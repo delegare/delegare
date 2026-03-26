@@ -1,0 +1,36 @@
+---
+title: Introduction
+description: Trustless agent payment authorization for the AI economy.
+---
+
+Delegare (Latin for "to delegate") is a trustless payment authorization layer that allows human users to grant spending power to AI agents without handing over credit card numbers or private keys.
+
+## The Problem
+AI agents today are limited by their inability to perform economic actions. Existing solutions require either:
+1. **Full Custody:** Giving an agent your credit card or wallet seed phrase (massive security risk).
+2. **Pre-funding:** Locking capital into a per-agent wallet (capital inefficient).
+
+## The Delegare Solution
+Delegare introduces **Spending Delegates** — cryptographically signed tokens that enforce strict spending limits, merchant allowlists, and time-based expirations.
+
+<CardGroup cols={2}>
+  <Card title="Human-in-the-loop Setup" icon="user-shield">
+    Users authorize a delegate once via a secure UI.
+  </Card>
+  <Card title="Agent-Led Execution" icon="robot">
+    Agents use the `delegateToken` to authorize payments autonomously.
+  </Card>
+  <Card title="Dual-Rail Settlement" icon="bridge">
+    Settle via Stripe (Fiat) or Base L2 (Crypto) with automatic fallback.
+  </Card>
+  <Card title="Atomic Limits" icon="gauge-high">
+    DynamoDB-backed atomic counters prevent overspending and race conditions.
+  </Card>
+</CardGroup>
+
+## How it works
+1. **Merchant** requests a setup session.
+2. **User** authorizes limits (e.g., "$50/mo total, max $10 per tx").
+3. **Agent** receives a `delegateToken`.
+4. **Agent** calls `/charge` with the token whenever it needs to buy something.
+5. **Vault** validates limits atomically and executes the payment on the best available rail.

@@ -1,0 +1,56 @@
+---
+title: Charge a Delegate
+api: POST /v1/payments/charge
+description: Executes a payment using a Spending Delegate token.
+---
+
+### Headers
+| Name | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `X-Delegare-Merchant-Id` | `string` | Yes | Your unique merchant identifier. |
+| `X-Delegare-Api-Key` | `string` | Yes | Your secret API key. |
+
+### Body Parameters
+| Name | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `delegateToken` | `string` | Yes | The user-authorized delegate token (`dtok_...`). |
+| `amountCents` | `number` | Yes | Amount in cents (positive integer). |
+| `currency` | `string` | Yes | `usd`, `usdc`, or `usdt`. |
+| `description` | `string` | Yes | Max 500 characters. Shown on user statement. |
+| `idempotencyKey` | `string` | Yes | Unique key to prevent duplicate charges. |
+| `metadata` | `object` | No | Key-value pairs for your own tracking. |
+
+### Response
+<ResponseField name="receiptId" type="string">
+  Unique identifier for this transaction.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  `completed`, `pending`, or `failed`.
+</ResponseField>
+
+<ResponseField name="amountCents" type="number">
+  The final charged amount.
+</ResponseField>
+
+<ResponseField name="railUsed" type="string">
+  `fiat` (Stripe) or `crypto` (Base).
+</ResponseField>
+
+<ResponseField name="txHash" type="string">
+  On-chain transaction hash (if crypto was used).
+</ResponseField>
+
+<ResponseField name="stripePaymentIntentId" type="string">
+  Stripe internal ID (if fiat was used).
+</ResponseField>
+
+### Errors
+| Status | Code | Description |
+| :--- | :--- | :--- |
+| 400 | `validation_error` | Missing or malformed parameters. |
+| 402 | `per_tx` | Amount exceeds the delegate's per-transaction limit. |
+| 402 | `monthly` | Charge would exceed the delegate's monthly limit. |
+| 402 | `merchant_limit_exceeded` | Amount exceeds merchant-specific limits. |
+| 403 | `merchant_inactive` | Your merchant account is not active. |
+| 429 | `rate_limit_exceeded` | Too many requests. |

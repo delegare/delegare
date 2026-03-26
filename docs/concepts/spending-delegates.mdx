@@ -1,0 +1,25 @@
+---
+title: Spending Delegates
+description: Understanding the core primitive of Delegare.
+---
+
+A **Spending Delegate** is a cryptographically secured authorization that allows an agent to spend up to a certain amount on behalf of a user.
+
+## Atomic Limit Enforcement
+The most critical feature of Delegare is its **guaranteed limit enforcement**. When an agent requests a charge, the Vault performs a single atomic operation in DynamoDB:
+
+1. **Check Status:** Ensures the delegate is `active` and not expired.
+2. **Check Allowlist:** Validates that the `merchantId` is permitted.
+3. **Check Monthly Reset:** If the current date has rolled over into a new month, the monthly spend counter is reset to zero.
+4. **Conditional Increment:** Increments the spend counter only if the new total is within the user's defined limits.
+
+This approach eliminates race conditions where two agents (or the same agent calling twice) could exceed the monthly limit by hitting the API at the exact same millisecond.
+
+## Token Lifecycle
+- **Setup:** User defines limits and connects a payment method.
+- **Issuance:** A signed `delegateToken` is generated.
+- **Active:** Agents use the token for payments.
+- **Revocation:** Users can revoke tokens at any time via the dashboard, instantly disabling all future charges.
+
+## Security
+Delegate tokens are never stored in plaintext on the client. They are cryptographically signed using a vault-wide HMAC secret. Even if a merchant database is compromised, a token cannot be modified to increase its own spending limits.

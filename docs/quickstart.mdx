@@ -1,0 +1,53 @@
+---
+title: Quickstart
+description: Set up your first spending delegate in 5 minutes.
+---
+
+To start accepting agent payments with Delegare, you'll need to register as a Merchant and integrate our SDK.
+
+### 1. Register as a Merchant
+Currently, merchant registration is handled via our [Dashboard](https://delegare.co/dashboard). You will receive:
+- `merchantId`: Your unique identifier.
+- `apiKey`: Your secret key for authorizing session requests.
+
+### 2. Request a Setup Session
+When a user wants to enable payments for an agent, your backend creates a setup session.
+
+```bash
+curl -X POST https://api.delegare.dev/v1/delegates \
+  -H "X-Delegare-Merchant-Id: your_merchant_id" \
+  -H "X-Delegare-Api-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "maxPerTxCents": 1000,
+    "maxMonthlySpendCents": 5000,
+    "requestedRail": "both"
+  }'
+```
+
+This returns a `sessionToken` and a `setupUrl`.
+
+### 3. Redirect the User
+Send the user to the `setupUrl`. There, they will:
+1. Connect their payment method (Stripe or Wallet).
+2. Confirm the limits you requested.
+3. Once finished, they are redirected back to your `redirectUrl`.
+
+### 4. Collect the Delegate Token
+After the user completes setup, your agent can retrieve the `delegateToken` from your backend (the Vault sends a webhook to your configured endpoint when the session is completed).
+
+### 5. Charge the Delegate
+Your agent can now execute payments directly.
+
+```bash
+curl -X POST https://api.delegare.dev/v1/payments/charge \
+  -H "X-Delegare-Merchant-Id: your_merchant_id" \
+  -H "X-Delegare-Api-Key: your_api_key" \
+  -d '{
+    "delegateToken": "dtok_...",
+    "amountCents": 500,
+    "currency": "usd",
+    "description": "API Subscription",
+    "idempotencyKey": "unique_request_id_123"
+  }'
+```

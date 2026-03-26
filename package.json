@@ -1,0 +1,20 @@
+{
+  "name": "delegare",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "deploy:dev": "cd infrastructure && pnpm cdk deploy --all --context environment=dev",
+    "deploy:prod": "cd infrastructure && pnpm cdk deploy --all --context environment=prod",
+    "sdk:publish": "cd packages/sdk && pnpm publish --access public",
+    "mcp-tools:publish": "cd packages/mcp-tools && pnpm publish --access public"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
