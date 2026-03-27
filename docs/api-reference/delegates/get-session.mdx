@@ -1,0 +1,50 @@
+---
+title: "Get Session"
+api: "GET https://api.delegare.dev/v1/delegates/session/{sessionToken}"
+description: "Retrieve the status of a setup session."
+---
+
+Once a user completes the setup process on the `setupUrl`, you can retrieve the status of the session to get the resulting `delegateToken`. Alternatively, you can listen for the `delegate.created` webhook.
+
+### Headers
+
+<ParamField header="X-Delegare-Merchant-Id" type="string" required>
+  Your merchant identifier.
+</ParamField>
+
+<ParamField header="X-Delegare-Api-Key" type="string" required>
+  Your merchant API key.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="sessionToken" type="string" required>
+  The token generated during `Create Setup Session`.
+</ParamField>
+
+### Response
+
+<ResponseField name="status" type="string">
+  The status of the session (`pending`, `completed`, `failed`).
+</ResponseField>
+
+<ResponseField name="delegateToken" type="string">
+  The token your agent uses to authorize charges (only present if `status` is `completed`).
+</ResponseField>
+
+<RequestExample>
+```bash Request
+curl -X GET https://api.delegare.dev/v1/delegates/session/sess_123456789 \
+  -H "X-Delegare-Merchant-Id: your_merchant_id" \
+  -H "X-Delegare-Api-Key: your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "status": "completed",
+  "delegateToken": "dtok_abc123xyz789"
+}
+```
+</ResponseExample>

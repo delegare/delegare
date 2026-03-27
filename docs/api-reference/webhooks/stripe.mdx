@@ -1,0 +1,34 @@
+---
+title: "Stripe Webhooks"
+description: "Handle incoming webhooks for fiat settlement."
+---
+
+When a transaction is settled on the fiat rail via Stripe, Delegare can forward normalized webhooks to your server.
+
+### Available Events
+
+- `payment.succeeded`: Fired when a charge successfully settles on the Stripe rail.
+- `payment.failed`: Fired when a Stripe charge fails (e.g., card declined).
+- `delegate.created`: Fired when a user successfully completes a setup session and a delegate token is generated.
+- `delegate.revoked`: Fired when a user revokes a delegate token from their dashboard.
+
+### Webhook Format
+
+All webhooks are sent as `POST` requests with a JSON body and an `X-Delegare-Signature` header for verification.
+
+```json Example Payload
+{
+  "id": "evt_01H...",
+  "type": "payment.succeeded",
+  "data": {
+    "transactionId": "txn_123456789",
+    "amountCents": 500,
+    "rail": "stripe",
+    "status": "succeeded"
+  },
+  "created_at": "2024-03-27T10:00:00Z"
+}
+```
+
+### Verifying Signatures
+We strongly recommend verifying the `X-Delegare-Signature` header using your webhook signing secret (available in your dashboard) to ensure the request actually came from Delegare.

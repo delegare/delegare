@@ -1,0 +1,50 @@
+---
+title: "Revoke Delegate"
+api: "POST https://api.delegare.dev/v1/delegates/{delegateToken}/revoke"
+description: "Revoke an active spending delegate, instantly preventing further charges."
+---
+
+Revoking a delegate immediately invalidates its token. Any future charge attempts using this token will fail with a `403 Forbidden` response.
+
+### Headers
+
+<ParamField header="X-Delegare-Merchant-Id" type="string" required>
+  Your merchant identifier.
+</ParamField>
+
+<ParamField header="X-Delegare-Api-Key" type="string" required>
+  Your merchant API key.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="delegateToken" type="string" required>
+  The `delegateToken` to revoke.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Will be `true` if the delegate was successfully revoked.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  The new status of the delegate, which will be `"revoked"`.
+</ResponseField>
+
+<RequestExample>
+```bash Request
+curl -X POST https://api.delegare.dev/v1/delegates/dtok_abc123xyz789/revoke \
+  -H "X-Delegare-Merchant-Id: your_merchant_id" \
+  -H "X-Delegare-Api-Key: your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "status": "revoked"
+}
+```
+</ResponseExample>

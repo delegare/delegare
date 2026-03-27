@@ -1,0 +1,65 @@
+---
+title: "Get Delegate Balance"
+api: "GET https://api.delegare.dev/v1/delegates/{delegateToken}/balance"
+description: "Retrieve the current spending balance of an active delegate."
+---
+
+Retrieve the spending limits and the currently available balance for a specific delegate token.
+
+### Headers
+
+<ParamField header="X-Delegare-Merchant-Id" type="string" required>
+  Your merchant identifier.
+</ParamField>
+
+<ParamField header="X-Delegare-Api-Key" type="string" required>
+  Your merchant API key.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="delegateToken" type="string" required>
+  The `delegateToken` used to authorize charges.
+</ParamField>
+
+### Response
+
+<ResponseField name="status" type="string">
+  The status of the delegate (`active`, `revoked`, `expired`).
+</ResponseField>
+
+<ResponseField name="maxMonthlySpendCents" type="integer">
+  The total authorized monthly spend limit.
+</ResponseField>
+
+<ResponseField name="currentMonthlySpendCents" type="integer">
+  The total amount spent by this delegate so far in the current month.
+</ResponseField>
+
+<ResponseField name="remainingMonthlySpendCents" type="integer">
+  The remaining available balance for the current month.
+</ResponseField>
+
+<ResponseField name="maxPerTxCents" type="integer">
+  The maximum permitted amount for a single transaction.
+</ResponseField>
+
+<RequestExample>
+```bash Request
+curl -X GET https://api.delegare.dev/v1/delegates/dtok_abc123xyz789/balance \
+  -H "X-Delegare-Merchant-Id: your_merchant_id" \
+  -H "X-Delegare-Api-Key: your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "status": "active",
+  "maxMonthlySpendCents": 5000,
+  "currentMonthlySpendCents": 1500,
+  "remainingMonthlySpendCents": 3500,
+  "maxPerTxCents": 1000
+}
+```
+</ResponseExample>

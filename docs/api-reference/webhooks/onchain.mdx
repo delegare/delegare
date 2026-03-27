@@ -1,0 +1,35 @@
+---
+title: "Onchain Webhooks"
+description: "Handle incoming webhooks for crypto settlement on Base."
+---
+
+If you support dual-rail settlement or exclusively accept crypto payments on the Base L2 network, Delegare listens to the blockchain for successful transactions and forwards the events to your webhook endpoint.
+
+### Available Events
+
+- `payment.succeeded`: Fired when a charge successfully settles on the Base L2 rail.
+- `payment.failed`: Fired when an onchain transaction fails (e.g., reverted transaction, out of gas).
+- `delegate.created`: Fired when a user successfully connects a wallet and completes the setup session.
+- `delegate.revoked`: Fired when a user revokes their onchain delegate token via the Delegare dashboard or a smart contract call.
+
+### Webhook Format
+
+Similar to fiat webhooks, onchain webhooks include a JSON payload and an `X-Delegare-Signature` header.
+
+```json Example Payload
+{
+  "id": "evt_02H...",
+  "type": "payment.succeeded",
+  "data": {
+    "transactionId": "txn_987654321",
+    "amountCents": 500,
+    "rail": "base",
+    "status": "succeeded",
+    "txHash": "0x123abc456def789..."
+  },
+  "created_at": "2024-03-27T10:05:00Z"
+}
+```
+
+### Differences from Stripe
+Onchain webhooks may contain additional metadata, such as the `txHash`, allowing you to provide a link to a block explorer like BaseScan for your users.

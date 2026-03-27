@@ -1,0 +1,64 @@
+---
+title: "Create Setup Session"
+api: "POST https://api.delegare.dev/v1/delegates"
+description: "Create a session to authorize a new spending delegate."
+---
+
+When a user wants to enable payments for an AI agent, your backend creates a setup session. This endpoint returns a `setupUrl` where the user will securely connect their payment method and confirm spending limits.
+
+### Headers
+
+<ParamField header="X-Delegare-Merchant-Id" type="string" required>
+  Your merchant identifier.
+</ParamField>
+
+<ParamField header="X-Delegare-Api-Key" type="string" required>
+  Your merchant API key.
+</ParamField>
+
+### Body
+
+<ParamField body="maxPerTxCents" type="integer" required>
+  The maximum amount the agent can spend in a single transaction, in cents (USD).
+</ParamField>
+
+<ParamField body="maxMonthlySpendCents" type="integer" required>
+  The maximum amount the agent can spend per calendar month, in cents (USD).
+</ParamField>
+
+<ParamField body="requestedRail" type="string" default="both">
+  The preferred settlement rail. Options are `"stripe"`, `"base"`, or `"both"`.
+</ParamField>
+
+### Response
+
+<ResponseField name="sessionToken" type="string">
+  The unique token for this setup session.
+</ResponseField>
+
+<ResponseField name="setupUrl" type="string">
+  The URL to redirect the user to complete the setup process.
+</ResponseField>
+
+<RequestExample>
+```bash Request
+curl -X POST https://api.delegare.dev/v1/delegates \
+  -H "X-Delegare-Merchant-Id: your_merchant_id" \
+  -H "X-Delegare-Api-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "maxPerTxCents": 1000,
+    "maxMonthlySpendCents": 5000,
+    "requestedRail": "both"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "sessionToken": "sess_123456789",
+  "setupUrl": "https://app.delegare.dev/setup/sess_123456789"
+}
+```
+</ResponseExample>

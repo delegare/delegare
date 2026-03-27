@@ -1,0 +1,70 @@
+---
+title: "Get Receipt"
+api: "GET https://api.delegare.dev/v1/payments/{transactionId}/receipt"
+description: "Retrieve a receipt for a processed payment transaction."
+---
+
+Retrieve details of a specific payment, including its status, the rail used, and timestamps.
+
+### Headers
+
+<ParamField header="X-Delegare-Merchant-Id" type="string" required>
+  Your merchant identifier.
+</ParamField>
+
+<ParamField header="X-Delegare-Api-Key" type="string" required>
+  Your merchant API key.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="transactionId" type="string" required>
+  The unique ID of the transaction to retrieve.
+</ParamField>
+
+### Response
+
+<ResponseField name="id" type="string">
+  The unique identifier for the transaction.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  The status of the transaction (`succeeded`, `failed`, `pending`).
+</ResponseField>
+
+<ResponseField name="amountCents" type="integer">
+  The transaction amount in cents (USD).
+</ResponseField>
+
+<ResponseField name="currency" type="string">
+  The currency code, e.g., `"usd"`.
+</ResponseField>
+
+<ResponseField name="rail" type="string">
+  The rail used for settlement (`stripe` or `base`).
+</ResponseField>
+
+<ResponseField name="receiptUrl" type="string">
+  A hosted URL to view the transaction receipt, if applicable.
+</ResponseField>
+
+<RequestExample>
+```bash Request
+curl -X GET https://api.delegare.dev/v1/payments/txn_123456789/receipt \
+  -H "X-Delegare-Merchant-Id: your_merchant_id" \
+  -H "X-Delegare-Api-Key: your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "id": "txn_123456789",
+  "status": "succeeded",
+  "amountCents": 500,
+  "currency": "usd",
+  "rail": "stripe",
+  "receiptUrl": "https://receipts.delegare.dev/txn_123456789"
+}
+```
+</ResponseExample>
