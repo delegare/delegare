@@ -15,6 +15,7 @@
     "pnpm": ">=9.0.0"
   },
   "devDependencies": {
+    "next": "16.2.1",
     "typescript": "^5.4.0"
   }
 }
