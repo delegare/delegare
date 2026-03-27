@@ -1,0 +1,91 @@
+---
+title: "List Transactions"
+api: "GET https://api.delegare.dev/v1/merchants/transactions"
+description: "Retrieve a list of transactions across your merchant account."
+---
+
+Retrieve a paginated list of all successful and failed transactions processed across all delegates connected to your merchant account.
+
+### Headers
+
+<ParamField header="X-Delegare-Merchant-Id" type="string" required>
+  Your merchant identifier.
+</ParamField>
+
+<ParamField header="X-Delegare-Api-Key" type="string" required>
+  Your merchant API key.
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="limit" type="integer" default="10">
+  A limit on the number of objects to be returned, between 1 and 100.
+</ParamField>
+
+<ParamField query="starting_after" type="string">
+  A cursor for use in pagination. `starting_after` is an object ID that defines your place in the list.
+</ParamField>
+
+### Response
+
+<ResponseField name="hasMore" type="boolean">
+  Whether there are more transactions available in the list.
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  An array of transaction objects.
+  <Expandable title="properties">
+    <ResponseField name="id" type="string">
+      Unique identifier for the transaction.
+    </ResponseField>
+    <ResponseField name="delegateId" type="string">
+      The ID of the spending delegate used for the transaction.
+    </ResponseField>
+    <ResponseField name="amountCents" type="integer">
+      The transaction amount in cents (USD).
+    </ResponseField>
+    <ResponseField name="status" type="string">
+      The status of the transaction (`succeeded`, `failed`, `pending`).
+    </ResponseField>
+    <ResponseField name="rail" type="string">
+      The rail used for settlement (`stripe` or `base`).
+    </ResponseField>
+    <ResponseField name="createdAt" type="string">
+      ISO 8601 timestamp of when the transaction occurred.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash Request
+curl -X GET "https://api.delegare.dev/v1/merchants/transactions?limit=10" \
+  -H "X-Delegare-Merchant-Id: your_merchant_id" \
+  -H "X-Delegare-Api-Key: your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "hasMore": false,
+  "data": [
+    {
+      "id": "txn_123456789",
+      "delegateId": "del_987654321",
+      "amountCents": 500,
+      "status": "succeeded",
+      "rail": "base",
+      "createdAt": "2024-03-27T10:00:00Z"
+    },
+    {
+      "id": "txn_223456789",
+      "delegateId": "del_187654321",
+      "amountCents": 1200,
+      "status": "succeeded",
+      "rail": "stripe",
+      "createdAt": "2024-03-26T14:30:00Z"
+    }
+  ]
+}
+```
+</ResponseExample>

@@ -1,0 +1,49 @@
+---
+title: "Get Merchant Stats"
+api: "GET https://api.delegare.dev/v1/merchants/stats"
+description: "Retrieve aggregated statistics for your merchant account."
+---
+
+Get high-level statistics about your merchant account, including total processed volume and active spending delegates.
+
+### Headers
+
+<ParamField header="X-Delegare-Merchant-Id" type="string" required>
+  Your merchant identifier.
+</ParamField>
+
+<ParamField header="X-Delegare-Api-Key" type="string" required>
+  Your merchant API key.
+</ParamField>
+
+### Response
+
+<ResponseField name="totalVolumeCents" type="integer">
+  The total volume processed by your merchant account in cents (USD).
+</ResponseField>
+
+<ResponseField name="activeDelegates" type="integer">
+  The current number of active spending delegates connected to your merchant account.
+</ResponseField>
+
+<ResponseField name="transactionCount" type="integer">
+  The total number of successful transactions.
+</ResponseField>
+
+<RequestExample>
+```bash Request
+curl -X GET https://api.delegare.dev/v1/merchants/stats \
+  -H "X-Delegare-Merchant-Id: your_merchant_id" \
+  -H "X-Delegare-Api-Key: your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "totalVolumeCents": 150450,
+  "activeDelegates": 42,
+  "transactionCount": 128
+}
+```
+</ResponseExample>
