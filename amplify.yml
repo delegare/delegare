@@ -6,7 +6,7 @@ applications:
         preBuild:
           commands:
             - npm install -g pnpm
-            - cd ../.. && pnpm install --no-frozen-lockfile
+            - pnpm install --no-frozen-lockfile --dir ../..
         build:
           commands:
             - pnpm run build
