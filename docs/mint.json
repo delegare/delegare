@@ -21,47 +21,45 @@
     "name": "Get API Keys",
     "url": "https://delegare.co/dashboard"
   },
-  "navigation": {
-    "groups": [
-      {
-        "group": "Getting Started",
-        "pages": ["introduction", "quickstart"]
-      },
-      {
-        "group": "Concepts",
-        "pages": ["concepts/spending-delegates", "concepts/dual-rail-payments"]
-      },
-      {
-        "group": "Merchant API",
-        "pages": [
-          "api-reference/merchants/stats",
-          "api-reference/merchants/transactions"
-        ]
-      },
-      {
-        "group": "Delegate API",
-        "pages": [
-          "api-reference/delegates/create-session",
-          "api-reference/delegates/get-session",
-          "api-reference/delegates/balance",
-          "api-reference/delegates/revoke"
-        ]
-      },
-      {
-        "group": "Payment API",
-        "pages": [
-          "api-reference/payments/charge",
-          "api-reference/payments/get-receipt",
-          "api-reference/webhooks/stripe",
-          "api-reference/webhooks/onchain"
-        ]
-      },
-      {
-        "group": "Development",
-        "pages": ["development/setup", "development/testing"]
-      }
-    ]
-  },
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": ["introduction", "quickstart"]
+    },
+    {
+      "group": "Concepts",
+      "pages": ["concepts/spending-delegates", "concepts/dual-rail-payments"]
+    },
+    {
+      "group": "Merchant API",
+      "pages": [
+        "api-reference/merchants/stats",
+        "api-reference/merchants/transactions"
+      ]
+    },
+    {
+      "group": "Delegate API",
+      "pages": [
+        "api-reference/delegates/create-session",
+        "api-reference/delegates/get-session",
+        "api-reference/delegates/balance",
+        "api-reference/delegates/revoke"
+      ]
+    },
+    {
+      "group": "Payment API",
+      "pages": [
+        "api-reference/payments/charge",
+        "api-reference/payments/get-receipt",
+        "api-reference/webhooks/stripe",
+        "api-reference/webhooks/onchain"
+      ]
+    },
+    {
+      "group": "Development",
+      "pages": ["development/setup", "development/testing"]
+    }
+  ],
   "footerSocials": {
     "github": "https://github.com/delegare"
   }
