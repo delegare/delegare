@@ -6,7 +6,7 @@ applications:
         preBuild:
           commands:
             - npm install -g pnpm
-            - pnpm install --no-frozen-lockfile
+            - cd ../.. && pnpm install --no-frozen-lockfile
         build:
           commands:
             - pnpm run build
@@ -16,5 +16,6 @@ applications:
           - '**/*'
       cache:
         paths:
-          - .next/cache/**/*
+          - ../../node_modules/**/*
           - node_modules/**/*
+          - .next/cache/**/*
