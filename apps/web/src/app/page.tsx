@@ -1,65 +1,86 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="flex min-h-screen flex-col items-center justify-between p-24 bg-zinc-950 text-white font-sans">
+      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
+        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-zinc-800 bg-zinc-950/80 pb-6 pt-8 backdrop-blur-2xl lg:static lg:w-auto lg:rounded-xl lg:border lg:p-4">
+          Delegare.dev
+        </p>
+        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-zinc-950 via-zinc-950 lg:static lg:h-auto lg:w-auto lg:bg-none">
+          <Button variant="outline" asChild>
+            <Link href="https://app.delegare.dev">
+              Dashboard
+            </Link>
+          </Button>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+
+      <div className="relative flex place-items-center flex-col gap-6 before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-cyan-500/20 before:to-transparent before:blur-2xl after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-cyan-500/40 after:via-cyan-600/20 after:blur-2xl">
+        <h1 className="text-6xl font-bold tracking-tight text-center max-w-3xl">
+          Trustless Agent Payments. <br />
+          <span className="text-cyan-400">3¢ per transaction. Always.</span>
+        </h1>
+        <p className="text-xl text-zinc-400 max-w-2xl text-center">
+          Empower your AI agents to spend securely without handing over credit card numbers or private keys. 
+          Built with dual-rail settlement (Stripe & Base) and atomic limit enforcement.
+        </p>
+        <div className="flex gap-4 mt-8">
+          <Button size="lg" className="bg-cyan-500 text-zinc-950 hover:bg-cyan-400" asChild>
+            <Link href="https://docs.delegare.dev">
+              Read the Docs
+            </Link>
+          </Button>
+          <Button size="lg" variant="outline" className="border-zinc-700 text-white hover:bg-zinc-800" asChild>
+            <Link href="https://app.delegare.dev">
+              Get API Keys
+            </Link>
+          </Button>
         </div>
-      </main>
-    </div>
+      </div>
+
+      <div className="mb-32 grid text-left lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-3 lg:gap-6">
+        <Card className="bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 transition-colors group cursor-pointer">
+          <Link href="https://docs.delegare.dev/concepts/spending-delegates">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                Atomic Limits <span className="inline-block transition-transform group-hover:translate-x-1">-&gt;</span>
+              </CardTitle>
+              <CardDescription className="text-zinc-400">
+                DynamoDB-backed enforcement prevents overspending, even with concurrent API calls.
+              </CardDescription>
+            </CardHeader>
+          </Link>
+        </Card>
+
+        <Card className="bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 transition-colors group cursor-pointer">
+          <Link href="https://docs.delegare.dev/api-reference/payments/charge">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                Dual-Rail <span className="inline-block transition-transform group-hover:translate-x-1">-&gt;</span>
+              </CardTitle>
+              <CardDescription className="text-zinc-400">
+                Settle in fiat via Stripe or USDC on Base L2, with automatic failover.
+              </CardDescription>
+            </CardHeader>
+          </Link>
+        </Card>
+
+        <Card className="bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 transition-colors group cursor-pointer">
+          <Link href="https://github.com/delegare/delegare">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                Open Source <span className="inline-block transition-transform group-hover:translate-x-1">-&gt;</span>
+              </CardTitle>
+              <CardDescription className="text-zinc-400">
+                Explore our SDKs and architecture. Transparency is the foundation of trust.
+              </CardDescription>
+            </CardHeader>
+          </Link>
+        </Card>
+      </div>
+    </main>
   );
 }
