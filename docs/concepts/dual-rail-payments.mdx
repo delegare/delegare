@@ -1,0 +1,28 @@
+---
+title: Dual-Rail Settlement
+description: How Delegare settles payments across Fiat and Crypto.
+---
+
+Delegare is built with a **dual-rail architecture**, allowing agents to settle payments through the most efficient path available—whether that's traditional fiat (Stripe) or decentralized finance (Base L2).
+
+## What are Dual-Rails?
+When a merchant integrates Delegare, they can choose to accept payments via:
+
+1. **The Fiat Rail (Stripe):** Traditional credit card and bank transfer settlement. Best for businesses that need to keep their accounting in USD/EUR.
+2. **The Crypto Rail (Base):** USDC settlement on the Base Layer 2 network. Best for low-fee, instant global settlement.
+
+## Automatic Failover
+One of the core benefits of the dual-rail system is **automatic failover**. If a user has both a card and a wallet connected:
+
+- The Vault will attempt the merchant's preferred rail first.
+- If the preferred rail fails (e.g., insufficient crypto balance or a declined card), the Vault can automatically attempt to settle on the secondary rail.
+- This ensures that agents can complete their tasks with the highest possible success rate.
+
+## Merchant Experience
+Merchants don't need to manage multiple complex integrations. The Delegare API abstracts the rail complexity:
+- You call one `/charge` endpoint.
+- You receive one unified webhook for payment success.
+- You can view all transactions (fiat and crypto) in a single unified [Dashboard](https://app.delegare.dev).
+
+## Low Fees
+By leveraging Base L2 for crypto payments, Delegare can offer transaction fees as low as **3¢ per transaction**, significantly lower than traditional payment processors for micro-payments.
