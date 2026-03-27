@@ -5,11 +5,11 @@
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
   },
-  "favicon": "/favicon.png",
+  "favicon": "/favicon/favicon.svg",
   "colors": {
-    "primary": "#00D1FF",
-    "light": "#85E9FF",
-    "dark": "#00A3C7"
+    "primary": "#c8b99a",
+    "light": "#c8b99a",
+    "dark": "#c8b99a"
   },
   "topbarLinks": [
     {
@@ -24,11 +24,17 @@
   "navigation": [
     {
       "group": "Getting Started",
-      "pages": ["introduction", "quickstart"]
+      "pages": [
+        "introduction",
+        "quickstart"
+      ]
     },
     {
       "group": "Concepts",
-      "pages": ["concepts/spending-delegates", "concepts/dual-rail-payments"]
+      "pages": [
+        "concepts/spending-delegates",
+        "concepts/dual-rail-payments"
+      ]
     },
     {
       "group": "Merchant API",
@@ -57,10 +63,22 @@
     },
     {
       "group": "Development",
-      "pages": ["development/setup", "development/testing"]
+      "pages": [
+        "development/setup",
+        "development/testing"
+      ]
     }
   ],
   "footerSocials": {
     "github": "https://github.com/delegare"
+  },
+  "appearance": {
+    "default": "dark"
+  },
+  "fonts": {
+    "family": "DM Sans",
+    "heading": {
+      "family": "DM Serif Display"
+    }
   }
 }

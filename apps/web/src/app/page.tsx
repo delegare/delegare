@@ -472,8 +472,8 @@ export default function Home() {
             <div className="audience-title">Accept payments from agents.</div>
             <p className="audience-body">
               Drop in the SDK. Your service accepts agent-initiated payments on
-              any rail — card, USDC, bank transfer. Already on Stripe? You&apos;re
-              95% done.
+              any rail — card, USDC, bank transfer. Already on Stripe?
+              You&apos;re 95% done.
             </p>
             <div className="audience-detail">
               3¢ flat per transaction · no percentage · no volume pricing
@@ -554,8 +554,8 @@ export default function Home() {
             <div className="rail-name">Crypto</div>
             <p className="rail-desc">
               USDC and USDT on Base L2. ERC-4337 session keys mean the agent
-              signs transactions without ever holding the user&apos;s master private
-              key.
+              signs transactions without ever holding the user&apos;s master
+              private key.
             </p>
             <div className="rail-props">
               {[
@@ -588,8 +588,9 @@ export default function Home() {
             </div>
             <div className="pricing-context">
               <p className="pricing-context-line">
-                Delegare is not a payment processor — it&apos;s the authorization
-                layer that makes your existing payments agent-ready.
+                Delegare is not a payment processor — it&apos;s the
+                authorization layer that makes your existing payments
+                agent-ready.
               </p>
               <p className="pricing-context-line">
                 Your Stripe setup stays exactly as it is. Delegare sits in front
@@ -597,9 +598,9 @@ export default function Home() {
                 authorization.
               </p>
               <p className="pricing-context-note">
-                For reference: Stripe&apos;s base fee on a $25 transaction is ~$1.03.
-                Delegare&apos;s authorization layer costs $0.03. These are different
-                things. Both exist on every transaction.
+                For reference: Stripe&apos;s base fee on a $25 transaction is
+                ~$1.03. Delegare&apos;s authorization layer costs $0.03. These
+                are different things. Both exist on every transaction.
               </p>
             </div>
           </div>
@@ -719,7 +720,9 @@ export default function Home() {
             </div>
             <div>&nbsp;</div>
             <div>
-              <span className="c-dim">{"// receipt.receiptId · receipt.railUsed · receipt.txHash"}</span>
+              <span className="c-dim">
+                {"// receipt.receiptId · receipt.railUsed · receipt.txHash"}
+              </span>
             </div>
           </div>
         </div>
@@ -751,6 +754,9 @@ export default function Home() {
               className="footer-link"
             >
               Privacy
+            </a>
+            <a href="https://delegare.dev/legal/terms" className="footer-link">
+              Terms
             </a>
           </div>
           <div className="footer-free">

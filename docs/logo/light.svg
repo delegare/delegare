@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" width="120" height="40">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;display=swap');
+    text { font-family: 'DM Serif Display', serif; }
+  </style>
+  <text x="0" y="28" font-size="28" fill="#0c0c0c" letter-spacing="-0.3">
+    delegare<tspan fill="#c8b99a">.</tspan>
+  </text>
+</svg>
