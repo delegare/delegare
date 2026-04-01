@@ -393,7 +393,6 @@ export default function Home() {
           .footer { flex-direction: column; gap: 24px; align-items: flex-start; padding: 40px 24px; }
         }
       `}</style>
-
       {/* NAV */}
       <nav className={`nav${scrolled ? " scrolled" : ""}`}>
         <Link href="/" className="nav-logo">
@@ -406,9 +405,9 @@ export default function Home() {
           <a href="https://github.com/delegare/delegare" className="nav-link">
             GitHub
           </a>
-          <a href="https://app.delegare.dev" className="nav-cta">
-            Get API key →
-          </a>
+          <Link href="/login" className="nav-cta">
+            Sign in
+          </Link>
         </div>
       </nav>
 
