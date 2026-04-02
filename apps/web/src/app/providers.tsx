@@ -12,10 +12,10 @@ Amplify.configure({
       loginWith: {
         email: true,
         oauth: {
-          domain: process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'delegare.auth.us-east-1.amazoncognito.com',
+          domain: process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'delegare-dev.auth.us-east-2.amazoncognito.com',
           scopes: ['phone', 'email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
-          redirectSignIn: [process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL || 'http://localhost:3000'],
-          redirectSignOut: [process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL || 'http://localhost:3000'],
+          redirectSignIn: [process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://app.delegare.dev')],
+          redirectSignOut: [process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://app.delegare.dev')],
           responseType: 'code',
           providers: ['Google'],
         },
