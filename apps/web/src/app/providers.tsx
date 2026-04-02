@@ -13,7 +13,7 @@ Amplify.configure({
         email: true,
         oauth: {
           domain: process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'delegare-dev.auth.us-east-2.amazoncognito.com',
-          scopes: ['phone', 'email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
+          scopes: ['phone', 'email', 'profile', 'openid'],
           redirectSignIn: [process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://app.delegare.dev')],
           redirectSignOut: [process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://app.delegare.dev')],
           responseType: 'code',
