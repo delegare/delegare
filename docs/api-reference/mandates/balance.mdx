@@ -1,6 +1,6 @@
 ---
 title: "Get Delegate Balance"
-api: "GET /v1/delegates/{delegateToken}/balance"
+api: "GET /v1/mandates/{intentMandate}/balance"
 description: "Retrieve the current spending balance of an active delegate."
 ---
 
@@ -18,8 +18,8 @@ Retrieve the spending limits and the currently available balance for a specific 
 
 ### Path Parameters
 
-<ParamField path="delegateToken" type="string" required>
-  The `delegateToken` used to authorize charges.
+<ParamField path="intentMandate" type="string" required>
+  The `intentMandate` used to authorize charges.
 </ParamField>
 
 ### Response
@@ -46,7 +46,7 @@ Retrieve the spending limits and the currently available balance for a specific 
 
 <RequestExample>
 ```bash Request
-curl -X GET https://api.delegare.dev/v1/delegates/dtok_abc123xyz789/balance \
+curl -X GET https://api.delegare.dev/v1/mandates/dtok_abc123xyz789/balance \
   -H "X-Delegare-Merchant-Id: your_merchant_id" \
   -H "X-Delegare-Api-Key: your_api_key"
 ```

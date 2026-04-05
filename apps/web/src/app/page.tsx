@@ -424,9 +424,9 @@ export default function Home() {
             <em>You stay in control.</em>
           </h1>
           <p className="hero-sub">
-            Delegare lets you give your AI agent a spending allowance — without
-            handing over your card number, wallet seed, or any credentials. Your
-            agent pays for things within limits you set. Always.
+            Delegare is the first AP2-compliant payment infrastructure for AI agents. 
+            Give your agent a spending allowance via Verifiable Credentials (Intent Mandates) — without
+            handing over your card number or wallet seed. Your agent pays for things within limits you set. Always.
           </p>
           <div className="hero-price">
             <div className="hero-price-num">3¢</div>
@@ -526,6 +526,9 @@ export default function Home() {
       {/* RAILS */}
       <section className="section">
         <div className="section-label">Two rails. One interface.</div>
+        <p style={{ textAlign: 'center', color: 'rgba(240,237,232,0.6)', maxWidth: 600, margin: '0 auto 40px' }}>
+          By issuing standard AP2 Intent Mandates (SD-JWT-VC), agents can pay any compatible merchant globally.
+        </p>
         <div className="rails-grid">
           <div className="rail-card">
             <div className="rail-icon rail-icon-fiat">💳</div>

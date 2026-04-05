@@ -1,0 +1,22 @@
+{
+  "name": "delegare-express-checkout",
+  "version": "0.1.0",
+  "description": "An example of an Express backend accepting payments via Delegare AI agents",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "setup": "node setup-buyer.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "@delegare/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "license": "MIT"
+}

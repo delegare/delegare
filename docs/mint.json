@@ -32,7 +32,7 @@
     {
       "group": "Concepts",
       "pages": [
-        "concepts/spending-delegates",
+        "concepts/intent-mandates",
         "concepts/dual-rail-payments"
       ]
     },
@@ -44,12 +44,12 @@
       ]
     },
     {
-      "group": "Delegate API",
+      "group": "Mandate API",
       "pages": [
-        "api-reference/delegates/create-session",
-        "api-reference/delegates/get-session",
-        "api-reference/delegates/balance",
-        "api-reference/delegates/revoke"
+        "api-reference/mandates/create-session",
+        "api-reference/mandates/get-session",
+        "api-reference/mandates/balance",
+        "api-reference/mandates/revoke"
       ]
     },
     {

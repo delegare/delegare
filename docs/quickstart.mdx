@@ -1,6 +1,6 @@
 ---
 title: Quickstart
-description: Set up your first spending delegate in 5 minutes.
+description: Set up your first spending mandate in 5 minutes.
 ---
 
 To start accepting agent payments with Delegare, you'll need to register as a Merchant and integrate our SDK.
@@ -14,14 +14,14 @@ Currently, merchant registration is handled via our [Dashboard](https://app.dele
 When a user wants to enable payments for an agent, your backend creates a setup session.
 
 ```bash
-curl -X POST https://api.delegare.dev/v1/delegates \
+curl -X POST https://api.delegare.dev/v1/mandates \
   -H "X-Delegare-Merchant-Id: your_merchant_id" \
   -H "X-Delegare-Api-Key: your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
     "maxPerTxCents": 1000,
     "maxMonthlySpendCents": 5000,
-    "requestedRail": "both"
+    "rail": "both"
   }'
 ```
 
@@ -31,20 +31,21 @@ This returns a `sessionToken` and a `setupUrl`.
 Send the user to the `setupUrl`. There, they will:
 1. Connect their payment method (Stripe or Wallet).
 2. Confirm the limits you requested.
-3. Once finished, they are redirected back to your `redirectUrl`.
+3. Once finished, they are redirected back to your configured URL.
 
-### 4. Collect the Delegate Token
-After the user completes setup, your agent can retrieve the `delegateToken` from your backend (the Vault sends a webhook to your configured endpoint when the session is completed).
+### 4. Collect the Intent Mandate
+After the user completes setup, your agent can retrieve the **Intent Mandate** (a cryptographic SD-JWT-VC that proves authorization) from your backend. The Vault sends a webhook to your configured endpoint when the session is completed.
 
-### 5. Charge the Delegate
-Your agent can now execute payments directly.
+### 5. Charge the Mandate
+Your agent can now execute payments directly using the Intent Mandate.
 
 ```bash
 curl -X POST https://api.delegare.dev/v1/payments/charge \
   -H "X-Delegare-Merchant-Id: your_merchant_id" \
   -H "X-Delegare-Api-Key: your_api_key" \
+  -H "Content-Type: application/json" \
   -d '{
-    "delegateToken": "dtok_...",
+    "intentMandate": "eyJhbGciOiJFUz...",
     "amountCents": 500,
     "currency": "usd",
     "description": "API Subscription",

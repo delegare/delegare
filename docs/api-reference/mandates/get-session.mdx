@@ -1,10 +1,10 @@
 ---
 title: "Get Session"
-api: "GET /v1/delegates/session/{sessionToken}"
+api: "GET /v1/mandates/session/{sessionToken}"
 description: "Retrieve the status of a setup session."
 ---
 
-Once a user completes the setup process on the `setupUrl`, you can retrieve the status of the session to get the resulting `delegateToken`. Alternatively, you can listen for the `delegate.created` webhook.
+Once a user completes the setup process on the `setupUrl`, you can retrieve the status of the session to get the resulting `intentMandate`. Alternatively, you can listen for the `delegate.created` webhook.
 
 ### Headers
 
@@ -28,13 +28,13 @@ Once a user completes the setup process on the `setupUrl`, you can retrieve the 
   The status of the session (`pending`, `completed`, `failed`).
 </ResponseField>
 
-<ResponseField name="delegateToken" type="string">
+<ResponseField name="intentMandate" type="string">
   The token your agent uses to authorize charges (only present if `status` is `completed`).
 </ResponseField>
 
 <RequestExample>
 ```bash Request
-curl -X GET https://api.delegare.dev/v1/delegates/session/sess_123456789 \
+curl -X GET https://api.delegare.dev/v1/mandates/session/sess_123456789 \
   -H "X-Delegare-Merchant-Id: your_merchant_id" \
   -H "X-Delegare-Api-Key: your_api_key"
 ```
@@ -44,7 +44,7 @@ curl -X GET https://api.delegare.dev/v1/delegates/session/sess_123456789 \
 ```json Response
 {
   "status": "completed",
-  "delegateToken": "dtok_abc123xyz789"
+  "intentMandate": "dtok_abc123xyz789"
 }
 ```
 </ResponseExample>

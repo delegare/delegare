@@ -10,7 +10,7 @@ export interface DelegareConfig {
 }
 
 export interface ChargeRequest {
-  delegateToken: string;
+  intentMandate: string; // The SD-JWT-VC string
   amountCents: number;
   currency: Currency;
   description: string;
@@ -20,14 +20,13 @@ export interface ChargeRequest {
 
 export interface ChargeResponse {
   receiptId: string;
-  status: 'completed' | 'pending' | 'failed';
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
   amountCents: number;
   currency: Currency;
-  railUsed: Rail;
-  railFallbackUsed: boolean;
+  railUsed?: Rail;
   txHash?: string;
   stripePaymentIntentId?: string;
-  completedAt: string;
+  failureReason?: string;
 }
 
 export interface BalanceResponse {
@@ -38,11 +37,13 @@ export interface BalanceResponse {
     fiat: { spentCents: number; transactions: number };
     crypto: { spentCents: number; transactions: number };
   };
-  paymentMethods: PaymentMethodSummary[];
-  railPreference: RailPreference;
-  status: DelegateStatus;
-  expiresAt?: string;
+  paymentMethods?: PaymentMethodSummary[];
+  railPreference?: RailPreference;
+  status: MandateStatus;
+  expiresAt: string;
 }
+
+export type MandateStatus = 'active' | 'revoked' | 'expired';
 
 export interface PaymentMethodSummary {
   rail: Rail;
@@ -67,7 +68,7 @@ export interface SetupDelegateResponse {
 
 export interface SetupSessionStatus {
   status: 'pending' | 'complete' | 'expired';
-  delegateToken?: string;
+  intentMandate?: string;
   maskedPaymentMethods?: PaymentMethodSummary[];
 }
 

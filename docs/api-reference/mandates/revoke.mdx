@@ -1,7 +1,7 @@
 ---
 title: "Revoke Delegate"
-api: "POST /v1/delegates/{delegateToken}/revoke"
-description: "Revoke an active spending delegate, instantly preventing further charges."
+api: "POST /v1/mandates/{intentMandate}/revoke"
+description: "Revoke an active Intent Mandate, instantly preventing further charges."
 ---
 
 Revoking a delegate immediately invalidates its token. Any future charge attempts using this token will fail with a `403 Forbidden` response.
@@ -18,8 +18,8 @@ Revoking a delegate immediately invalidates its token. Any future charge attempt
 
 ### Path Parameters
 
-<ParamField path="delegateToken" type="string" required>
-  The `delegateToken` to revoke.
+<ParamField path="intentMandate" type="string" required>
+  The `intentMandate` to revoke.
 </ParamField>
 
 ### Response
@@ -34,7 +34,7 @@ Revoking a delegate immediately invalidates its token. Any future charge attempt
 
 <RequestExample>
 ```bash Request
-curl -X POST https://api.delegare.dev/v1/delegates/dtok_abc123xyz789/revoke \
+curl -X POST https://api.delegare.dev/v1/mandates/dtok_abc123xyz789/revoke \
   -H "X-Delegare-Merchant-Id: your_merchant_id" \
   -H "X-Delegare-Api-Key: your_api_key"
 ```

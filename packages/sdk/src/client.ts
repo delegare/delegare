@@ -57,16 +57,16 @@ export class Delegare {
     return this.request<ChargeResponse>('POST', '/payments/charge', params);
   }
 
-  async getBalance(delegateToken: string): Promise<BalanceResponse> {
-    return this.request<BalanceResponse>('GET', `/delegates/${encodeURIComponent(delegateToken)}/balance`);
+  async getBalance(intentMandate: string): Promise<BalanceResponse> {
+    return this.request<BalanceResponse>('GET', `/mandates/${encodeURIComponent(intentMandate)}/balance`);
   }
 
-  async revoke(delegateToken: string): Promise<RevokeResponse> {
-    return this.request<RevokeResponse>('DELETE', `/delegates/${encodeURIComponent(delegateToken)}`);
+  async revoke(intentMandate: string): Promise<RevokeResponse> {
+    return this.request<RevokeResponse>('DELETE', `/mandates/${encodeURIComponent(intentMandate)}`);
   }
 
   async createSetupSession(params: SetupDelegateRequest): Promise<SetupDelegateResponse> {
-    return this.request<SetupDelegateResponse>('POST', '/delegates', params);
+    return this.request<SetupDelegateResponse>('POST', '/mandates', params);
   }
 
   async getSetupSession(sessionToken: string): Promise<SetupSessionStatus> {
@@ -74,7 +74,7 @@ export class Delegare {
   }
 
   /**
-   * Polls for setup session completion and returns the delegateToken once the
+   * Polls for setup session completion and returns the intentMandate once the
    * user has completed the browser setup flow. Rejects after 5 minutes.
    */
   async waitForSetup(sessionToken: string): Promise<string> {
@@ -82,8 +82,8 @@ export class Delegare {
     while (Date.now() < deadline) {
       await sleep(POLL_INTERVAL_MS);
       const result = await this.getSetupSession(sessionToken);
-      if (result.status === 'complete' && result.delegateToken) {
-        return result.delegateToken;
+      if (result.status === 'complete' && result.intentMandate) {
+        return result.intentMandate;
       }
       if (result.status === 'expired') {
         throw new Error('Setup session expired before the user completed setup');

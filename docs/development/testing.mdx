@@ -3,7 +3,7 @@ title: "Testing & Sandbox"
 description: "Learn how to use Delegare test mode to simulate payments."
 ---
 
-Delegare provides a dedicated **Sandbox Environment** where you can safely test the entire spending delegate lifecycle—from session creation to atomic limit enforcement to dual-rail payments—without using real funds.
+Delegare provides a dedicated **Sandbox Environment** where you can safely test the entire Intent Mandate lifecycle—from session creation to atomic limit enforcement to dual-rail payments—without using real funds.
 
 ### Switching to Test Mode
 
@@ -18,7 +18,7 @@ Instead, they can use predefined "Test Cards" and "Test Wallets" to simulate suc
 
 ### Simulating Payments
 
-When your agent uses a test `delegateToken` to call `/charge`:
+When your agent uses a test `intentMandate` to call `/charge`:
 - **Stripe Simulation:** The Vault automatically uses Stripe's test clocks to mock fiat payments. No actual credit card charge is attempted.
 - **Base Simulation:** The Vault connects to Base Sepolia (or a local fork) to simulate onchain settlement, executing mock USDC transfers without requiring real gas or assets.
 

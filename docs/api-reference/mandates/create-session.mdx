@@ -1,7 +1,7 @@
 ---
 title: "Create Setup Session"
-api: "POST /v1/delegates"
-description: "Create a session to authorize a new spending delegate."
+api: "POST /v1/mandates"
+description: "Create a session to authorize a new Intent Mandate."
 ---
 
 When a user wants to enable payments for an AI agent, your backend creates a setup session. This endpoint returns a `setupUrl` where the user will securely connect their payment method and confirm spending limits.
@@ -42,7 +42,7 @@ When a user wants to enable payments for an AI agent, your backend creates a set
 
 <RequestExample>
 ```bash Request
-curl -X POST https://api.delegare.dev/v1/delegates \
+curl -X POST https://api.delegare.dev/v1/mandates \
   -H "X-Delegare-Merchant-Id: your_merchant_id" \
   -H "X-Delegare-Api-Key: your_api_key" \
   -H "Content-Type: application/json" \

@@ -1,7 +1,7 @@
 ---
 title: Charge a Delegate
 api: POST /v1/payments/charge
-description: Executes a payment using a Spending Delegate token.
+description: Executes a payment using a Intent Mandate token.
 ---
 
 ### Headers
@@ -13,7 +13,7 @@ description: Executes a payment using a Spending Delegate token.
 ### Body Parameters
 | Name | Type | Required | Description |
 | :--- | :--- | :--- | :--- |
-| `delegateToken` | `string` | Yes | The user-authorized delegate token (`dtok_...`). |
+| `intentMandate` | `string` | Yes | The user-authorized delegate token (`dtok_...`). |
 | `amountCents` | `number` | Yes | Amount in cents (positive integer). |
 | `currency` | `string` | Yes | `usd`, `usdc`, or `usdt`. |
 | `description` | `string` | Yes | Max 500 characters. Shown on user statement. |

@@ -13,20 +13,24 @@ export function registerDelegareTools(
     baseUrl: options.baseUrl,
   });
 
-  // ── setup_payment_delegate ─────────────────────────────────────────────────
-  server.tool(
-    'setup_payment_delegate',
-    'Initiate the one-time browser setup flow so the user can connect their payment method ' +
-    'and set spending limits. Returns a URL the user must visit. Returns sessionToken for polling.',
+  const oauthSecurity = [{ type: 'oauth2', scopes: ['pay', 'balance', 'revoke'] }];
+
+  // ── setup_spending_mandate ─────────────────────────────────────────────────
+  server.registerTool(
+    'setup_spending_mandate',
     {
-      maxPerTxCents: z.number().int().positive().describe('Maximum charge per transaction in cents'),
-      maxMonthlySpendCents: z.number().int().positive().describe('Maximum total spend per month in cents'),
-      rail: z.enum(['fiat', 'crypto', 'both']).optional()
-        .describe('Which payment rails to enable. Defaults to both.'),
-      railPreference: z.enum(['auto', 'fiat_first', 'crypto_first', 'cheapest', 'fastest']).optional()
-        .describe('How to select the rail when both are available. Defaults to auto.'),
-    },
-    async ({ maxPerTxCents, maxMonthlySpendCents, rail, railPreference }) => {
+      description: 'Initiate the one-time browser setup flow so the user can connect their payment method and set spending limits. Returns a URL the user must visit. Returns sessionToken for polling.',
+      inputSchema: z.object({
+        maxPerTxCents: z.number().int().positive().describe('Maximum charge per transaction in cents'),
+        maxMonthlySpendCents: z.number().int().positive().describe('Maximum total spend per month in cents'),
+        rail: z.enum(['fiat', 'crypto', 'both']).optional().describe('Which payment rails to enable. Defaults to both.'),
+        railPreference: z.enum(['auto', 'fiat_first', 'crypto_first', 'cheapest', 'fastest']).optional().describe('How to select the rail when both are available. Defaults to auto.'),
+      }),
+      securitySchemes: oauthSecurity,
+    } as any,
+    async (args: any) => {
+      const { maxPerTxCents, maxMonthlySpendCents, rail, railPreference } = args || {};
+
       const session = await client.createSetupSession({
         maxPerTxCents,
         maxMonthlySpendCents,
@@ -37,7 +41,7 @@ export function registerDelegareTools(
       return {
         content: [
           {
-            type: 'text' as const,
+            type: 'text',
             text: JSON.stringify({
               message:
                 'Please ask the user to visit the setup URL to connect their payment method. ' +
@@ -54,20 +58,23 @@ export function registerDelegareTools(
   );
 
   // ── poll_setup_session ─────────────────────────────────────────────────────
-  server.tool(
+  server.registerTool(
     'poll_setup_session',
-    'Check whether the user has completed the payment setup flow. Call this after presenting ' +
-    'the setup URL. Returns the delegateToken once complete — store it in agent context for future payments.',
     {
-      sessionToken: z.string().describe('The sessionToken returned by setup_payment_delegate'),
-    },
-    async ({ sessionToken }) => {
+      description: 'Check whether the user has completed the payment setup flow. Call this after presenting the setup URL. Returns the intentMandate once complete — store it in agent context for future payments.',
+      inputSchema: z.object({
+        sessionToken: z.string().describe('The sessionToken returned by setup_spending_mandate'),
+      }),
+      securitySchemes: oauthSecurity,
+    } as any,
+    async (args: any) => {
+      const { sessionToken } = args || {};
       const result = await client.getSetupSession(sessionToken);
 
       return {
         content: [
           {
-            type: 'text' as const,
+            type: 'text',
             text: JSON.stringify(result),
           },
         ],
@@ -75,21 +82,24 @@ export function registerDelegareTools(
     },
   );
 
-  // ── check_agent_balance ────────────────────────────────────────────────────
-  server.tool(
-    'check_agent_balance',
-    'Check remaining monthly budget and masked payment methods for a spending delegate. ' +
-    'Never returns card numbers or wallet seeds — only masked summaries.',
+  // ── check_mandate_balance ────────────────────────────────────────────────────
+  server.registerTool(
+    'check_mandate_balance',
     {
-      delegateToken: z.string().describe('The delegateToken stored in agent context'),
-    },
-    async ({ delegateToken }) => {
-      const balance = await client.getBalance(delegateToken);
+      description: 'Check remaining monthly budget and masked payment methods for a spending mandate. Never returns card numbers or wallet seeds — only masked summaries.',
+      inputSchema: z.object({
+        intentMandate: z.string().describe('The intentMandate (SD-JWT-VC) stored in agent context'),
+      }),
+      securitySchemes: oauthSecurity,
+    } as any,
+    async (args: any) => {
+      const { intentMandate } = args || {};
+      const balance = await client.getBalance(intentMandate);
 
       return {
         content: [
           {
-            type: 'text' as const,
+            type: 'text',
             text: JSON.stringify(balance),
           },
         ],
@@ -97,29 +107,28 @@ export function registerDelegareTools(
     },
   );
 
-  // ── pay_merchant ───────────────────────────────────────────────────────────
-  server.tool(
-    'pay_merchant',
-    'Execute a payment through the Delegare vault. The agent never handles card numbers or ' +
-    'wallet keys — only the opaque delegateToken. Spending limits are enforced server-side.',
+  // ── authorize_agent_payment ───────────────────────────────────────────────────────────
+  server.registerTool(
+    'authorize_agent_payment',
     {
-      delegateToken: z.string().describe('The delegateToken stored in agent context'),
-      amountCents: z.number().int().positive().describe('Amount to charge in cents (e.g. 9900 = $99.00)'),
-      currency: z.enum(['usd', 'usdc', 'usdt']).describe('Currency for the charge'),
-      description: z.string().describe('Human-readable description of what is being paid for'),
-      idempotencyKey: z.string().describe(
-        'Unique key to prevent duplicate charges. Use a stable identifier like a subscription ID.',
-      ),
-      metadataJson: z.string().optional().describe(
-        'Optional JSON string of key-value metadata (e.g. \'{"planId":"growth"}\')',
-      ),
-    },
-    async ({ delegateToken, amountCents, currency, description, idempotencyKey, metadataJson }) => {
+      description: 'Execute a payment through the Delegare vault using AP2. The agent presents its Intent Mandate (SD-JWT-VC). Spending limits are enforced server-side.',
+      inputSchema: z.object({
+        intentMandate: z.string().describe('The intentMandate stored in agent context'),
+        amountCents: z.number().int().positive().describe('Amount to charge in cents (e.g. 9900 = $99.00)'),
+        currency: z.enum(['usd', 'usdc', 'usdt']).describe('Currency for the charge'),
+        description: z.string().describe('Human-readable description of what is being paid for'),
+        idempotencyKey: z.string().describe('Unique key to prevent duplicate charges. Use a stable identifier like a subscription ID.'),
+        metadataJson: z.string().optional().describe('Optional JSON string of key-value metadata (e.g. \'{"planId":"growth"}\')'),
+      }),
+      securitySchemes: oauthSecurity,
+    } as any,
+    async (args: any) => {
+      const { intentMandate, amountCents, currency, description, idempotencyKey, metadataJson } = args || {};
       if (options.allowedAmountsCents && !options.allowedAmountsCents.includes(amountCents)) {
         return {
           content: [
             {
-              type: 'text' as const,
+              type: 'text',
               text: JSON.stringify({
                 error: 'amount_not_allowed',
                 message: `Amount ${amountCents} cents is not in the allowed amounts list`,
@@ -141,7 +150,7 @@ export function registerDelegareTools(
       }
 
       const receipt = await client.charge({
-        delegateToken,
+        intentMandate,
         amountCents,
         currency,
         description,
@@ -152,7 +161,7 @@ export function registerDelegareTools(
       return {
         content: [
           {
-            type: 'text' as const,
+            type: 'text',
             text: JSON.stringify(receipt),
           },
         ],
@@ -160,21 +169,24 @@ export function registerDelegareTools(
     },
   );
 
-  // ── revoke_delegate ────────────────────────────────────────────────────────
-  server.tool(
-    'revoke_delegate',
-    'Immediately revoke a spending delegate. After revocation, no further charges can be made ' +
-    'with this delegateToken. The user can create a new delegate at any time.',
+  // ── revoke_mandate ────────────────────────────────────────────────────────
+  server.registerTool(
+    'revoke_mandate',
     {
-      delegateToken: z.string().describe('The delegateToken to revoke'),
-    },
-    async ({ delegateToken }) => {
-      const result = await client.revoke(delegateToken);
+      description: 'Immediately revoke a spending mandate. After revocation, no further charges can be made with this intentMandate. The user can create a new mandate at any time.',
+      inputSchema: z.object({
+        intentMandate: z.string().describe('The intentMandate to revoke'),
+      }),
+      securitySchemes: oauthSecurity,
+    } as any,
+    async (args: any) => {
+      const { intentMandate } = args || {};
+      const result = await client.revoke(intentMandate);
 
       return {
         content: [
           {
-            type: 'text' as const,
+            type: 'text',
             text: JSON.stringify(result),
           },
         ],

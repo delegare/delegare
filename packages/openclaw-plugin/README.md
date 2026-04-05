@@ -21,13 +21,14 @@ Click Connect. You'll be redirected to Delegare to:
 
 Takes about 60 seconds. Your card details never 
 reach OpenClaw or Delegare — Stripe handles them.
+At the end of this flow, Delegare issues an **AP2 Intent Mandate (SD-JWT-VC)** to your OpenClaw agent.
 
 ## 3. Start using it
 
 Tell OpenClaw:
 "What's my Delegare balance?"
 "Pay [merchant] $X for [description]"
-"Revoke my Delegare spending delegate"
+"Revoke my Delegare spending mandate"
 
 ## Your handle
 
@@ -38,6 +39,6 @@ you USDC at that address.
 
 ## Troubleshooting
 
-Token expired: run setup_payment_delegate again
+Token expired: run setup_spending_mandate again
 Limit exceeded: update limits at app.delegare.dev
 Wrong merchant: check your allowed merchants list

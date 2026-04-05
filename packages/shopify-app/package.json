@@ -1,0 +1,29 @@
+{
+  "name": "@delegare/shopify-app",
+  "version": "0.1.0",
+  "description": "Shopify Payments App for Delegare Agentic Commerce",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@delegare/sdk": "workspace:*",
+    "@shopify/shopify-api": "^11.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pino": "^9.1.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.19.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.11.0",
+    "typescript": "^5.4.0"
+  }
+}
