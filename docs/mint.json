@@ -62,9 +62,22 @@
       ]
     },
     {
+      "group": "SDK & Tools",
+      "pages": [
+        "sdk-tools/typescript-sdk",
+        "sdk-tools/mcp-server",
+        "sdk-tools/shopify-app"
+      ]
+    },
+    {
+      "group": "Examples",
+      "pages": [
+        "examples/express-checkout"
+      ]
+    },
+    {
       "group": "Development",
       "pages": [
-        "development/setup",
         "development/testing"
       ]
     }

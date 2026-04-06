@@ -1,0 +1,70 @@
+---
+title: Typescript SDK
+description: The official @delegare/sdk for Node.js and Browser.
+---
+
+The Delegare SDK provides a simple, type-safe interface for interacting with the Delegare protocol.
+
+## Installation
+
+```bash
+npm install @delegare/sdk
+# or
+pnpm add @delegare/sdk
+```
+
+## Initialization
+
+Initialize the client with your Merchant credentials.
+
+```typescript
+import { Delegare } from '@delegare/sdk';
+
+const delegare = new Delegare({
+  merchantId: 'm_123...',
+  apiKey: process.env.DELEGARE_API_KEY,
+  // Use sandbox URL for testing
+  baseUrl: 'https://api.sandbox.delegare.dev' 
+});
+```
+
+## Core Methods
+
+### Create Setup Session
+Generates a URL where your user can authorize a spending mandate.
+
+```typescript
+const session = await delegare.createSetupSession({
+  maxPerTxCents: 1000,         // $10.00
+  maxMonthlySpendCents: 5000,   // $50.00
+  rail: 'both',                 // allow fiat and crypto
+  redirectUrl: 'https://your-app.com/callback'
+});
+
+console.log(session.setupUrl);
+```
+
+### Charge Mandate
+Executes a payment using an `intentMandate` (SD-JWT-VC) provided by an agent.
+
+```typescript
+const receipt = await delegare.charge({
+  intentMandate: 'eyJhbGci...',
+  amountCents: 1500,
+  currency: 'usd',
+  description: 'AI Agent Purchase',
+  idempotencyKey: 'order_789'
+});
+
+if (receipt.status === 'completed') {
+  console.log('Payment successful!', receipt.receiptId);
+}
+```
+
+### Check Balance
+Query the remaining monthly limit for a specific mandate.
+
+```typescript
+const balance = await delegare.getMandateBalance('mandate_id_here');
+console.log(`Remaining: $${balance.remainingMonthlyCents / 100}`);
+```

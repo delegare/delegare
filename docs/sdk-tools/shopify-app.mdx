@@ -1,0 +1,29 @@
+---
+title: Shopify Custom Payment App
+description: Accepting agent payments on Shopify via Delegare.
+---
+
+The Delegare Shopify integration allows Shopify merchants to accept autonomous payments from AI agents.
+
+The prototype is available in the `packages/shopify-app` directory of the Delegare repository.
+
+## How it works
+
+1. **Merchant Onboarding:** The merchant installs the Delegare app on their Shopify store. The app automatically registers them as a Delegare merchant.
+2. **Checkout Integration:** Delegare appears as a custom payment method during Shopify checkout.
+3. **Buyer Interaction:** When a buyer selects Delegare, they are presented with a UI to enter an **Intent Mandate** (SD-JWT-VC).
+4. **Autonomous Capture:** An AI agent can also intercept this session and provide the mandate autonomously via an MCP tool.
+5. **Settlement:** The Shopify app uses the `@delegare/sdk` to charge the mandate, and the order is marked as **Paid** in Shopify.
+
+## Prototype Setup
+
+To run the Shopify app prototype:
+
+```bash
+cd packages/shopify-app
+npm install
+# Configure your Shopify and Delegare keys in .env
+npm start
+```
+
+For a live demonstration, see the [express-checkout](/examples/express-checkout) example.

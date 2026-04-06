@@ -1,27 +1,40 @@
 ---
-title: "Testing & Sandbox"
-description: "Learn how to use Delegare test mode to simulate payments."
+title: Testing & Sandboxing
+description: How to test your Delegare integration safely.
 ---
 
-Delegare provides a dedicated **Sandbox Environment** where you can safely test the entire Intent Mandate lifecycle—from session creation to atomic limit enforcement to dual-rail payments—without using real funds.
+Delegare provides a dedicated **Sandbox** environment that mirrors production but runs on test networks. Use this environment for all development and automated testing.
 
-### Switching to Test Mode
+## Environment URLs
 
-In your Delegare Merchant Dashboard, use the **Environment Toggle** in the sidebar to switch between `Live` and `Sandbox`.
+| Environment | Base URL | Rail (Fiat) | Rail (Crypto) |
+| :--- | :--- | :--- | :--- |
+| **Sandbox** | `https://api.sandbox.delegare.dev` | Stripe Test Mode | Base Sepolia |
+| **Production** | `https://api.delegare.dev` | Stripe Live Mode | Base Mainnet |
 
-When in the Sandbox environment, you will be issued test API keys that begin with `sk_test_...`.
+## Sandbox Testing Steps
 
-### Test Setup Sessions
+### 1. Use Test API Keys
+Log in to the [Sandbox Dashboard](https://app.sandbox.delegare.dev) to retrieve your Test Merchant ID and Test API Key. These keys are only valid for the sandbox URL.
 
-When you create a setup session using a test API key, the `setupUrl` will direct users to a mocked flow where they do not need to enter real payment details.
-Instead, they can use predefined "Test Cards" and "Test Wallets" to simulate successful or failed connection states.
+### 2. Stripe Test Cards
+When using the Setup UI in Sandbox mode, you can use Stripe's standard test cards (e.g., `4242 4242 4242 4242`) to simulate successful or failed authorizations.
 
-### Simulating Payments
+### 3. Base Sepolia ETH/USDC
+For crypto rail testing, ensure your test agent or user wallet has **Base Sepolia ETH** for gas and **Base Sepolia USDC** for payments.
+- **Base Faucet:** [https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet](https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet)
 
-When your agent uses a test `intentMandate` to call `/charge`:
-- **Stripe Simulation:** The Vault automatically uses Stripe's test clocks to mock fiat payments. No actual credit card charge is attempted.
-- **Base Simulation:** The Vault connects to Base Sepolia (or a local fork) to simulate onchain settlement, executing mock USDC transfers without requiring real gas or assets.
+## Webhook Testing
+You can use tools like `ngrok` to expose your local server and set the `webhookUrl` in the Sandbox Dashboard. Delegare will sign every webhook with your sandbox-specific `webhookSecret` using HMAC-SHA256.
 
-### Webhooks in Sandbox
+```bash
+# Example X-Delegare-Signature verification (Node.js)
+const crypto = require('crypto');
+const hmac = crypto.createHmac('sha256', process.env.DELEGARE_WEBHOOK_SECRET);
+hmac.update(JSON.stringify(req.body));
+const signature = hmac.digest('hex');
 
-All sandbox transactions will trigger webhooks sent to your test environment URLs, exactly mimicking live events. The payload will have a flag (`"livemode": false`) so your backend can differentiate between real and simulated events.
+if (signature === req.headers['x-delegare-signature']) {
+  // Verified!
+}
+```

@@ -1,0 +1,69 @@
+---
+title: Express Checkout Example
+description: A complete e-commerce mock using the Delegare SDK.
+---
+
+This example demonstrates how a merchant backend can accept `intentMandate` (SD-JWT-VC) tokens from an agent and process a payment via the Delegare SDK.
+
+The source code is available in the `examples/express-checkout` directory of the Delegare repository.
+
+## Overview
+
+1. **Setup Buyer:** The merchant creates a setup session for the user.
+2. **Authorization:** The user completes the setup via the Delegare UI, generating an Intent Mandate.
+3. **Checkout:** The AI agent sends the Intent Mandate to the merchant's `/api/checkout` endpoint.
+4. **Execution:** The merchant backend uses `@delegare/sdk` to charge the mandate.
+
+## Merchant Backend (Node.js)
+
+```javascript
+const { Delegare } = require('@delegare/sdk');
+const express = require('express');
+
+const delegare = new Delegare({
+  merchantId: process.env.DELEGARE_MERCHANT_ID,
+  apiKey: process.env.DELEGARE_API_KEY,
+  baseUrl: 'https://api.sandbox.delegare.dev'
+});
+
+const app = express();
+app.use(express.json());
+
+app.post('/api/checkout', async (req, res) => {
+  const { intentMandate, item } = req.body;
+
+  try {
+    // 1. Charge the agent!
+    const receipt = await delegare.charge({
+      intentMandate,
+      amountCents: 1500, // $15.00
+      currency: 'usd',
+      description: `Order: ${item}`,
+      idempotencyKey: `order_${Date.now()}`
+    });
+
+    res.json({ success: true, receipt });
+  } catch (error) {
+    res.status(402).json({ error: error.message });
+  }
+});
+
+app.listen(4000);
+```
+
+## Running the Demo locally
+
+If you have the Delegare repository cloned, you can run the interactive demo:
+
+```bash
+cd examples/express-checkout
+npm install
+# Follow instructions in README to set your .env
+npm start
+```
+
+Then, in a separate terminal, run the buyer setup script:
+```bash
+node setup-buyer.js
+```
+This script will give you a setup URL. Open it, complete the flow in Sandbox mode, and the script will automatically output a `curl` command you can use to test the checkout!

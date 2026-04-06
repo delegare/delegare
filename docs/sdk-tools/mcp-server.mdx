@@ -1,0 +1,51 @@
+---
+title: MCP Server & Tools
+description: Powering AI agents with payment capabilities via Model Context Protocol.
+---
+
+Delegare provides an official MCP Server that enables LLMs (like Claude or GPT-4) to perform economic actions autonomously using Intent Mandates.
+
+The server is available in the `packages/mcp-server` directory of the Vault repository.
+
+## Available Tools
+
+The MCP server exposes the following tools to the agent:
+
+### 1. `setup_spending_mandate`
+Generates a setup URL for the human user.
+- **Input:** `maxAmountPerTxCents`, `maxMonthlySpendCents`, `railPreference`
+- **Output:** A markdown link for the user to authorize.
+
+### 2. `check_mandate_balance`
+Allows the agent to see how much it can spend.
+- **Input:** `mandateId`
+- **Output:** Remaining monthly balance.
+
+### 3. `authorize_agent_payment`
+The core tool for making purchases.
+- **Input:** `amountCents`, `currency`, `description`, `recipient`
+- **Output:** A cryptographic Intent Mandate (SD-JWT-VC) or a success receipt if the server handles the execution.
+
+## MCP Authentication Guard
+To prevent unauthorized tool calls, the MCP server implements an `mcpAuthGuard`. 
+- Every tool call must be authorized by an OAuth session.
+- Credentials (`merchantId`, `apiKey`) are never exposed to the LLM prompt.
+- The guard injects the required metadata into the tool context based on the bearer token in the request header.
+
+## Usage in Claude Desktop
+
+Add Delegare to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "delegare": {
+      "command": "npx",
+      "args": ["-y", "@delegare/mcp-server"],
+      "env": {
+        "DELEGARE_API_URL": "https://api.sandbox.delegare.dev"
+      }
+    }
+  }
+}
+```
