@@ -1,25 +1,32 @@
 ---
 title: Intent Mandates
-description: Understanding the core primitive of Delegare.
+description: Understanding the core primitive of the AP2-compliant Delegare protocol.
 ---
 
-A **Intent Mandate** is a cryptographically secured authorization that allows an agent to spend up to a certain amount on behalf of a user.
+An **Intent Mandate** is a cryptographically secured authorization that allows an agent to spend up to a certain amount on behalf of a user. Delegare implements the **AP2 protocol standard** for these authorizations.
+
+## Verifiable Digital Credentials
+Unlike legacy API tokens, an Intent Mandate is a **Verifiable Credential (SD-JWT-VC)**. It contains the specific spending constraints (limits, merchant allowlists, expiration) and is signed by the Delegare Platform DID (`did:web:delegare.dev`) using asymmetric cryptography (ES256).
 
 ## Atomic Limit Enforcement
 The most critical feature of Delegare is its **guaranteed limit enforcement**. When an agent requests a charge, the Vault performs a single atomic operation in DynamoDB:
 
-1. **Check Status:** Ensures the delegate is `active` and not expired.
-2. **Check Allowlist:** Validates that the `merchantId` is permitted.
-3. **Check Monthly Reset:** If the current date has rolled over into a new month, the monthly spend counter is reset to zero.
-4. **Conditional Increment:** Increments the spend counter only if the new total is within the user's defined limits.
+1. **Cryptographic Verification:** Verifies the `intentMandate` signature against the Platform's public key.
+2. **Check Status:** Ensures the mandate is `active` and not expired.
+3. **Check Allowlist:** Validates that the `merchantId` (or Merchant DID) is permitted.
+4. **Check Monthly Reset:** If the current date has rolled over into a new month, the monthly spend counter is reset to zero.
+5. **Conditional Increment:** Increments the spend counter only if the new total is within the user's defined limits.
 
 This approach eliminates race conditions where two agents (or the same agent calling twice) could exceed the monthly limit by hitting the API at the exact same millisecond.
 
-## Token Lifecycle
-- **Setup:** User defines limits and connects a payment method.
-- **Issuance:** A signed `intentMandate` is generated.
-- **Active:** Agents use the token for payments.
-- **Revocation:** Users can revoke tokens at any time via the dashboard, instantly disabling all future charges.
+## Mandate Lifecycle
+- **Setup:** User defines limits and connects a payment method via the Setup UI.
+- **Issuance:** A signed `intentMandate` (SD-JWT-VC) is issued to the agent.
+- **Active:** Agents present the mandate to merchants to authorize payments.
+- **Revocation:** Users can revoke mandates at any time via the dashboard, instantly disabling all future charges across both fiat and crypto rails.
 
 ## Security
-Delegate tokens are never stored in plaintext on the client. They are cryptographically signed using a vault-wide HMAC secret. Even if a merchant database is compromised, a token cannot be modified to increase its own spending limits.
+Intent Mandates are never stored in plaintext on the client. They are cryptographically signed using the Delegare Platform's private ES256 key. Because we use asymmetric signatures, anyone can verify the mandate's authenticity using the public keys published at `/.well-known/jwks.json`, but only the Vault can issue them. 
+
+Even if a merchant database is compromised, a mandate cannot be modified to increase its own spending limits without breaking the cryptographic signature.
+
