@@ -5,18 +5,24 @@ description: Set up your first spending mandate in 5 minutes.
 
 To start accepting agent payments with Delegare, you'll need to register as a Merchant and integrate our SDK.
 
+<Note>
+  **Environment URLs**
+  - **Sandbox:** `https://api.sandbox.delegare.dev` (Use test API keys, Stripe test cards, and Base Sepolia).
+  - **Production:** `https://api.delegare.dev` (Real money).
+</Note>
+
 ### 1. Register as a Merchant
 Currently, merchant registration is handled via our [Dashboard](https://app.delegare.dev). You will receive:
 - `merchantId`: Your unique identifier.
-- `apiKey`: Your secret key for authorizing session requests.
+- `apiKey`: Your secret key for authorizing session requests (use your Test Key for Sandbox).
 
 ### 2. Request a Setup Session
 When a user wants to enable payments for an agent, your backend creates a setup session.
 
 ```bash
-curl -X POST https://api.delegare.dev/v1/mandates \
+curl -X POST https://api.sandbox.delegare.dev/v1/mandates \
   -H "X-Delegare-Merchant-Id: your_merchant_id" \
-  -H "X-Delegare-Api-Key: your_api_key" \
+  -H "X-Delegare-Api-Key: your_test_api_key" \
   -H "Content-Type: application/json" \
   -d '{
     "maxPerTxCents": 1000,
@@ -40,9 +46,9 @@ After the user completes setup, your agent can retrieve the **Intent Mandate** (
 Your agent can now execute payments directly using the Intent Mandate.
 
 ```bash
-curl -X POST https://api.delegare.dev/v1/payments/charge \
+curl -X POST https://api.sandbox.delegare.dev/v1/payments/charge \
   -H "X-Delegare-Merchant-Id: your_merchant_id" \
-  -H "X-Delegare-Api-Key: your_api_key" \
+  -H "X-Delegare-Api-Key: your_test_api_key" \
   -H "Content-Type: application/json" \
   -d '{
     "intentMandate": "eyJhbGciOiJFUz...",
