@@ -5,11 +5,11 @@ applications:
       phases:
         preBuild:
           commands:
-            - nvm install 22
-            - nvm use 22
+            - nvm install 24
+            - nvm use 24
             - corepack enable
             - corepack prepare pnpm@latest --activate
-            - cd ../.. && pnpm install --no-frozen-lockfile
+            - cd ../.. && NODE_ENV=development pnpm install --no-frozen-lockfile --prod=false
         build:
           commands:
             - cd ../.. && pnpm --filter web build
