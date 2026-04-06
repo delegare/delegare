@@ -9,10 +9,10 @@ applications:
             - nvm use 22
             - corepack enable
             - corepack prepare pnpm@latest --activate
-            - cd ../.. && pnpm install --no-frozen-lockfile && cd apps/web
+            - cd ../.. && pnpm install --no-frozen-lockfile
         build:
           commands:
-            - pnpm run build
+            - cd ../.. && pnpm --filter web build
       artifacts:
         baseDirectory: .next
         files:
