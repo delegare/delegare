@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, notFound } from "next/navigation";
 import Link from "next/link";
 
 interface MerchantPublicView {
@@ -17,8 +17,17 @@ interface MerchantPublicView {
 
 export default function PublicProfilePage() {
   const params = useParams();
-  const handle = Array.isArray(params.handle) ? params.handle[0] : params.handle;
-  
+  const rawHandle = Array.isArray(params.handle) ? params.handle[0] : params.handle;
+
+  // Only `/@foo` is valid — anything else is a 404. This keeps the root
+  // namespace free for future static routes and gives @-handles a canonical shape.
+  if (!rawHandle || !rawHandle.startsWith("@") || rawHandle.length < 2) {
+    notFound();
+  }
+
+  // Strip the leading @ for the API call; the backend stores merchantIds without it.
+  const handle = rawHandle.slice(1);
+
   const [merchant, setMerchant] = useState<MerchantPublicView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,7 +36,7 @@ export default function PublicProfilePage() {
 
   useEffect(() => {
     if (!handle) return;
-    
+
     fetch(`${API_URL}/v1/merchants/${handle}`)
       .then(res => {
         if (!res.ok) throw new Error("Merchant not found");
@@ -55,7 +64,7 @@ export default function PublicProfilePage() {
     return (
       <div className="min-h-screen bg-[#0c0c0c] text-[#f0ede8] flex flex-col items-center justify-center font-sans gap-4">
         <h1 className="text-2xl font-medium">Merchant Not Found</h1>
-        <p className="text-[#f0ede8]/50">The handle '{handle}' does not exist or is inactive.</p>
+        <p className="text-[#f0ede8]/50">The handle '@{handle}' does not exist or is inactive.</p>
         <Link href="/" className="text-[#c8b99a] hover:underline mt-4">Return Home</Link>
       </div>
     );
@@ -107,15 +116,15 @@ export default function PublicProfilePage() {
           </p>
           <div className="bg-[#000000] p-3 rounded-lg text-left overflow-x-auto border border-[#f0ede8]/10">
             <code className="text-xs text-[#7ec898] whitespace-pre">
-              "Pay 5 USDC to {merchant.merchantId} for a coffee"
+              "Pay 5 USDC to @{merchant.merchantId} for a coffee"
             </code>
           </div>
         </div>
 
         <div className="text-center">
           <p className="text-xs text-[#f0ede8]/40 mb-3">Don't have an agent budget set up yet?</p>
-          <a href={`https://app.delegare.dev/setup?merchantId=${merchant.merchantId}`} className="block w-full py-3 px-4 bg-[#c8b99a]/10 hover:bg-[#c8b99a]/20 text-[#c8b99a] border border-[#c8b99a]/30 rounded-xl text-sm font-medium transition-colors">
-            Connect your Wallet
+          <a href={`https://app.delegare.dev/setup?merchant=${merchant.merchantId}`} className="block w-full py-3 px-4 bg-[#c8b99a]/10 hover:bg-[#c8b99a]/20 text-[#c8b99a] border border-[#c8b99a]/30 rounded-xl text-sm font-medium transition-colors">
+            Connect your Agent
           </a>
         </div>
       </div>

@@ -436,7 +436,7 @@ export default function Home() {
             </div>
           </div>
           <div className="hero-actions">
-            <a href="#connect" className="btn-primary">
+            <a href="https://app.delegare.dev/setup?ref=hero" className="btn-primary">
               Connect your agent →
             </a>
             <a href="https://docs.delegare.dev" className="btn-secondary">
@@ -460,7 +460,7 @@ export default function Home() {
             <div className="audience-detail">
               Works with Claude, ChatGPT, and any MCP-compatible agent
             </div>
-            <a href="#connect" className="audience-link">
+            <a href="https://app.delegare.dev/setup?ref=card" className="audience-link">
               Set up your spending delegate →
             </a>
           </div>
