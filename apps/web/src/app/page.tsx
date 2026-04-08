@@ -405,9 +405,9 @@ export default function Home() {
           <a href="https://github.com/delegare/delegare" className="nav-link">
             GitHub
           </a>
-          <Link href="/login" className="nav-cta">
+          <a href={process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://app.delegare.dev'} className="nav-cta">
             Sign in
-          </Link>
+          </a>
         </div>
       </nav>
 

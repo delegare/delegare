@@ -22,7 +22,7 @@ function LoginContent() {
         fetchAuthSession().then((session) => {
           const token = session.tokens?.idToken?.toString() || session.tokens?.accessToken?.toString();
           
-          fetch("https://api.delegare.dev/v1/oauth2/approve", {
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://api.delegare.dev"}/v1/oauth2/approve`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
