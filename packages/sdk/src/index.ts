@@ -14,4 +14,8 @@ export type {
   DelegateStatus,
   RailPreference,
   DelegareError,
+  X402Requirement,
+  X402Payment,
+  X402Response,
+  X402SignRequest,
 } from './types';

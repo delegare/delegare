@@ -77,6 +77,46 @@ export interface RevokeResponse {
   revokedAt: string;
 }
 
+export interface X402Requirement {
+  scheme: 'exact';
+  network: 'base' | 'base-sepolia';
+  asset: string;
+  maxAmountRequired: string;
+  payTo: string;
+  resource: string;
+  mimeType: string;
+  maxTimeoutSeconds: number;
+}
+
+export interface X402Payment {
+  scheme: 'exact';
+  payment: {
+    from: string;
+    to: string;
+    value: string;
+    validAfter: number;
+    validBefore: number;
+    nonce: string;
+    signature: string;
+  };
+}
+
+export interface X402Response {
+  success: boolean;
+  receipt: string;
+  payer?: string;
+}
+
+export interface X402SignRequest {
+  intentMandate: string;
+  scheme: 'exact';
+  to: string;
+  value: string;
+  validAfter?: number;
+  validBefore?: number;
+  nonce?: string;
+}
+
 export interface DelegareError {
   code: string;
   message: string;

@@ -7,6 +7,9 @@ import {
   SetupDelegateResponse,
   SetupSessionStatus,
   RevokeResponse,
+  X402Requirement,
+  X402Payment,
+  X402SignRequest,
 } from './types';
 
 const DEFAULT_BASE_URL = 'https://api.delegare.dev/v1';
@@ -90,6 +93,45 @@ export class Delegare {
       }
     }
     throw new Error('Timed out waiting for user to complete payment setup');
+  }
+
+  async signX402(params: X402SignRequest): Promise<X402Payment> {
+    return this.request<X402Payment>('POST', `/mandates/${encodeURIComponent(params.intentMandate)}/sign-x402`, params);
+  }
+
+  /**
+   * Helper to fetch a resource that might be protected by x402.
+   * Automatically handles the 402 challenge if a mandate is provided.
+   */
+  async fetch(url: string, init?: RequestInit, intentMandate?: string): Promise<Response> {
+    let res = await fetch(url, init);
+
+    if (res.status === 402 && intentMandate) {
+      const data = await res.clone().json() as { paymentRequirements?: { accepts: X402Requirement[] } };
+      const req = data.paymentRequirements?.accepts.find(a => a.scheme === 'exact' && (a.network === 'base' || a.network === 'base-sepolia'));
+      
+      if (req) {
+        const payment = await this.signX402({
+          intentMandate,
+          scheme: 'exact',
+          to: req.payTo,
+          value: req.maxAmountRequired,
+          validBefore: Math.floor(Date.now() / 1000) + req.maxTimeoutSeconds,
+        });
+
+        const secondInit = {
+          ...init,
+          headers: {
+            ...init?.headers,
+            'X-Payment': Buffer.from(JSON.stringify(payment)).toString('base64'),
+          }
+        };
+
+        res = await fetch(url, secondInit);
+      }
+    }
+
+    return res;
   }
 }
 

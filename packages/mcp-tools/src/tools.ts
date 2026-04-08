@@ -169,6 +169,70 @@ export function registerDelegareTools(
     },
   );
 
+  // ── delegare_fetch ─────────────────────────────────────────────────────────
+  server.registerTool(
+    'delegare_fetch',
+    {
+      description: 'Fetch a URL. If the resource requires payment via x402, this tool will automatically use the provided spending mandate to authorize the payment and retrieve the data. Supports both GET and POST.',
+      inputSchema: z.object({
+        url: z.string().url().describe('The URL to fetch'),
+        method: z.enum(['GET', 'POST']).default('GET').describe('HTTP method'),
+        body: z.string().optional().describe('Optional JSON body for POST requests'),
+        intentMandate: z.string().describe('Your active spending delegate token (intentMandate)'),
+      }),
+      securitySchemes: oauthSecurity,
+    } as any,
+    async (args: any) => {
+      const { url, method, body, intentMandate } = args || {};
+
+      try {
+        const init: RequestInit = {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: body ? body : undefined,
+        };
+
+        const response = await client.fetch(url, init, intentMandate);
+        const text = await response.text();
+        const isJson = response.headers.get('content-type')?.includes('application/json');
+
+        let data;
+        try {
+          data = isJson ? JSON.parse(text) : text;
+        } catch {
+          data = text;
+        }
+
+        const xPaymentResponse = response.headers.get('x-payment-response');
+        let receipt;
+        if (xPaymentResponse) {
+          try {
+            receipt = JSON.parse(Buffer.from(xPaymentResponse, 'base64').toString('utf8'));
+          } catch {}
+        }
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                status: response.status,
+                content: data,
+                paymentExecuted: !!receipt,
+                receipt,
+              }),
+            },
+          ],
+        };
+      } catch (err: any) {
+        return {
+          content: [{ type: 'text', text: JSON.stringify({ error: err.message }) }],
+          isError: true,
+        };
+      }
+    },
+  );
+
   // ── revoke_mandate ────────────────────────────────────────────────────────
   server.registerTool(
     'revoke_mandate',
