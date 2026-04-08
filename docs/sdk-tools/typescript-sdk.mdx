@@ -68,3 +68,22 @@ Query the remaining monthly limit for a specific mandate.
 const balance = await delegare.getMandateBalance('mandate_id_here');
 console.log(`Remaining: $${balance.remainingMonthlyCents / 100}`);
 ```
+
+### Fetch (x402 Auto-Payment)
+A drop-in replacement for the native `fetch` API that automatically intercepts and handles `x402` (HTTP 402 Payment Required) challenges.
+
+If the requested endpoint returns a `402` status with `X-PAYMENT` requirements, the SDK will:
+1. Verify the price is within the agent's pre-authorized spending mandate.
+2. Sign the required transaction automatically under the hood (zero popups).
+3. Append the signed `X-Payment` header and seamlessly retry the request.
+
+```typescript
+// Works exactly like a normal fetch, but passes the mandate as the 3rd argument
+const response = await delegare.fetch(
+  'https://api.example.com/premium-data', 
+  { method: 'GET' }, 
+  intentMandate // Your agent's SD-JWT-VC spending token
+);
+
+const data = await response.json();
+```

@@ -26,6 +26,12 @@ The core tool for making purchases.
 - **Input:** `amountCents`, `currency`, `description`, `recipient`
 - **Output:** A cryptographic Intent Mandate (SD-JWT-VC) or a success receipt if the server handles the execution.
 
+### 4. `delegare_fetch`
+A tool for scraping or fetching data from third-party APIs that may be monetized.
+- **Input:** `url`, `method`, `body`
+- **Output:** The fetched HTTP response content.
+- **x402 Auto-Payment:** If the target URL returns a `402 Payment Required` challenge, this tool intercepts it, automatically signs the payment with the agent's mandate, and resubmits the request to fetch the data.
+
 ## MCP Authentication Guard
 To prevent unauthorized tool calls, the MCP server implements an `mcpAuthGuard`. 
 - Every tool call must be authorized by an OAuth session.

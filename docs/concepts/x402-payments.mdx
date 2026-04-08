@@ -1,0 +1,76 @@
+---
+title: "x402 Payments (Set-and-Forget)"
+description: "How Delegare makes x402 protocol microtransactions seamless for AI agents."
+---
+
+The `x402` protocol (an extension of the HTTP `402 Payment Required` status) allows APIs to monetize individual endpoints by demanding a microtransaction before returning a resource. 
+
+While `x402` is powerful for agent-to-agent (A2A) commerce, existing implementations suffer from a critical UX flaw: **the wallet popup**. Every time an agent hits a paywall, the human user must manually confirm a transaction in their browser wallet.
+
+Delegare solves this by combining the `x402` protocol with **Intent Mandates**, creating the first truly "set-and-forget" x402 client.
+
+---
+
+## How It Works
+
+With Delegare, the human user authorizes a spending budget *once* (e.g., "$50 per month"). When the AI agent encounters an `x402` challenge, Delegare automatically signs an EIP-3009 `TransferWithAuthorization` using the mandate's secure session key and resubmits the request.
+
+1. **Agent** requests `GET /api/premium-data`.
+2. **Merchant** returns `402 Payment Required` with `X-PAYMENT` requirements (price, asset, network).
+3. **Delegare SDK** intercepts the 402, verifies it's within the agent's monthly budget, and automatically signs the payment.
+4. **Agent** automatically retries the request with the `X-PAYMENT` header.
+5. **Merchant** verifies the signature, settles the payment on-chain, and returns the data.
+
+---
+
+## For Merchants: Monetizing APIs
+
+If you are building an API and want to charge agents per request, you can use Vault's `x402` middleware to instantly monetize any Express route.
+
+```typescript
+import { requireX402Payment } from '@delegare/vault/middleware/x402';
+
+// Protect this route: Charge 0.05 USDC per call
+app.get('/premium-data', 
+  requireX402Payment({ 
+    price: '0.05', 
+    currency: 'usdc', 
+    payTo: '0xYourMerchantWalletAddress' 
+  }), 
+  (req, res) => {
+    // The middleware ensures the payment is settled before reaching here
+    res.json({ secret: 'AI agents love this data' });
+  }
+);
+```
+
+The middleware automatically handles returning the 402 challenge, validating the incoming EIP-3009 signature against the user's balance or Delegare mandate limit, and broadcasting the transaction to the Base network.
+
+---
+
+## For Agents: Seamlessly Paying Paywalls
+
+If you are building an AI agent, you can use the `@delegare/sdk` to seamlessly navigate `x402` paywalls without interrupting the user.
+
+Simply replace your standard `fetch` calls with `delegare.fetch`. Pass the user's `intentMandate` as the third argument. 
+
+```typescript
+import { Delegare } from '@delegare/sdk';
+
+const delegare = new Delegare({ merchantId: '...', apiKey: '...' });
+
+// If the API returns a 402, the SDK will automatically pay it
+// using the user's mandate and retry the request.
+const response = await delegare.fetch(
+  'https://merchant.com/premium-data', 
+  { method: 'GET' }, 
+  userIntentMandate
+);
+
+const data = await response.json();
+console.log(data); // { secret: 'AI agents love this data' }
+```
+
+### Model Context Protocol (MCP)
+
+If your agent is powered by MCP (like Claude Desktop or OpenClaw), the `delegare_fetch` tool handles this automatically. The LLM simply calls the tool with a URL, and Delegare handles the underlying economic negotiation.
