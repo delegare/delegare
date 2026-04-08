@@ -48,7 +48,8 @@ function LoginContent() {
           setIsApproving(false);
         });
       } else {
-        window.location.href = "https://app.delegare.dev";
+        const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://app.delegare.dev';
+        window.location.href = dashboardUrl;
       }
     }
   }, [authStatus, oauthReqId, isApproving]);

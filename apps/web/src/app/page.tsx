@@ -433,11 +433,11 @@ export default function Home() {
             </div>
           </div>
           <div className="hero-actions">
-            <a href="https://app.delegare.dev/setup?ref=hero" className="btn-primary">
-              Connect your agent →
+            <a href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://app.delegare.dev'}/setup?ref=hero`} className="btn-primary">
+              Connect your wallet
             </a>
             <a href="https://docs.delegare.dev" className="btn-secondary">
-              Merchant docs
+              Read the docs
             </a>
           </div>
         </div>
@@ -457,7 +457,7 @@ export default function Home() {
             <div className="audience-detail">
               Works with Claude, ChatGPT, and any MCP-compatible agent
             </div>
-            <a href="https://app.delegare.dev/setup?ref=card" className="audience-link">
+            <a href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://app.delegare.dev'}/setup?ref=card`} className="audience-link">
               Set up your spending delegate →
             </a>
           </div>
@@ -761,7 +761,7 @@ export default function Home() {
             >
               GitHub
             </a>
-            <a href="https://app.delegare.dev" className="footer-link">
+            <a href={process.env.NEXT_PUBLIC_DASHBOARD_URL || "https://app.delegare.dev"} className="footer-link">
               Dashboard
             </a>
             <a

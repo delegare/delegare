@@ -123,7 +123,7 @@ export default function PublicProfilePage() {
 
         <div className="text-center">
           <p className="text-xs text-[#f0ede8]/40 mb-3">Don't have an agent budget set up yet?</p>
-          <a href={`https://app.delegare.dev/setup?merchant=${merchant.merchantId}`} className="block w-full py-3 px-4 bg-[#c8b99a]/10 hover:bg-[#c8b99a]/20 text-[#c8b99a] border border-[#c8b99a]/30 rounded-xl text-sm font-medium transition-colors">
+          <a href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://app.delegare.dev'}/setup?merchant=${merchant.merchantId}`} className="block w-full py-3 px-4 bg-[#c8b99a]/10 hover:bg-[#c8b99a]/20 text-[#c8b99a] border border-[#c8b99a]/30 rounded-xl text-sm font-medium transition-colors">
             Connect your Agent
           </a>
         </div>
