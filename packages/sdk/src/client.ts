@@ -122,9 +122,8 @@ export class Delegare {
     try {
       const body = (await first.clone().json()) as {
         accepts?: X402Requirement[];
-        paymentRequirements?: { accepts?: X402Requirement[] };
       };
-      accepts = body.accepts ?? body.paymentRequirements?.accepts;
+      accepts = body.accepts;
     } catch {
       return first;
     }
