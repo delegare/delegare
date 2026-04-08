@@ -1,6 +1,6 @@
 {
   "name": "@delegare/mcp-tools",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "MCP tool registration for Delegare agent payment delegation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
