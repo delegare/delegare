@@ -561,7 +561,7 @@ export default function Home() {
                 "USDC · USDT on Base mainnet",
                 "~2 second settlement, gas under $0.001",
                 "Session key scoped to Delegare contract only",
-                "Master key never leaves user&apos;s wallet",
+                "Master key never leaves user's wallet",
               ].map((p) => (
                 <div key={p} className="rail-prop">
                   <span className="rail-prop-check">✦</span> {p}
