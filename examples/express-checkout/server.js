@@ -24,6 +24,78 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ── x402 Auto-Payment Route (API Paywall) ────────────────────────────────
+app.get('/api/premium-data', async (req, res) => {
+  const xPayment = req.header('x-payment');
+  const merchantWallet = process.env.MERCHANT_USDC_WALLET || '0x0000000000000000000000000000000000000000';
+
+  if (!xPayment) {
+    // 1. Agent asks for data, merchant returns 402 with price requirements
+    console.log('🔒 Agent requested premium data. Issuing x402 challenge ($0.05 USDC).');
+    res.status(402).json({
+      error: 'payment_required',
+      accepts: [
+        {
+          scheme: 'exact',
+          network: 'base',
+          asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC Base
+          maxAmountRequired: '0.05',
+          payTo: merchantWallet,
+          resource: 'http://localhost:4000/api/premium-data',
+          mimeType: 'application/json',
+          maxTimeoutSeconds: 3600
+        }
+      ]
+    });
+    return;
+  }
+
+  // 2. Agent auto-retries with a signed X-PAYMENT header
+  console.log('✅ Agent returned with X-PAYMENT header. Validating and settling...');
+  
+  try {
+    const paymentData = JSON.parse(Buffer.from(xPayment, 'base64').toString('utf8'));
+    
+    // Pass the signed payment directly to Delegare to verify and settle it
+    const vaultUrl = process.env.DELEGARE_BASE_URL || 'https://api.sandbox.delegare.dev/v1';
+    
+    const settleRes = await fetch(`${vaultUrl}/x402/settle`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        payment: paymentData,
+        requirements: {
+          price: '0.05',
+          currency: 'usdc',
+          network: 'base',
+          payTo: merchantWallet
+        }
+      })
+    });
+
+    if (!settleRes.ok) {
+      console.log('❌ Settlement failed.');
+      res.status(400).json({ error: 'invalid_payment' });
+      return;
+    }
+
+    const result = await settleRes.json();
+
+    // 3. Attach the receipt to the response header and deliver the goods
+    res.setHeader('X-Payment-Response', Buffer.from(JSON.stringify({ success: true, receipt: result.txHash })).toString('base64'));
+    res.json({
+      secret: 'AI agents love this premium data.',
+      weather: 'Sunny',
+      temp: 72,
+      txHash: result.txHash
+    });
+    console.log(`🎉 Premium data delivered! TxHash: ${result.txHash}`);
+
+  } catch (err) {
+    res.status(400).json({ error: 'invalid_x_payment_header' });
+  }
+});
+
 // ── Checkout Endpoint for Agents ──────────────────────────────────────────
 // An AI agent (or a traditional web frontend) calls this endpoint with an 
 // `intentMandate` (SD-JWT-VC) to authorize the purchase.
