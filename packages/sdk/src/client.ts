@@ -8,8 +8,7 @@ import {
   SetupSessionStatus,
   RevokeResponse,
   X402Requirement,
-  X402Payment,
-  X402SignRequest,
+  X402PaymentReceipt,
 } from './types';
 
 const DEFAULT_BASE_URL = 'https://api.delegare.dev/v1';
@@ -95,43 +94,67 @@ export class Delegare {
     throw new Error('Timed out waiting for user to complete payment setup');
   }
 
-  async signX402(params: X402SignRequest): Promise<X402Payment> {
-    return this.request<X402Payment>('POST', `/mandates/${encodeURIComponent(params.intentMandate)}/sign-x402`, params);
-  }
-
   /**
-   * Helper to fetch a resource that might be protected by x402.
-   * Automatically handles the 402 challenge if a mandate is provided.
+   * Fetch a resource that may be gated by an x402 paywall.
+   *
+   * If the server responds with 402 and valid x402 PaymentRequirements, and
+   * an `intentMandate` was provided, this helper retries the request with
+   * `X-DELEGARE-MANDATE: <intentMandate>`. Vault's facilitator settles the
+   * payment by charging the mandate's smart wallet through the router — no
+   * popups, no EIP-3009 signing by the agent, no custody of private keys.
+   *
+   * Notes:
+   *   - USDC's canonical `transferWithAuthorization` ignores EIP-1271, so a
+   *     session key cannot sign x402 payloads on behalf of a smart wallet.
+   *     This mandate-header flow is the supported path for agent payments.
+   *   - For servers that are NOT using vault's x402 middleware, the retry
+   *     will be ignored and you'll receive the original 402 back.
    */
   async fetch(url: string, init?: RequestInit, intentMandate?: string): Promise<Response> {
-    let res = await fetch(url, init);
+    const first = await fetch(url, init);
 
-    if (res.status === 402 && intentMandate) {
-      const data = await res.clone().json() as { paymentRequirements?: { accepts: X402Requirement[] } };
-      const req = data.paymentRequirements?.accepts.find(a => a.scheme === 'exact' && (a.network === 'base' || a.network === 'base-sepolia'));
-      
-      if (req) {
-        const payment = await this.signX402({
-          intentMandate,
-          scheme: 'exact',
-          to: req.payTo,
-          value: req.maxAmountRequired,
-          validBefore: Math.floor(Date.now() / 1000) + req.maxTimeoutSeconds,
-        });
-
-        const secondInit = {
-          ...init,
-          headers: {
-            ...init?.headers,
-            'X-Payment': Buffer.from(JSON.stringify(payment)).toString('base64'),
-          }
-        };
-
-        res = await fetch(url, secondInit);
-      }
+    if (first.status !== 402 || !intentMandate) {
+      return first;
     }
 
-    return res;
+    // Parse the PaymentRequirements; bail out cleanly for non-x402 402s.
+    let accepts: X402Requirement[] | undefined;
+    try {
+      const body = (await first.clone().json()) as {
+        accepts?: X402Requirement[];
+        paymentRequirements?: { accepts?: X402Requirement[] };
+      };
+      accepts = body.accepts ?? body.paymentRequirements?.accepts;
+    } catch {
+      return first;
+    }
+
+    const req = accepts?.find(
+      (a) => a.scheme === 'exact' && (a.network === 'base' || a.network === 'base-sepolia'),
+    );
+    if (!req) return first;
+
+    const retryHeaders = new Headers(init?.headers ?? {});
+    retryHeaders.set('X-DELEGARE-MANDATE', intentMandate);
+
+    return fetch(url, { ...init, headers: retryHeaders });
+  }
+
+  /** Decode the `X-PAYMENT-RESPONSE` header set by vault's middleware. */
+  decodePaymentReceipt(response: Response): X402PaymentReceipt | undefined {
+    const header = response.headers.get('x-payment-response');
+    if (!header) return undefined;
+    try {
+      // Node & modern browsers both expose atob; fall back to Buffer in Node.
+      const decoded =
+        typeof atob === 'function'
+          ? atob(header)
+          : // eslint-disable-next-line @typescript-eslint/no-var-requires
+            Buffer.from(header, 'base64').toString('utf8');
+      return JSON.parse(decoded) as X402PaymentReceipt;
+    } catch {
+      return undefined;
+    }
   }
 }
 

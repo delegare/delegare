@@ -77,44 +77,26 @@ export interface RevokeResponse {
   revokedAt: string;
 }
 
+/** Single entry in an x402 server's `accepts` array. */
 export interface X402Requirement {
   scheme: 'exact';
   network: 'base' | 'base-sepolia';
   asset: string;
+  /** Atomic USDC units as a decimal string (USDC has 6 decimals). */
   maxAmountRequired: string;
   payTo: string;
   resource: string;
-  mimeType: string;
+  mimeType?: string;
   maxTimeoutSeconds: number;
+  extra?: Record<string, unknown>;
 }
 
-export interface X402Payment {
-  scheme: 'exact';
-  payment: {
-    from: string;
-    to: string;
-    value: string;
-    validAfter: number;
-    validBefore: number;
-    nonce: string;
-    signature: string;
-  };
-}
-
-export interface X402Response {
+/** Decoded `X-PAYMENT-RESPONSE` header contents. */
+export interface X402PaymentReceipt {
   success: boolean;
-  receipt: string;
-  payer?: string;
-}
-
-export interface X402SignRequest {
-  intentMandate: string;
-  scheme: 'exact';
-  to: string;
-  value: string;
-  validAfter?: number;
-  validBefore?: number;
-  nonce?: string;
+  transaction: string;
+  network: 'base' | 'base-sepolia';
+  payer: string;
 }
 
 export interface DelegareError {
