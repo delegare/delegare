@@ -416,17 +416,14 @@ export default function Home() {
         <div className="hero-left">
           <div className="hero-eyebrow">
             <div className="hero-eyebrow-dot" />
-            Now in beta
+            Agentic Commerce Protocols
           </div>
           <h1 className="hero-heading">
-            Your agent pays.
-            <br />
-            <em>You stay in control.</em>
+            The standard payment layer for <em>AI agents.</em>
           </h1>
           <p className="hero-sub">
-            Delegare is the first AP2-compliant payment infrastructure for AI agents. 
-            Give your agent a spending allowance via Verifiable Credentials (Intent Mandates) — without
-            handing over your card number or wallet seed. Your agent pays for things within limits you set. Always.
+            The unified <strong>AP2</strong> and <strong>x402</strong> facilitator. 
+            Set a secure spending limit once, and let your agent autonomously negotiate and settle paywalls across the web — without ever popping up a wallet.
           </p>
           <div className="hero-price">
             <div className="hero-price-num">3¢</div>
@@ -526,8 +523,8 @@ export default function Home() {
       {/* RAILS */}
       <section className="section">
         <div className="section-label">Two rails. One interface.</div>
-        <p style={{ textAlign: 'center', color: 'rgba(240,237,232,0.6)', maxWidth: 600, margin: '0 auto 40px' }}>
-          By issuing standard AP2 Intent Mandates (SD-JWT-VC), agents can pay any compatible merchant globally.
+        <p style={{ textAlign: 'center', color: 'rgba(240,237,232,0.6)', maxWidth: 650, margin: '0 auto 40px', lineHeight: 1.6 }}>
+          By issuing <strong>AP2 Intent Mandates</strong> (SD-JWT-VC), agents can securely pay any compatible merchant. By integrating <strong>x402</strong>, those agents can bypass paywalls on the fly—zero popups required.
         </p>
         <div className="rails-grid">
           <div className="rail-card">
@@ -591,13 +588,12 @@ export default function Home() {
             <div className="pricing-context">
               <p className="pricing-context-line">
                 Delegare is not a payment processor — it&apos;s the
-                authorization layer that makes your existing payments
-                agent-ready.
+                <strong> AP2 authorization layer</strong> and <strong>x402 facilitator</strong> that makes your existing payments agent-ready.
               </p>
               <p className="pricing-context-line">
-                Your Stripe setup stays exactly as it is. Delegare sits in front
+                Your Stripe or USDC setup stays exactly as it is. Delegare sits in front
                 of it, handling agent identity, spending limits, and autonomous
-                authorization.
+                "set-and-forget" x402 negotiations.
               </p>
               <p className="pricing-context-note">
                 For reference: Stripe&apos;s base fee on a $25 transaction is
@@ -669,7 +665,7 @@ export default function Home() {
             </div>
             <div>
               <span className="c-blue">const</span>
-              <span className="c-white"> d </span>
+              <span className="c-white"> delegare </span>
               <span className="c-dim">=</span>
               <span className="c-white"> new </span>
               <span className="c-green">Delegare</span>
@@ -680,7 +676,24 @@ export default function Home() {
             <div>&nbsp;</div>
             <div>
               <span className="c-dim">
-                {"// 3. charge — delegateToken comes from the agent's context"}
+                {"// 3. fetch any paywalled resource (x402 handled automatically)"}
+              </span>
+            </div>
+            <div>
+              <span className="c-blue">const</span>
+              <span className="c-white"> res </span>
+              <span className="c-dim">=</span>
+              <span className="c-blue"> await</span>
+              <span className="c-white"> delegare.</span>
+              <span className="c-green">fetch</span>
+              <span className="c-white">(</span>
+              <span className="c-gold">&apos;https://api.merchant.com/premium&apos;</span>
+              <span className="c-white">, {"{"}{"}"}, intentMandate)</span>
+            </div>
+            <div>&nbsp;</div>
+            <div>
+              <span className="c-dim">
+                {"// 4. or charge explicitly via AP2 intent mandate"}
               </span>
             </div>
             <div>
@@ -688,12 +701,12 @@ export default function Home() {
               <span className="c-white"> receipt </span>
               <span className="c-dim">=</span>
               <span className="c-blue"> await</span>
-              <span className="c-white"> d.</span>
+              <span className="c-white"> delegare.</span>
               <span className="c-green">charge</span>
               <span className="c-white">({"{"}</span>
             </div>
             <div>
-              <span className="c-white">{"  "}delegateToken,</span>
+              <span className="c-white">{"  "}intentMandate,</span>
             </div>
             <div>
               <span className="c-white">{"  "}amountCents: </span>
