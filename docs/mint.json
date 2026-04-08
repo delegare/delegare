@@ -67,6 +67,7 @@
       "pages": [
         "sdk-tools/typescript-sdk",
         "sdk-tools/mcp-server",
+        "sdk-tools/openclaw-plugin",
         "sdk-tools/shopify-app"
       ]
     },

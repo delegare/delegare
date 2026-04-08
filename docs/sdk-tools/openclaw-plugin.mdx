@@ -1,0 +1,69 @@
+---
+title: "OpenClaw Plugin"
+description: "Enable autonomous payments for your OpenClaw agents."
+---
+
+The official **Delegare** plugin for OpenClaw acts as a standalone Model Context Protocol (MCP) server. It gives your OpenClaw agents the ability to autonomously execute payments and bypass `x402` paywalls.
+
+By connecting this plugin, your agent gains access to the `@delegare/mcp-tools` suite, allowing it to spend funds safely using a pre-authorized **AP2 Intent Mandate (SD-JWT-VC)** without needing you to approve every transaction.
+
+---
+
+## Installation & Setup
+
+### 1. Install the plugin
+You can install the plugin globally using npm:
+
+```bash
+npm install -g @delegare/openclaw-plugin
+```
+
+### 2. Add the MCP server to OpenClaw
+Open your OpenClaw desktop app or gateway and navigate to **Settings → MCP Servers → Add Server**. Use the following configuration:
+
+*   **Name:** `Delegare`
+*   **Command:** `npx`
+*   **Args:** `-y @delegare/openclaw-plugin`
+*   **Auth:** `OAuth 2.0` (Connects securely to your Delegare account)
+
+### 3. Authorize and Set Limits
+Once added, click **Connect** in the OpenClaw interface. You will be redirected to the Delegare Dashboard where you can:
+- Connect your preferred payment method (Stripe card or Base USDC wallet).
+- Set your agent's autonomous spending limits (e.g., "$50 max per month").
+- Confirm the setup.
+
+At the end of this flow, Delegare issues an **AP2 Intent Mandate** to your OpenClaw agent.
+
+---
+
+## Usage
+
+Your agent is now economically enabled! You can try prompting OpenClaw with tasks that require payment or data retrieval:
+
+<CodeGroup>
+```text Agent Prompt
+Fetch the data from https://premium-api.com/data. 
+If it asks for payment via x402, use your mandate to pay it.
+```
+
+```text Agent Prompt
+What is my current Delegare mandate balance?
+```
+
+```text Agent Prompt
+Pay @coffee-shop $5.00 for the espresso order.
+```
+</CodeGroup>
+
+---
+
+## Security Features
+
+*   **Zero Popups:** Once limits are set, the agent handles transaction signing server-side. No wallet popups will interrupt its workflow.
+*   **Non-Custodial:** Your master private key never leaves your device. The agent only receives a tightly scoped, easily revokable session key.
+*   **Strict Bounds:** Every transaction is verified by the Vault backend against the human-defined per-transaction and monthly limits.
+
+## Links
+- [MCP Tools Documentation](/sdk-tools/mcp-server)
+- [Protocol Concepts](/concepts/intent-mandates)
+- [GitHub Repository](https://github.com/delegare/delegare)
