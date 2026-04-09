@@ -21,10 +21,8 @@ export class Delegare {
   private readonly baseUrl: string;
 
   constructor(config: DelegareConfig) {
-    if (!config.merchantId) throw new Error('merchantId is required');
-    if (!config.apiKey) throw new Error('apiKey is required');
-    this.merchantId = config.merchantId;
-    this.apiKey = config.apiKey;
+    this.merchantId = config.merchantId || '';
+    this.apiKey = config.apiKey || '';
     this.baseUrl = config.baseUrl ?? DEFAULT_BASE_URL;
   }
 
