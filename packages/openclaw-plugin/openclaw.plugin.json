@@ -1,11 +1,8 @@
 {
   "name": "Delegare",
   "id": "delegare",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Delegare - Trustless payment delegation for AI agents in OpenClaw",
   "entrypoint": "./dist/index.js",
-  "icon": "https://delegare.dev/logo.png",
-  "openclaw": {
-    "extensions": ["./dist/index.js"]
-  }
+  "icon": "https://delegare.dev/logo.png"
 }
