@@ -18,10 +18,11 @@ const PROVIDER_ID = "delegare";
  * In OpenClaw plugins, auth metadata is typically passed in the third argument of execute.
  */
 function getClient(config: any, meta?: any) {
-  // OpenClaw injects OAuth tokens and merchant context into the meta object
-  // after the user completes the OAuth flow.
-  
-  // Extract merchantId from notes array if present (e.g. "merchantId:m_123")
+  // OpenClaw passes auth credentials in multiple ways depending on the version/config:
+  //   1. meta.auth object (native provider flow)
+  //   2. Plugin config (api.config)
+
+  // --- Try meta.auth first (native provider flow) ---
   let merchantId = meta?.auth?.merchantId;
   if (!merchantId && Array.isArray(meta?.auth?.notes)) {
     const note = meta.auth.notes.find((n: string) => n.startsWith("merchantId:"));
@@ -29,11 +30,22 @@ function getClient(config: any, meta?: any) {
       merchantId = note.split(":")[1];
     }
   }
-  
-  // Depending on the OAuth response mapping, the token might be in accessToken or apiKey.
-  const apiKey = meta?.auth?.access || meta?.auth?.accessToken || meta?.auth?.apiKey; 
-  const baseUrl = meta?.auth?.baseUrl || config?.baseUrl;
-  
+  let apiKey = meta?.auth?.access || meta?.auth?.accessToken || meta?.auth?.apiKey;
+
+  // --- Fallback: plugin config ---
+  if (!merchantId) {
+    merchantId = config?.merchantId;
+  }
+  if (!apiKey) {
+    apiKey = config?.accessToken || config?.apiKey;
+  }
+
+  // Determine base URL — respect environment config for sandbox
+  let baseUrl = meta?.auth?.baseUrl || config?.baseUrl;
+  if (!baseUrl && config?.environment === 'sandbox') {
+    baseUrl = 'https://api.sandbox.delegare.dev/v1';
+  }
+
   if (!merchantId || !apiKey) {
     throw new Error("Delegare authentication required. Please connect your Delegare account using OAuth in the OpenClaw settings interface (Settings > Config > Authentication).");
   }
@@ -174,6 +186,7 @@ export default definePluginEntry({
     // ── setup_spending_mandate ─────────────────────────────────────────────────
     api.registerTool({
       name: "setup_spending_mandate",
+      provider: PROVIDER_ID,
       description: "Initiate the one-time browser setup flow so the user can connect their payment method and set spending limits. Returns a URL the user must visit. Returns sessionToken for polling.",
       parameters: Type.Object({
         maxPerTxCents: Type.Number({ description: "Maximum charge per transaction in cents" }),
@@ -209,6 +222,7 @@ export default definePluginEntry({
     // ── poll_setup_session ─────────────────────────────────────────────────────
     api.registerTool({
       name: "poll_setup_session",
+      provider: PROVIDER_ID,
       description: "Check whether the user has completed the payment setup flow. Call this after presenting the setup URL. Returns the intentMandate once complete.",
       parameters: Type.Object({
         sessionToken: Type.String({ description: "The sessionToken returned by setup_spending_mandate" }),
@@ -225,6 +239,7 @@ export default definePluginEntry({
     // ── check_mandate_balance ────────────────────────────────────────────────────
     api.registerTool({
       name: "check_mandate_balance",
+      provider: PROVIDER_ID,
       description: "Check remaining monthly budget and masked payment methods for a spending mandate.",
       parameters: Type.Object({
         intentMandate: Type.String({ description: "The intentMandate (SD-JWT-VC) stored in agent context" }),
@@ -241,6 +256,7 @@ export default definePluginEntry({
     // ── authorize_agent_payment ───────────────────────────────────────────────────────────
     api.registerTool({
       name: "authorize_agent_payment",
+      provider: PROVIDER_ID,
       description: "Execute a payment through the Delegare vault using AP2. The agent presents its Intent Mandate (SD-JWT-VC).",
       parameters: Type.Object({
         intentMandate: Type.String({ description: "The intentMandate stored in agent context" }),
@@ -279,6 +295,7 @@ export default definePluginEntry({
     // ── delegare_fetch ─────────────────────────────────────────────────────────
     api.registerTool({
       name: "delegare_fetch",
+      provider: PROVIDER_ID,
       description: "Fetch a URL. If the resource requires payment via x402, this tool will automatically use the provided spending mandate.",
       parameters: Type.Object({
         url: Type.String({ description: "The URL to fetch" }),
@@ -333,6 +350,7 @@ export default definePluginEntry({
     // ── revoke_mandate ────────────────────────────────────────────────────────
     api.registerTool({
       name: "revoke_mandate",
+      provider: PROVIDER_ID,
       description: "Immediately revoke a spending mandate.",
       parameters: Type.Object({
         intentMandate: Type.String({ description: "The intentMandate to revoke" }),
