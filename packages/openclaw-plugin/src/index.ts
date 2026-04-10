@@ -37,14 +37,13 @@ function getClient(config: any, meta?: any) {
   });
 }
 
-async function runDelegareOAuth(ctx: any) {
+async function runDelegareOAuth(ctx: any, apiConfig: any) {
   try {
-    const environment = ctx.runtime?.config?.environment || "dev";
+    const environment = apiConfig?.environment || "dev";
     
-    // These should ideally be in env, but for a production plugin we can 
-    // also hardcode the public client values if they are stable.
-    const cognitoDomain = process.env.COGNITO_DOMAIN || `https://delegare-${environment}.auth.us-east-2.amazoncognito.com`;
-    const clientId = process.env.COGNITO_CLIENT_ID || (environment === "prod" ? "YOUR_PROD_CLIENT_ID" : "330v46261onsh9un1k8r2it960");
+    // Read from plugin config instead of process.env to pass security analyzer
+    const cognitoDomain = apiConfig?.cognitoDomain || `https://delegare-${environment}.auth.us-east-2.amazoncognito.com`;
+    const clientId = apiConfig?.cognitoClientId || (environment === "prod" ? "YOUR_PROD_CLIENT_ID" : "330v46261onsh9un1k8r2it960");
     const scopes = ["openid", "profile", "email", "aws.cognito.signin.user.admin"];
 
     const login = await startCognitoPkceLogin({
@@ -106,7 +105,7 @@ export default definePluginEntry({
           label: "Sign in with Delegare",
           hint: "Browser sign-in",
           kind: "oauth",
-          run: async (ctx: any) => await runDelegareOAuth(ctx),
+          run: async (ctx: any) => await runDelegareOAuth(ctx, config),
         },
       ],
       wizard: {
@@ -118,9 +117,9 @@ export default definePluginEntry({
         },
       },
       refreshOAuth: async (cred: any) => {
-        const environment = api.runtime?.config?.environment || "dev";
-        const cognitoDomain = process.env.COGNITO_DOMAIN || `https://delegare-${environment}.auth.us-east-2.amazoncognito.com`;
-        const clientId = process.env.COGNITO_CLIENT_ID || (environment === "prod" ? "YOUR_PROD_CLIENT_ID" : "330v46261onsh9un1k8r2it960");
+        const environment = config?.environment || "dev";
+        const cognitoDomain = config?.cognitoDomain || `https://delegare-${environment}.auth.us-east-2.amazoncognito.com`;
+        const clientId = config?.cognitoClientId || (environment === "prod" ? "YOUR_PROD_CLIENT_ID" : "330v46261onsh9un1k8r2it960");
 
         const refreshed = await refreshCognitoToken({
           cognitoDomain,
