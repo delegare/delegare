@@ -42,9 +42,13 @@ After updating the configuration, **restart your OpenClaw gateway**.
 Delegare uses OAuth 2.0 to securely issue your agent an Intent Mandate without exposing your master API keys to the OpenClaw environment.
 
 1. Open the OpenClaw Web UI (e.g., `http://localhost:18789/__openclaw__/canvas/`).
-2. Navigate to **Settings** (the gear icon) → **Auth**.
-3. Find the **Delegare** provider in the list.
-4. Click **Connect / Authenticate**.
+2. Navigate to **Settings** (the gear icon) → **Config** → **Authentication**.
+3. Under **Auth Profiles**, click **Add Entry** to create a new profile.
+4. Set the following details for the new entry:
+   - **Display Name:** `Delegare Account` (or similar)
+   - **Mode:** `oauth`
+   - **Provider:** `delegare`
+5. Once the profile is created, click the **Connect / Authenticate** button that appears for it.
 
 You will be redirected to the Delegare Dashboard to connect your preferred payment method (Stripe card or Base USDC wallet) and set your agent's autonomous spending limits (e.g., "$50 max per month").
 
