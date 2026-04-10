@@ -128,16 +128,13 @@ importers:
 
   packages/openclaw-plugin:
     dependencies:
-      '@delegare/mcp-tools':
-        specifier: workspace:*
-        version: link:../mcp-tools
-      '@modelcontextprotocol/sdk':
-        specifier: ^1.0.0
-        version: 1.28.0(zod@4.3.6)
-    devDependencies:
+      '@delegare/sdk':
+        specifier: ^0.2.1
+        version: 0.2.1
       '@sinclair/typebox':
         specifier: ^0.34.49
         version: 0.34.49
+    devDependencies:
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.37
@@ -658,6 +655,9 @@ packages:
 
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
+
+  '@delegare/sdk@0.2.1':
+    resolution: {integrity: sha512-dJmEPIbhx79WStSxU5Kuvv6WjeKCmxOzQhgPJjJdis5kWIudRv7dNsNTm9ykdPX4mWmLy3bzrrWdIele5Sk1NA==}
 
   '@dotenvx/dotenvx@1.58.0':
     resolution: {integrity: sha512-xizSguxyyvH5eqGWJrhTomUdXFSRaweXBEXxTpkbaalIjHZeKPNPHpevwxCXXqdXPe5bTIeEtBSKD+zStadGFw==}
@@ -6141,6 +6141,8 @@ snapshots:
       '@types/react': 19.2.14
 
   '@bcoe/v8-coverage@0.2.3': {}
+
+  '@delegare/sdk@0.2.1': {}
 
   '@dotenvx/dotenvx@1.58.0':
     dependencies:
