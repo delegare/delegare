@@ -46,14 +46,19 @@ async function main() {
         console.log("\n🎉 Setup Complete!");
         console.log("==========================================================");
         console.log(`YOUR INTENT MANDATE (SD-JWT-VC):`);
-        console.log(`${status.intentMandate}`);
+        
+        // Ensure we're grabbing the actual encoded token, not the ID.
+        // In the SDK, the encoded string is usually returned directly as intentMandate or encodedMandate.
+        const jwtString = status.encodedMandate || status.intentMandate;
+        
+        console.log(`${jwtString}`);
         console.log("==========================================================\n");
         console.log(`You can now use this mandate in your curl command to buy a pizza!`);
         console.log(`
 curl -X POST http://localhost:4000/api/checkout \\
   -H "Content-Type: application/json" \\
   -d '{
-    "intentMandate": "${status.intentMandate}",
+    "intentMandate": "${jwtString}",
     "item": "large_pepperoni_pizza",
     "deliveryAddress": "123 AI Avenue"
   }'
