@@ -1,10 +1,16 @@
 {
   "id": "delegare",
   "name": "Delegare",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "description": "Delegare - Trustless payment delegation for AI agents in OpenClaw",
   "entrypoint": "./dist/index.js",
   "icon": "https://delegare.dev/logo.png",
+  "auth": {
+    "type": "oauth2",
+    "authorizationUrl": "https://delegare.dev/oauth/authorize",
+    "tokenUrl": "https://api.delegare.dev/v1/oauth/token",
+    "scopes": ["pay", "balance", "revoke"]
+  },
   "configSchema": {
     "type": "object",
     "additionalProperties": false,
@@ -13,14 +19,6 @@
         "type": "string",
         "description": "Override the Delegare API base URL (e.g. https://api.sandbox.delegare.dev/v1)",
         "default": "https://api.delegare.dev/v1"
-      },
-      "merchantId": {
-        "type": "string",
-        "description": "Your Delegare Merchant ID"
-      },
-      "apiKey": {
-        "type": "string",
-        "description": "Your Delegare API Key"
       }
     }
   }
