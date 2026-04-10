@@ -1,8 +1,17 @@
 // @ts-expect-error - openclaw/plugin-sdk is provided by the OpenClaw host at runtime
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
+// @ts-expect-error - provided by host
+import { buildOauthProviderAuthResult } from "openclaw/plugin-sdk/provider-auth";
 import { Type } from "@sinclair/typebox";
 // @ts-ignore
 import { Delegare } from "@delegare/sdk";
+import { 
+  startCognitoPkceLogin, 
+  exchangeCognitoCodeForTokens, 
+  refreshCognitoToken 
+} from "./cognito-oauth.js";
+
+const PROVIDER_ID = "delegare";
 
 /**
  * Helper to create a Delegare client using credentials from OpenClaw's OAuth flow.
@@ -18,7 +27,7 @@ function getClient(config: any, meta?: any) {
   const baseUrl = meta?.auth?.baseUrl || config?.baseUrl;
   
   if (!merchantId || !apiKey) {
-    throw new Error("Delegare authentication required. Please connect your Delegare account using OAuth in the OpenClaw settings interface.");
+    throw new Error("Delegare authentication required. Please connect your Delegare account using OAuth in the OpenClaw settings interface (Settings > Config > Authentication).");
   }
 
   return new Delegare({
@@ -28,17 +37,107 @@ function getClient(config: any, meta?: any) {
   });
 }
 
+async function runDelegareOAuth(ctx: any) {
+  try {
+    const environment = ctx.runtime?.config?.environment || "dev";
+    
+    // These should ideally be in env, but for a production plugin we can 
+    // also hardcode the public client values if they are stable.
+    const cognitoDomain = process.env.COGNITO_DOMAIN || `https://delegare-${environment}.auth.us-east-2.amazoncognito.com`;
+    const clientId = process.env.COGNITO_CLIENT_ID || (environment === "prod" ? "YOUR_PROD_CLIENT_ID" : "330v46261onsh9un1k8r2it960");
+    const scopes = ["openid", "profile", "email", "aws.cognito.signin.user.admin"];
+
+    const login = await startCognitoPkceLogin({
+      cognitoDomain,
+      clientId,
+      scopes,
+      prompter: ctx.prompter,
+      openUrl: ctx.openUrl,
+      isRemote: ctx.isRemote,
+    });
+
+    if (!login) {
+      return { profiles: [] };
+    }
+
+    const tokens = await exchangeCognitoCodeForTokens({
+      cognitoDomain,
+      clientId,
+      code: login.code,
+      redirectUri: login.redirectUri,
+      codeVerifier: login.codeVerifier,
+    });
+
+    return buildOauthProviderAuthResult({
+      providerId: PROVIDER_ID,
+      access: tokens.accessToken,
+      refresh: tokens.refreshToken ?? undefined,
+      expires: tokens.expiresAtEpochSeconds ?? undefined,
+      email: tokens.email ?? undefined,
+      displayName: tokens.username ?? undefined,
+      profileName: tokens.email ?? tokens.username ?? "default",
+      // We store the merchantId in the notes or metadata so getClient can recover it
+      notes: tokens.merchantId ? [`merchantId:${tokens.merchantId}`] : undefined,
+    });
+  } catch (err: any) {
+    console.error("Delegare OAuth failed:", err);
+    return { profiles: [] };
+  }
+}
+
 /**
  * Native OpenClaw Plugin Entry
- * This is the preferred way to extend OpenClaw as it runs in-process and
- * integrates directly with OpenClaw's capability registration.
  */
 export default definePluginEntry({
-  id: "delegare",
+  id: PROVIDER_ID,
   name: "Delegare",
   description: "Delegare - Trustless payment delegation for AI agents in OpenClaw",
   register(api: any) {
     const config = api.config || {};
+
+    // ── provider registration (for UI Connect button) ───────────────────────────
+    api.registerProvider({
+      id: PROVIDER_ID,
+      label: "Delegare",
+      kind: "service",
+      auth: [
+        {
+          id: "oauth",
+          label: "Sign in with Delegare",
+          hint: "Browser sign-in",
+          kind: "oauth",
+          run: async (ctx: any) => await runDelegareOAuth(ctx),
+        },
+      ],
+      wizard: {
+        setup: {
+          choiceId: PROVIDER_ID,
+          choiceLabel: "Delegare",
+          choiceHint: "Economic Enablement (Payments)",
+          methodId: "oauth",
+        },
+      },
+      refreshOAuth: async (cred: any) => {
+        const environment = api.runtime?.config?.environment || "dev";
+        const cognitoDomain = process.env.COGNITO_DOMAIN || `https://delegare-${environment}.auth.us-east-2.amazoncognito.com`;
+        const clientId = process.env.COGNITO_CLIENT_ID || (environment === "prod" ? "YOUR_PROD_CLIENT_ID" : "330v46261onsh9un1k8r2it960");
+
+        const refreshed = await refreshCognitoToken({
+          cognitoDomain,
+          clientId,
+          refreshToken: cred.refresh,
+        });
+
+        return {
+          ...cred,
+          type: "oauth",
+          provider: PROVIDER_ID,
+          access: refreshed.accessToken,
+          refresh: refreshed.refreshToken ?? cred.refresh,
+          expires: refreshed.expiresAtEpochSeconds ?? cred.expires,
+        };
+      },
+    });
 
     // ── setup_spending_mandate ─────────────────────────────────────────────────
     api.registerTool({
