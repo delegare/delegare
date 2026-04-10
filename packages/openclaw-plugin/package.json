@@ -1,7 +1,8 @@
 {
   "name": "@delegare/openclaw-plugin",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Delegare - Trustless payment delegation for AI agents in OpenClaw",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "openclaw": {
@@ -9,13 +10,8 @@
       "./dist/index.js"
     ]
   },
-  "bin": {
-    "delegare-openclaw": "./bin/run.js"
-  },
   "files": [
     "dist",
-    "bin",
-    "mcp.json",
     "openclaw.plugin.json"
   ],
   "license": "MIT",
@@ -25,7 +21,6 @@
   },
   "keywords": [
     "openclaw",
-    "mcp",
     "plugin",
     "delegare",
     "payments",
@@ -37,8 +32,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@delegare/mcp-tools": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@sinclair/typebox": "^0.34.49"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
