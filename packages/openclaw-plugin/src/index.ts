@@ -11,8 +11,8 @@ import { Delegare } from "@delegare/sdk";
 function getClient(meta?: any) {
   // OpenClaw injects OAuth tokens and merchant context into the meta object.
   // The exact path depends on how the OAuth flow was configured in OpenClaw.
-  const merchantId = meta?.auth?.merchantId || process.env.DELEGARE_MERCHANT_ID || "";
-  const apiKey = meta?.auth?.apiKey || process.env.DELEGARE_API_KEY || "";
+  const merchantId = meta?.auth?.merchantId || "";
+  const apiKey = meta?.auth?.apiKey || "";
   
   return new Delegare({
     merchantId,
