@@ -1,6 +1,6 @@
 {
   "name": "@delegare/openclaw-plugin",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "Delegare - Trustless payment delegation for AI agents in OpenClaw",
   "type": "module",
   "main": "dist/index.js",
@@ -28,7 +28,7 @@
     "agents"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "tsup": "^8.5.1",
     "typescript": "^5.4.0"
   }
 }
