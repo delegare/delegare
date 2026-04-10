@@ -8,15 +8,17 @@ import { Delegare } from "@delegare/sdk";
  * Helper to create a Delegare client using credentials from OpenClaw's OAuth flow.
  * In OpenClaw plugins, auth metadata is typically passed in the third argument of execute.
  */
-function getClient(meta?: any) {
+function getClient(config: any, meta?: any) {
   // OpenClaw injects OAuth tokens and merchant context into the meta object.
   // The exact path depends on how the OAuth flow was configured in OpenClaw.
   const merchantId = meta?.auth?.merchantId || "";
   const apiKey = meta?.auth?.apiKey || "";
+  const baseUrl = meta?.auth?.baseUrl || config?.baseUrl;
   
   return new Delegare({
     merchantId,
     apiKey,
+    ...(baseUrl ? { baseUrl } : {})
   });
 }
 
@@ -30,6 +32,8 @@ export default definePluginEntry({
   name: "Delegare",
   description: "Delegare - Trustless payment delegation for AI agents in OpenClaw",
   register(api: any) {
+    const config = api.config || {};
+
     // ── setup_spending_mandate ─────────────────────────────────────────────────
     api.registerTool({
       name: "setup_spending_mandate",
@@ -41,7 +45,7 @@ export default definePluginEntry({
         railPreference: Type.Optional(Type.Enum({ auto: "auto", fiat_first: "fiat_first", crypto_first: "crypto_first", cheapest: "cheapest", fastest: "fastest" }, { description: "How to select the rail when both are available. Defaults to auto." })),
       }),
       async execute(_id: string, params: any, meta: any) {
-        const client = getClient(meta);
+        const client = getClient(config, meta);
         const session = await client.createSetupSession({
           maxPerTxCents: params.maxPerTxCents,
           maxMonthlySpendCents: params.maxMonthlySpendCents,
@@ -73,7 +77,7 @@ export default definePluginEntry({
         sessionToken: Type.String({ description: "The sessionToken returned by setup_spending_mandate" }),
       }),
       async execute(_id: string, params: any, meta: any) {
-        const client = getClient(meta);
+        const client = getClient(config, meta);
         const result = await client.getSetupSession(params.sessionToken);
         return {
           content: [{ type: "text", text: JSON.stringify(result) }],
@@ -89,7 +93,7 @@ export default definePluginEntry({
         intentMandate: Type.String({ description: "The intentMandate (SD-JWT-VC) stored in agent context" }),
       }),
       async execute(_id: string, params: any, meta: any) {
-        const client = getClient(meta);
+        const client = getClient(config, meta);
         const balance = await client.getBalance(params.intentMandate);
         return {
           content: [{ type: "text", text: JSON.stringify(balance) }],
@@ -110,7 +114,7 @@ export default definePluginEntry({
         metadataJson: Type.Optional(Type.String({ description: "Optional JSON string of key-value metadata" })),
       }),
       async execute(_id: string, params: any, meta: any) {
-        const client = getClient(meta);
+        const client = getClient(config, meta);
         let metadata: Record<string, string> | undefined;
         if (params.metadataJson) {
           try {
@@ -146,7 +150,7 @@ export default definePluginEntry({
         intentMandate: Type.String({ description: "Your active spending delegate token (intentMandate)" }),
       }),
       async execute(_id: string, params: any, meta: any) {
-        const client = getClient(meta);
+        const client = getClient(config, meta);
         try {
           const init: RequestInit = {
             method: params.method ?? "GET",
@@ -197,7 +201,7 @@ export default definePluginEntry({
         intentMandate: Type.String({ description: "The intentMandate to revoke" }),
       }),
       async execute(_id: string, params: any, meta: any) {
-        const client = getClient(meta);
+        const client = getClient(config, meta);
         const result = await client.revoke(params.intentMandate);
         return {
           content: [{ type: "text", text: JSON.stringify(result) }],

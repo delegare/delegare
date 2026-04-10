@@ -1,13 +1,19 @@
 {
   "id": "delegare",
   "name": "Delegare",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "Delegare - Trustless payment delegation for AI agents in OpenClaw",
   "entrypoint": "./dist/index.js",
   "icon": "https://delegare.dev/logo.png",
   "configSchema": {
     "type": "object",
     "additionalProperties": false,
-    "properties": {}
+    "properties": {
+      "baseUrl": {
+        "type": "string",
+        "description": "Override the Delegare API base URL (e.g. https://api.sandbox.delegare.dev/v1)",
+        "default": "https://api.delegare.dev/v1"
+      }
+    }
   }
 }
