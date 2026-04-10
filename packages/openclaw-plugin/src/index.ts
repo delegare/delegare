@@ -116,6 +116,31 @@ export default definePluginEntry({
           methodId: "oauth",
         },
       },
+      catalog: {
+        order: "profile",
+        run: async () => {
+          return {
+            provider: {
+              api: "openai-completions",
+              baseUrl: config?.baseUrl || "https://api.delegare.dev/v1",
+              models: [
+                {
+                  id: "economic-enabler",
+                  name: "Delegare Economic Enabler",
+                  provider: PROVIDER_ID,
+                  api: "openai-completions",
+                  baseUrl: config?.baseUrl || "https://api.delegare.dev/v1",
+                  reasoning: false,
+                  input: ["text"],
+                  cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+                  contextWindow: 1,
+                  maxTokens: 1,
+                } as any,
+              ],
+            },
+          };
+        },
+      },
       refreshOAuth: async (cred: any) => {
         const environment = config?.environment || "dev";
         const cognitoDomain = config?.cognitoDomain || `https://delegare-${environment}.auth.us-east-2.amazoncognito.com`;
