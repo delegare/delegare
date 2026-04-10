@@ -20,10 +20,18 @@ const PROVIDER_ID = "delegare";
 function getClient(config: any, meta?: any) {
   // OpenClaw injects OAuth tokens and merchant context into the meta object
   // after the user completes the OAuth flow.
-  const merchantId = meta?.auth?.merchantId;
+  
+  // Extract merchantId from notes array if present (e.g. "merchantId:m_123")
+  let merchantId = meta?.auth?.merchantId;
+  if (!merchantId && Array.isArray(meta?.auth?.notes)) {
+    const note = meta.auth.notes.find((n: string) => n.startsWith("merchantId:"));
+    if (note) {
+      merchantId = note.split(":")[1];
+    }
+  }
   
   // Depending on the OAuth response mapping, the token might be in accessToken or apiKey.
-  const apiKey = meta?.auth?.accessToken || meta?.auth?.apiKey; 
+  const apiKey = meta?.auth?.access || meta?.auth?.accessToken || meta?.auth?.apiKey; 
   const baseUrl = meta?.auth?.baseUrl || config?.baseUrl;
   
   if (!merchantId || !apiKey) {
