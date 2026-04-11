@@ -112,7 +112,7 @@ export default definePluginEntry({
   name: "Delegare",
   description: "Delegare - Trustless payment delegation for AI agents in OpenClaw",
   register(api: any) {
-    const config = api.config || {};
+    const config = api.config?.plugins?.entries?.delegare?.config || {};
 
     // ── provider registration (for UI Connect button) ───────────────────────────
     api.registerProvider({
