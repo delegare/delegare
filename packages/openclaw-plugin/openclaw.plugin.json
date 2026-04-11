@@ -1,22 +1,17 @@
 {
   "id": "delegare",
   "name": "Delegare",
-  "version": "0.2.23",
+  "version": "0.3.0",
   "description": "Delegare - Trustless payment delegation for AI agents in OpenClaw",
   "entrypoint": "./dist/index.js",
   "setupEntrypoint": "./dist/setup-entry.js",
   "icon": "https://delegare.dev/logo.png",
   "auth": {
     "type": "oauth2",
-    "authorizationUrl": "https://delegare.dev/oauth/authorize",
-    "tokenUrl": "https://api.delegare.dev/v1/oauth/token",
+    "authorizationUrl": "https://api.delegare.dev/v1/oauth2/authorize",
+    "tokenUrl": "https://api.delegare.dev/v1/oauth2/token",
+    "registrationUrl": "https://api.delegare.dev/v1/oauth2/register",
     "scopes": ["pay", "balance", "revoke"]
-  },
-  "providerAuthEnvVars": {
-    "delegare": [
-      "DELEGARE_ACCESS_TOKEN",
-      "DELEGARE_MERCHANT_ID"
-    ]
   },
   "configSchema": {
     "type": "object",
@@ -29,16 +24,8 @@
       },
       "environment": {
         "type": "string",
-        "description": "The Delegare environment (dev, sandbox, prod)",
-        "default": "dev"
-      },
-      "cognitoDomain": {
-        "type": "string",
-        "description": "Override the Cognito OAuth Domain"
-      },
-      "cognitoClientId": {
-        "type": "string",
-        "description": "Override the Cognito App Client ID"
+        "description": "The Delegare environment (sandbox, prod)",
+        "default": "prod"
       }
     }
   }

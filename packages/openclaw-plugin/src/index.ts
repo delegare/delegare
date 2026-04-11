@@ -5,83 +5,89 @@ import { buildOauthProviderAuthResult } from "openclaw/plugin-sdk/provider-auth"
 import { Type } from "@sinclair/typebox";
 // @ts-ignore
 import { Delegare } from "@delegare/sdk";
-import { 
-  startCognitoPkceLogin, 
-  exchangeCognitoCodeForTokens, 
-  refreshCognitoToken 
-} from "./cognito-oauth.js";
+import {
+  startDelegarePkceLogin,
+  exchangeDelegareCodeForTokens,
+  refreshDelegareToken,
+} from "./delegare-oauth.js";
 
 const PROVIDER_ID = "delegare";
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function resolveBaseUrl(config: any): string {
+  if (config?.baseUrl) return config.baseUrl;
+  if (config?.environment === "sandbox") return "https://api.sandbox.delegare.dev/v1";
+  return "https://api.delegare.dev/v1";
+}
+
 /**
- * Helper to create a Delegare client using credentials from OpenClaw's OAuth flow.
- * In OpenClaw plugins, auth metadata is typically passed in the third argument of execute.
+ * Build a Delegare client from whatever credentials are available.
+ *
+ * Priority:
+ *   1. OAuth access token from meta.auth (OpenClaw provider auth flow)
+ *   2. Legacy API key from meta.auth or plugin config
  */
 function getClient(config: any, meta?: any) {
-  // OpenClaw passes auth credentials in multiple ways depending on the version/config:
-  //   1. meta.auth object (native provider flow)
-  //   2. Plugin config (api.config)
+  const baseUrl = meta?.auth?.baseUrl || resolveBaseUrl(config);
 
-  // --- Try meta.auth first (native provider flow) ---
+  // --- OAuth access token (primary path) ---
+  const accessToken =
+    meta?.auth?.access ||
+    meta?.auth?.accessToken ||
+    config?.accessToken;
+
+  const refreshToken = meta?.auth?.refresh || meta?.auth?.refreshToken;
+
+  if (accessToken) {
+    return new Delegare({
+      accessToken,
+      refreshToken,
+      baseUrl,
+    });
+  }
+
+  // --- API Key (fallback path) ---
   let merchantId = meta?.auth?.merchantId;
   if (!merchantId && Array.isArray(meta?.auth?.notes)) {
     const note = meta.auth.notes.find((n: string) => n.startsWith("merchantId:"));
-    if (note) {
-      merchantId = note.split(":")[1];
-    }
+    if (note) merchantId = note.split(":")[1];
   }
-  let apiKey = meta?.auth?.access || meta?.auth?.accessToken || meta?.auth?.apiKey;
+  if (!merchantId) merchantId = config?.merchantId;
 
-  // --- Fallback: plugin config ---
-  if (!merchantId) {
-    merchantId = config?.merchantId;
-  }
-  if (!apiKey) {
-    apiKey = config?.accessToken || config?.apiKey;
+  const apiKey = meta?.auth?.apiKey || config?.apiKey;
+
+  if (merchantId && apiKey) {
+    return new Delegare({ merchantId, apiKey, baseUrl });
   }
 
-  // Determine base URL — respect environment config for sandbox
-  let baseUrl = meta?.auth?.baseUrl || config?.baseUrl;
-  if (!baseUrl && config?.environment === 'sandbox') {
-    baseUrl = 'https://api.sandbox.delegare.dev/v1';
-  }
-
-  if (!merchantId || !apiKey) {
-    throw new Error("Delegare authentication required. Please connect your Delegare account using OAuth in the OpenClaw settings interface (Settings > Config > Authentication).");
-  }
-
-  return new Delegare({
-    merchantId,
-    apiKey,
-    ...(baseUrl ? { baseUrl } : {})
-  });
+  throw new Error(
+    "Delegare authentication required. Please connect your Delegare account " +
+    "using OAuth in the OpenClaw settings interface (Settings > Config > Authentication)."
+  );
 }
+
+// ── OAuth flow (against the vault, not Cognito) ─────────────────────────────
 
 async function runDelegareOAuth(ctx: any, apiConfig: any) {
   try {
-    const environment = apiConfig?.environment || "dev";
-    
-    // Read from plugin config instead of process.env to pass security analyzer
-    const cognitoDomain = apiConfig?.cognitoDomain || `https://delegare-${environment}.auth.us-east-2.amazoncognito.com`;
-    const clientId = apiConfig?.cognitoClientId || (environment === "prod" ? "YOUR_PROD_CLIENT_ID" : "330v46261onsh9un1k8r2it960");
-    const scopes = ["openid", "profile", "email", "aws.cognito.signin.user.admin"];
+    const baseUrl = apiConfig?.baseUrl?.replace(/\/v1\/?$/, "") ||
+      (apiConfig?.environment === "sandbox"
+        ? "https://api.sandbox.delegare.dev"
+        : "https://api.delegare.dev");
 
-    const login = await startCognitoPkceLogin({
-      cognitoDomain,
-      clientId,
-      scopes,
+    const login = await startDelegarePkceLogin({
+      baseUrl,
       prompter: ctx.prompter,
       openUrl: ctx.openUrl,
       isRemote: ctx.isRemote,
     });
 
-    if (!login) {
-      return { profiles: [] };
-    }
+    if (!login) return { profiles: [] };
 
-    const tokens = await exchangeCognitoCodeForTokens({
-      cognitoDomain,
-      clientId,
+    const tokens = await exchangeDelegareCodeForTokens({
+      baseUrl,
+      clientId: login.clientId,
       code: login.code,
       redirectUri: login.redirectUri,
       codeVerifier: login.codeVerifier,
@@ -92,11 +98,9 @@ async function runDelegareOAuth(ctx: any, apiConfig: any) {
       access: tokens.accessToken,
       refresh: tokens.refreshToken ?? undefined,
       expires: tokens.expiresAtEpochSeconds ?? undefined,
-      email: tokens.email ?? undefined,
-      displayName: tokens.username ?? undefined,
-      profileName: tokens.email ?? tokens.username ?? "default",
-      // We store the merchantId in the notes or metadata so getClient can recover it
-      notes: tokens.merchantId ? [`merchantId:${tokens.merchantId}`] : undefined,
+      profileName: "default",
+      // No merchantId or notes needed — the token itself carries the identity
+      // server-side. The SDK sends `Authorization: Bearer token_xxx`.
     });
   } catch (err: any) {
     console.error("Delegare OAuth failed:", err);
@@ -104,9 +108,8 @@ async function runDelegareOAuth(ctx: any, apiConfig: any) {
   }
 }
 
-/**
- * Native OpenClaw Plugin Entry
- */
+// ── Plugin entry ─────────────────────────────────────────────────────────────
+
 export default definePluginEntry({
   id: PROVIDER_ID,
   name: "Delegare",
@@ -114,7 +117,7 @@ export default definePluginEntry({
   register(api: any) {
     const config = api.config?.plugins?.entries?.delegare?.config || {};
 
-    // ── provider registration (for UI Connect button) ───────────────────────────
+    // ── provider registration (for UI Connect button) ───────────────────────
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Delegare",
@@ -138,37 +141,36 @@ export default definePluginEntry({
       },
       catalog: {
         order: "profile",
-        run: async () => {
-          return {
-            provider: {
-              api: "openai-completions",
-              baseUrl: config?.baseUrl || "https://api.delegare.dev/v1",
-              models: [
-                {
-                  id: "economic-enabler",
-                  name: "Delegare Economic Enabler",
-                  provider: PROVIDER_ID,
-                  api: "openai-completions",
-                  baseUrl: config?.baseUrl || "https://api.delegare.dev/v1",
-                  reasoning: false,
-                  input: ["text"],
-                  cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-                  contextWindow: 1,
-                  maxTokens: 1,
-                } as any,
-              ],
-            },
-          };
-        },
+        run: async () => ({
+          provider: {
+            api: "openai-completions",
+            baseUrl: resolveBaseUrl(config),
+            models: [
+              {
+                id: "economic-enabler",
+                name: "Delegare Economic Enabler",
+                provider: PROVIDER_ID,
+                api: "openai-completions",
+                baseUrl: resolveBaseUrl(config),
+                reasoning: false,
+                input: ["text"],
+                cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+                contextWindow: 1,
+                maxTokens: 1,
+              } as any,
+            ],
+          },
+        }),
       },
       refreshOAuth: async (cred: any) => {
-        const environment = config?.environment || "dev";
-        const cognitoDomain = config?.cognitoDomain || `https://delegare-${environment}.auth.us-east-2.amazoncognito.com`;
-        const clientId = config?.cognitoClientId || (environment === "prod" ? "YOUR_PROD_CLIENT_ID" : "330v46261onsh9un1k8r2it960");
+        if (!cred.refresh) throw new Error("No refresh token available");
+        const baseUrl = config?.baseUrl?.replace(/\/v1\/?$/, "") ||
+          (config?.environment === "sandbox"
+            ? "https://api.sandbox.delegare.dev"
+            : "https://api.delegare.dev");
 
-        const refreshed = await refreshCognitoToken({
-          cognitoDomain,
-          clientId,
+        const refreshed = await refreshDelegareToken({
+          baseUrl,
           refreshToken: cred.refresh,
         });
 
@@ -183,16 +185,27 @@ export default definePluginEntry({
       },
     });
 
-    // ── setup_spending_mandate ─────────────────────────────────────────────────
+    // ── setup_spending_mandate ───────────────────────────────────────────────
     api.registerTool({
       name: "setup_spending_mandate",
       provider: PROVIDER_ID,
-      description: "Initiate the one-time browser setup flow so the user can connect their payment method and set spending limits. Returns a URL the user must visit. Returns sessionToken for polling.",
+      description:
+        "Initiate the one-time browser setup flow so the user can connect their payment method and set spending limits. Returns a URL the user must visit. Returns sessionToken for polling.",
       parameters: Type.Object({
         maxPerTxCents: Type.Number({ description: "Maximum charge per transaction in cents" }),
         maxMonthlySpendCents: Type.Number({ description: "Maximum total spend per month in cents" }),
-        rail: Type.Optional(Type.Enum({ fiat: "fiat", crypto: "crypto", both: "both" }, { description: "Which payment rails to enable. Defaults to both." })),
-        railPreference: Type.Optional(Type.Enum({ auto: "auto", fiat_first: "fiat_first", crypto_first: "crypto_first", cheapest: "cheapest", fastest: "fastest" }, { description: "How to select the rail when both are available. Defaults to auto." })),
+        rail: Type.Optional(
+          Type.Enum(
+            { fiat: "fiat", crypto: "crypto", both: "both" },
+            { description: "Which payment rails to enable. Defaults to both." },
+          ),
+        ),
+        railPreference: Type.Optional(
+          Type.Enum(
+            { auto: "auto", fiat_first: "fiat_first", crypto_first: "crypto_first", cheapest: "cheapest", fastest: "fastest" },
+            { description: "How to select the rail when both are available. Defaults to auto." },
+          ),
+        ),
       }),
       async execute(_id: string, params: any, meta: any) {
         const client = getClient(config, meta);
@@ -202,13 +215,13 @@ export default definePluginEntry({
           rail: params.rail ?? "both",
           railPreference: params.railPreference ?? "auto",
         });
-
         return {
           content: [
             {
               type: "text",
               text: JSON.stringify({
-                message: "Please ask the user to visit the setup URL to connect their payment method. Use poll_setup_session with the sessionToken to check when setup is complete.",
+                message:
+                  "Please ask the user to visit the setup URL to connect their payment method. Use poll_setup_session with the sessionToken to check when setup is complete.",
                 setupUrl: session.setupUrl,
                 sessionToken: session.sessionToken,
                 expiresInSeconds: session.expiresInSeconds,
@@ -219,24 +232,23 @@ export default definePluginEntry({
       },
     });
 
-    // ── poll_setup_session ─────────────────────────────────────────────────────
+    // ── poll_setup_session ───────────────────────────────────────────────────
     api.registerTool({
       name: "poll_setup_session",
       provider: PROVIDER_ID,
-      description: "Check whether the user has completed the payment setup flow. Call this after presenting the setup URL. Returns the intentMandate once complete.",
+      description:
+        "Check whether the user has completed the payment setup flow. Call this after presenting the setup URL. Returns the intentMandate once complete.",
       parameters: Type.Object({
         sessionToken: Type.String({ description: "The sessionToken returned by setup_spending_mandate" }),
       }),
       async execute(_id: string, params: any, meta: any) {
         const client = getClient(config, meta);
         const result = await client.getSetupSession(params.sessionToken);
-        return {
-          content: [{ type: "text", text: JSON.stringify(result) }],
-        };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       },
     });
 
-    // ── check_mandate_balance ────────────────────────────────────────────────────
+    // ── check_mandate_balance ────────────────────────────────────────────────
     api.registerTool({
       name: "check_mandate_balance",
       provider: PROVIDER_ID,
@@ -247,21 +259,23 @@ export default definePluginEntry({
       async execute(_id: string, params: any, meta: any) {
         const client = getClient(config, meta);
         const balance = await client.getBalance(params.intentMandate);
-        return {
-          content: [{ type: "text", text: JSON.stringify(balance) }],
-        };
+        return { content: [{ type: "text", text: JSON.stringify(balance) }] };
       },
     });
 
-    // ── authorize_agent_payment ───────────────────────────────────────────────────────────
+    // ── authorize_agent_payment ──────────────────────────────────────────────
     api.registerTool({
       name: "authorize_agent_payment",
       provider: PROVIDER_ID,
-      description: "Execute a payment through the Delegare vault using AP2. The agent presents its Intent Mandate (SD-JWT-VC).",
+      description:
+        "Execute a payment through the Delegare vault using AP2. The agent presents its Intent Mandate (SD-JWT-VC).",
       parameters: Type.Object({
         intentMandate: Type.String({ description: "The intentMandate stored in agent context" }),
         amountCents: Type.Number({ description: "Amount to charge in cents (e.g. 9900 = $99.00)" }),
-        currency: Type.Enum({ usd: "usd", usdc: "usdc", usdt: "usdt" }, { description: "Currency for the charge" }),
+        currency: Type.Enum(
+          { usd: "usd", usdc: "usdc", usdt: "usdt" },
+          { description: "Currency for the charge" },
+        ),
         description: Type.String({ description: "Human-readable description of what is being paid for" }),
         idempotencyKey: Type.String({ description: "Unique key to prevent duplicate charges." }),
         metadataJson: Type.Optional(Type.String({ description: "Optional JSON string of key-value metadata" })),
@@ -276,7 +290,6 @@ export default definePluginEntry({
             // ignore malformed metadata
           }
         }
-
         const receipt = await client.charge({
           intentMandate: params.intentMandate,
           amountCents: params.amountCents,
@@ -285,21 +298,21 @@ export default definePluginEntry({
           idempotencyKey: params.idempotencyKey,
           metadata,
         });
-
-        return {
-          content: [{ type: "text", text: JSON.stringify(receipt) }],
-        };
+        return { content: [{ type: "text", text: JSON.stringify(receipt) }] };
       },
     });
 
-    // ── delegare_fetch ─────────────────────────────────────────────────────────
+    // ── delegare_fetch ──────────────────────────────────────────────────────
     api.registerTool({
       name: "delegare_fetch",
       provider: PROVIDER_ID,
-      description: "Fetch a URL. If the resource requires payment via x402, this tool will automatically use the provided spending mandate.",
+      description:
+        "Fetch a URL. If the resource requires payment via x402, this tool will automatically use the provided spending mandate.",
       parameters: Type.Object({
         url: Type.String({ description: "The URL to fetch" }),
-        method: Type.Optional(Type.Enum({ GET: "GET", POST: "POST" }, { description: "HTTP method" })),
+        method: Type.Optional(
+          Type.Enum({ GET: "GET", POST: "POST" }, { description: "HTTP method" }),
+        ),
         body: Type.Optional(Type.String({ description: "Optional JSON body for POST requests" })),
         intentMandate: Type.String({ description: "Your active spending delegate token (intentMandate)" }),
       }),
@@ -311,20 +324,16 @@ export default definePluginEntry({
             headers: { "Content-Type": "application/json" },
             body: params.body || undefined,
           };
-
           const response = await client.fetch(params.url, init, params.intentMandate);
           const text = await response.text();
           const isJson = response.headers.get("content-type")?.includes("application/json");
-
           let data;
           try {
             data = isJson ? JSON.parse(text) : text;
           } catch {
             data = text;
           }
-
           const receipt = client.decodePaymentReceipt(response);
-
           return {
             content: [
               {
@@ -347,7 +356,7 @@ export default definePluginEntry({
       },
     });
 
-    // ── revoke_mandate ────────────────────────────────────────────────────────
+    // ── revoke_mandate ──────────────────────────────────────────────────────
     api.registerTool({
       name: "revoke_mandate",
       provider: PROVIDER_ID,
@@ -358,9 +367,7 @@ export default definePluginEntry({
       async execute(_id: string, params: any, meta: any) {
         const client = getClient(config, meta);
         const result = await client.revoke(params.intentMandate);
-        return {
-          content: [{ type: "text", text: JSON.stringify(result) }],
-        };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       },
     });
   },
