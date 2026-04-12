@@ -24,6 +24,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ── Catalog Endpoint for Agents ──────────────────────────────────────────
+// Agents should query this endpoint first to learn the exact price of an item 
+// before asking the user for a spending mandate.
+app.get('/api/products/:item', (req, res) => {
+  const item = req.params.item;
+  const product = STORE_ITEMS[item];
+  if (!product) {
+    res.status(404).json({ error: 'product_not_found', message: `Product '${item}' not found in catalog` });
+    return;
+  }
+  res.json({ id: item, ...product });
+});
+
+app.get('/api/products', (req, res) => {
+  const products = Object.keys(STORE_ITEMS).map(id => ({ id, ...STORE_ITEMS[id] }));
+  res.json({ products });
+});
+
 // ── x402 Auto-Payment Route (API Paywall) ────────────────────────────────
 app.get('/api/premium-data', async (req, res) => {
   const xPayment = req.header('x-payment');
