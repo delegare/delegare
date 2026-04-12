@@ -27,9 +27,10 @@ app.use(express.json());
 // ── x402 Auto-Payment Route (API Paywall) ────────────────────────────────
 app.get('/api/premium-data', async (req, res) => {
   const xPayment = req.header('x-payment');
+  const xMandate = req.header('x-delegare-mandate');
   const merchantWallet = process.env.MERCHANT_USDC_WALLET || '0x0000000000000000000000000000000000000000';
 
-  if (!xPayment) {
+  if (!xPayment && !xMandate) {
     // 1. Agent asks for data, merchant returns 402 with price requirements
     console.log('🔒 Agent requested premium data. Issuing x402 challenge ($0.05 USDC).');
     res.status(402).json({
@@ -50,49 +51,70 @@ app.get('/api/premium-data', async (req, res) => {
     return;
   }
 
-  // 2. Agent auto-retries with a signed X-PAYMENT header
-  console.log('✅ Agent returned with X-PAYMENT header. Validating and settling...');
-  
   try {
-    const paymentData = JSON.parse(Buffer.from(xPayment, 'base64').toString('utf8'));
-    
-    // Pass the signed payment directly to Delegare to verify and settle it
-    const vaultUrl = process.env.DELEGARE_BASE_URL || 'https://api.sandbox.delegare.dev/v1';
-    
-    const settleRes = await fetch(`${vaultUrl}/x402/settle`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        payment: paymentData,
-        requirements: {
-          price: '0.05',
-          currency: 'usdc',
-          network: 'base',
-          payTo: merchantWallet
-        }
-      })
-    });
+    let txHash;
+    let rail;
 
-    if (!settleRes.ok) {
-      console.log('❌ Settlement failed.');
-      res.status(400).json({ error: 'invalid_payment' });
-      return;
+    if (xMandate) {
+      // 2a. Agent auto-retries with a pure Intent Mandate (AP2 / MCP compatibility)
+      console.log('✅ Agent returned with X-DELEGARE-MANDATE header. Charging mandate directly...');
+      const receipt = await delegare.charge({
+        intentMandate: xMandate,
+        amountCents: 5, // 0.05 USDC = 5 cents
+        currency: 'usd', // Billed in USD equivalent
+        description: 'x402: Premium API Data',
+        metadata: {
+          resource: '/api/premium-data',
+        },
+      });
+      txHash = receipt.receiptId;
+      rail = receipt.rail;
+    } else if (xPayment) {
+      // 2b. Agent auto-retries with a signed EIP-3009 X-PAYMENT header (Native OpenClaw EVM)
+      console.log('✅ Agent returned with X-PAYMENT header. Validating and settling EIP-3009...');
+      const paymentData = JSON.parse(Buffer.from(xPayment, 'base64').toString('utf8'));
+      
+      // Pass the signed payment directly to Delegare to verify and settle it
+      const vaultUrl = process.env.DELEGARE_BASE_URL || 'https://api.sandbox.delegare.dev/v1';
+      
+      const settleRes = await fetch(`${vaultUrl}/x402/settle`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payment: paymentData,
+          requirements: {
+            price: '0.05',
+            currency: 'usdc',
+            network: 'base',
+            payTo: merchantWallet
+          }
+        })
+      });
+
+      if (!settleRes.ok) {
+        console.log('❌ Settlement failed.');
+        res.status(400).json({ error: 'invalid_payment' });
+        return;
+      }
+
+      const result = await settleRes.json();
+      txHash = result.txHash;
+      rail = 'crypto';
     }
 
-    const result = await settleRes.json();
-
     // 3. Attach the receipt to the response header and deliver the goods
-    res.setHeader('X-Payment-Response', Buffer.from(JSON.stringify({ success: true, receipt: result.txHash })).toString('base64'));
+    res.setHeader('X-Payment-Response', Buffer.from(JSON.stringify({ success: true, receipt: txHash })).toString('base64'));
     res.json({
       secret: 'AI agents love this premium data.',
       weather: 'Sunny',
       temp: 72,
-      txHash: result.txHash
+      txHash: txHash
     });
-    console.log(`🎉 Premium data delivered! TxHash: ${result.txHash}`);
+    console.log(`🎉 Premium data delivered! TxHash: ${txHash} (${rail})`);
 
   } catch (err) {
-    res.status(400).json({ error: 'invalid_x_payment_header' });
+    console.error(`❌ Payment validation failed:`, err.message);
+    res.status(403).json({ error: 'invalid_x_payment_header', message: err.message });
   }
 });
 
