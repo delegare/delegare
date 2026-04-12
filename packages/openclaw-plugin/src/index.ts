@@ -61,9 +61,17 @@ function getClient(config: any, meta?: any) {
     return new Delegare({ merchantId, apiKey, baseUrl });
   }
 
+  // Build the connect URL based on the environment
+  const connectBase = baseUrl.includes("sandbox")
+    ? "https://app.sandbox.delegare.dev"
+    : "https://app.delegare.dev";
+
   throw new Error(
-    "Delegare authentication required. Please connect your Delegare account " +
-    "using OAuth in the OpenClaw settings interface (Settings > Config > Authentication)."
+    "Delegare authentication required. Visit " +
+    `${connectBase}/connect/agent?platform=openclaw` +
+    " to generate your access token, then add it to your OpenClaw " +
+    "plugin config as { \"plugins\": { \"entries\": { \"delegare\": { \"config\": { \"accessToken\": \"<your-token>\" } } } } } " +
+    "in openclaw.json and restart the gateway."
   );
 }
 
@@ -181,6 +189,60 @@ export default definePluginEntry({
           access: refreshed.accessToken,
           refresh: refreshed.refreshToken ?? cred.refresh,
           expires: refreshed.expiresAtEpochSeconds ?? cred.expires,
+        };
+      },
+    });
+
+    // ── delegare_connect (helper — returns setup instructions) ────────────────
+    api.registerTool({
+      name: "delegare_connect",
+      provider: PROVIDER_ID,
+      description:
+        "Check if Delegare is connected. If not, returns a URL where the user can sign in and generate an access token for this agent. Call this FIRST if any other Delegare tool fails with an authentication error.",
+      parameters: Type.Object({}),
+      async execute(_id: string, _params: any, meta: any) {
+        // Check if we already have a working token
+        const accessToken =
+          meta?.auth?.access || meta?.auth?.accessToken || config?.accessToken;
+        if (accessToken) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  connected: true,
+                  message: "Delegare is connected and ready.",
+                }),
+              },
+            ],
+          };
+        }
+
+        const base = resolveBaseUrl(config);
+        const connectBase = base.includes("sandbox")
+          ? "https://app.sandbox.delegare.dev"
+          : "https://app.delegare.dev";
+        const connectUrl = `${connectBase}/connect/agent?platform=openclaw`;
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                connected: false,
+                message:
+                  "Delegare is not connected. Ask the user to visit the setup URL below to sign in and get their access token.",
+                setupUrl: connectUrl,
+                instructions: [
+                  `1. Visit ${connectUrl}`,
+                  "2. Sign in or create a Delegare account",
+                  "3. Copy the generated access token",
+                  '4. Add it to openclaw.json under plugins.entries.delegare.config.accessToken',
+                  "5. Restart the gateway",
+                ],
+              }),
+            },
+          ],
         };
       },
     });
