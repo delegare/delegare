@@ -14,53 +14,26 @@ By installing this plugin, your agent gains access to the Delegare tool suite, a
 The Delegare plugin is a native OpenClaw extension. Install it directly using the OpenClaw CLI:
 
 ```bash
-openclaw plugins install npm:@delegare/openclaw-plugin
+openclaw plugins install @delegare/openclaw-plugin
 ```
 
-## 2. Configuration & Security
+## 2. Configuration & Authentication
 
-OpenClaw has a very strict security model. By default, newly installed plugins and their tools are **not** exposed to your AI agents until you explicitly whitelist them.
+OpenClaw operates as a secure, headless execution environment. Because it cannot natively intercept web-based OAuth redirects, Delegare uses **Long-Lived Access Tokens** specifically designed for Agent configuration.
 
-You must update your OpenClaw gateway configuration (usually located at `~/.openclaw/openclaw.json`) to allow the plugin and its tools.
+Getting your agent connected is a simple, one-time setup:
 
-```json ~/.openclaw/openclaw.json
-{
-  "plugins": {
-    "allow": ["delegare"]
-  },
-  "tools": {
-    "allow": ["*"]
-  }
-}
-```
-*Note: You can replace `"*"` with the specific tool names like `"delegare_fetch"`, `"setup_spending_mandate"`, etc., if you prefer strict capability scoping.*
+1. **Ask your Agent to Connect**
+   Simply tell your OpenClaw agent: *"Connect to Delegare."* 
+   The agent will invoke the `delegare_connect` tool, which will instantly reply with a secure, self-service setup link.
 
-After updating the configuration, **restart your OpenClaw gateway**.
+2. **Generate your Token**
+   Click the link the agent provides (or visit [app.delegare.dev/connect/agent?platform=openclaw](https://app.delegare.dev/connect/agent?platform=openclaw)). 
+   * Log in securely using your standard Google/Apple account.
+   * Delegare will instantly provision a 90-day secure access token for your agent.
 
-## 3. Authentication (OAuth)
-
-Delegare uses OAuth 2.0 to securely issue your agent an Intent Mandate without exposing your master API keys to the OpenClaw environment.
-
-1. Open the OpenClaw Web UI (e.g., `http://localhost:18789/__openclaw__/canvas/`).
-2. Navigate to **Settings** (the gear icon) → **Config** → **Authentication**.
-3. Under **Auth Profiles**, click **Add Entry** to create a new profile.
-4. Set the following details for the new entry:
-   - **Display Name:** `Delegare Account` (or similar)
-   - **Mode:** `oauth`
-   - **Provider:** `delegare`
-5. Once the profile is created, click the **Connect / Authenticate** button that appears for it.
-
-You will be redirected to the Delegare Dashboard to connect your preferred payment method (Stripe card or Base USDC wallet) and set your agent's autonomous spending limits (e.g., "$50 max per month").
-
-Once confirmed, you will be redirected back to OpenClaw, and the agent will be securely authorized!
-
----
-
-## 🧪 Testing in the Sandbox
-
-If you are developing a local e-commerce backend and want to test the plugin without using real money, you can configure the plugin to point to the Delegare Sandbox API.
-
-Update your `~/.openclaw/openclaw.json` to include the `config` override:
+3. **Update your Config**
+   The dashboard will provide a pre-formatted JSON snippet. Open your OpenClaw gateway configuration file (usually located at `~/.openclaw/openclaw.json`) and paste it into your `plugins` block:
 
 ```json ~/.openclaw/openclaw.json
 {
@@ -70,6 +43,38 @@ Update your `~/.openclaw/openclaw.json` to include the `config` override:
       "delegare": {
         "enabled": true,
         "config": {
+          "accessToken": "token_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
+      }
+    }
+  },
+  "tools": {
+    "allow": ["*"]
+  }
+}
+```
+
+*Note: You can replace `"*"` in the tools array with specific names like `"delegare_fetch"` or `"setup_spending_mandate"` if you prefer strict capability scoping.*
+
+**Restart your OpenClaw gateway** to apply the new configuration. Your agent is now fully authenticated!
+
+---
+
+## 3. 🧪 Testing in the Sandbox
+
+If you are developing a local e-commerce backend and want to test the plugin without using real money, you can easily point your agent to the Delegare Sandbox API.
+
+Simply update your `config` block in `~/.openclaw/openclaw.json` to include the Sandbox `baseUrl`:
+
+```json ~/.openclaw/openclaw.json
+{
+  "plugins": {
+    "allow": ["delegare"],
+    "entries": {
+      "delegare": {
+        "enabled": true,
+        "config": {
+          "accessToken": "token_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
           "baseUrl": "https://api.sandbox.delegare.dev/v1"
         }
       }
@@ -81,9 +86,11 @@ Update your `~/.openclaw/openclaw.json` to include the `config` override:
 }
 ```
 
+*(Remember to use a Sandbox Token generated from `app.sandbox.delegare.dev` if you use the Sandbox API!)*
+
 ---
 
-## Usage
+## 4. Usage
 
 Your agent is now economically enabled! Start a **new chat session** in OpenClaw (so it loads the updated tool context) and try prompting it with tasks that require payment or data retrieval:
 
