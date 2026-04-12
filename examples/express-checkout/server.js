@@ -63,6 +63,7 @@ app.get('/api/premium-data', async (req, res) => {
         amountCents: 5, // 0.05 USDC = 5 cents
         currency: 'usd', // Billed in USD equivalent
         description: 'x402: Premium API Data',
+        idempotencyKey: `x402_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
         metadata: {
           resource: '/api/premium-data',
         },
