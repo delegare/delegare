@@ -10,11 +10,13 @@ The fastest way to understand Delegare is to run our end-to-end example. You wil
 </Note>
 
 ### 1. Get Sandbox Credentials
+
 1. Go to the [Delegare Sandbox Dashboard](https://app.sandbox.delegare.dev).
 2. Register a new test merchant account.
 3. Copy your `merchantId` and `testApiKey`.
 
 ### 2. Clone the Example App
+
 We have provided an Express server that acts as a mock merchant (e.g., a pizza shop or API service).
 
 ```bash
@@ -24,6 +26,7 @@ npm install
 ```
 
 ### 3. Configure the Environment
+
 Create an environment file:
 
 ```bash
@@ -31,21 +34,28 @@ cp .env.example .env
 ```
 
 Open `.env` and paste your sandbox credentials:
+
 ```env
-DELEGARE_API_URL="https://api.sandbox.delegare.dev"
+DELEGARE_BASE_URL=https://api.sandbox.delegare.dev/v1
 DELEGARE_MERCHANT_ID="your_merchant_id"
 DELEGARE_API_KEY="your_test_api_key"
+
+# Optional: Set this to your USDC wallet address if you want to test x402 auto-payments
+# MERCHANT_USDC_WALLET="0x..."
 ```
 
 ### 4. Run the Merchant Server
+
 Start your mock merchant backend:
 
 ```bash
 npm run dev
 ```
-*(Leave this running in the terminal)*
+
+_(Leave this running in the terminal)_
 
 ### 5. Generate a Buyer Mandate
+
 Open a **new terminal tab** in the same directory. We will now run a script that simulates a user approving a budget for an AI agent.
 
 ```bash
@@ -57,6 +67,7 @@ npm run setup
 3. Once approved, return to your terminal. The script will print out a long string starting with `eyJhbGci...` - this is your **Intent Mandate**.
 
 ### 6. Execute an Agent Charge
+
 Now, pretend you are the AI agent who holds this mandate and wants to buy something from the merchant.
 
 Run this `curl` command, replacing the `intentMandate` with your token:
@@ -72,13 +83,15 @@ curl -X POST http://localhost:4000/api/checkout \
 ```
 
 ### 7. View the Result
-Look at your first terminal (the merchant server). You should see logs indicating that the Delegare SDK successfully executed the charge against the agent's limit. 
+
+Look at your first terminal (the merchant server). You should see logs indicating that the Delegare SDK successfully executed the charge against the agent's limit.
 
 **Congratulations!** You just processed an agent-authorized payment without sharing any credit card details.
 
 ---
 
 ### Next Steps
+
 - Learn how to integrate the [Typescript SDK](/sdk-tools/typescript-sdk) into your own backend.
 - Read about our [Security Model](/concepts/security-model) to see how limits are enforced.
 - Add payment capabilities to Claude Desktop with our [MCP Tools](/sdk-tools/mcp-tools).
