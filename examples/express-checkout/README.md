@@ -24,8 +24,8 @@ cp .env.example .env
 3. Install dependencies and start the server:
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 ## 🛍️ Generating a "Buyer" Intent Mandate
@@ -33,7 +33,7 @@ npm run dev
 To simulate an AI agent buying something from your store, you need to pretend to be a customer who has authorized this merchant to spend money on their behalf. We have included a helper script that generates a checkout link and polls for completion:
 
 ```bash
-npm run setup
+pnpm setup
 ```
 
 1. Run the command above.

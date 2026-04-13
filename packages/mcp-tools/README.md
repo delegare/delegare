@@ -9,9 +9,9 @@ This package exposes a set of Zod-validated, secure MCP tools that integrate dir
 ## Installation
 
 ```bash
-npm install @delegare/mcp-tools @delegare/sdk
-# or
 pnpm add @delegare/mcp-tools @delegare/sdk
+# or
+npm install @delegare/mcp-tools @delegare/sdk
 ```
 
 ---

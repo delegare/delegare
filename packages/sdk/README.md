@@ -13,9 +13,9 @@ This SDK allows developers to:
 ## Installation
 
 ```bash
-npm install @delegare/sdk
-# or
 pnpm add @delegare/sdk
+# or
+npm install @delegare/sdk
 # or
 yarn add @delegare/sdk
 ```

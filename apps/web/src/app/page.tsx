@@ -812,8 +812,8 @@ export default function Home() {
               <span className="c-dim">{"// 1. install"}</span>
             </div>
             <div>
-              <span className="c-green">npm</span>
-              <span className="c-white"> install </span>
+              <span className="c-green">pnpm</span>
+              <span className="c-white"> add </span>
               <span className="c-gold">@delegare/sdk</span>
             </div>
             <div>&nbsp;</div>

@@ -61,14 +61,14 @@ Run our Express Checkout example to see both the merchant and agent experience:
    ```bash
    git clone https://github.com/delegare/delegare.git
    cd delegare/examples/express-checkout
-   npm install
+   pnpm install
    ```
 2. **Setup Sandbox**
    Get your test keys from the [Sandbox Dashboard](https://app.sandbox.delegare.dev) and add them to `.env`.
 3. **Run the Demo**
    ```bash
-   npm run dev & # Start the mock merchant server
-   npm run setup # Generate a buyer mandate
+   pnpm dev & # Start the mock merchant server
+   pnpm setup # Generate a buyer mandate
    ```
    Follow the terminal instructions to approve a test mandate, then execute your first autonomous payment!
 

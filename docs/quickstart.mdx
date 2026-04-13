@@ -22,7 +22,7 @@ We have provided an Express server that acts as a mock merchant (e.g., a pizza s
 ```bash
 git clone https://github.com/delegare/delegare.git
 cd delegare/examples/express-checkout
-npm install
+pnpm install
 ```
 
 ### 3. Configure the Environment
@@ -49,7 +49,7 @@ DELEGARE_API_KEY="your_test_api_key"
 Start your mock merchant backend:
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 _(Leave this running in the terminal)_
@@ -59,7 +59,7 @@ _(Leave this running in the terminal)_
 Open a **new terminal tab** in the same directory. We will now run a script that simulates a user approving a budget for an AI agent.
 
 ```bash
-npm run setup
+pnpm setup
 ```
 
 1. The script will generate a Setup URL. Click the link to open it in your browser.
