@@ -40,8 +40,8 @@ export default function PublicProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Determine API URL based on environment
-  const [apiUrl, setApiUrl] = useState('https://api.delegare.dev');
+  // Determine API URL based on environment (default to empty so we don't fetch until we know)
+  const [apiUrl, setApiUrl] = useState('');
 
   useEffect(() => {
     const hostname = window.location.hostname;
@@ -54,6 +54,10 @@ export default function PublicProfilePage() {
 
   useEffect(() => {
     if (!handle || !apiUrl) return;
+    
+    // Reset states for new fetch
+    setLoading(true);
+    setError("");
 
     fetch(`${apiUrl}/merchants/${handle}`)
       .then(res => {
