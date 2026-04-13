@@ -12,6 +12,9 @@ export default function Home() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const dashboardUrl =
+    process.env.NEXT_PUBLIC_DASHBOARD_URL || "https://app.delegare.dev";
+
   return (
     <main
       style={{
@@ -100,19 +103,12 @@ export default function Home() {
         }
         .hero-sub {
           font-size: 17px; line-height: 1.65; color: rgba(240,237,232,0.55);
-          font-weight: 300; max-width: 420px;
+          font-weight: 300; max-width: 440px;
           animation: fadeUp 0.8s 0.1s ease both;
-        }
-        .hero-demo {
-          width: 100%; aspect-ratio: 16/9; background: rgba(240,237,232,0.03);
-          border: 1px dashed rgba(240,237,232,0.2); border-radius: 12px;
-          display: flex; align-items: center; justify-content: center;
-          color: rgba(240,237,232,0.4); font-size: 14px; font-style: italic;
-          animation: fadeUp 0.8s 0.2s ease both; margin-bottom: 24px;
         }
         .hero-actions {
           display: flex; gap: 12px; flex-wrap: wrap;
-          animation: fadeUp 0.8s 0.3s ease both;
+          animation: fadeUp 0.8s 0.2s ease both;
         }
         .btn-primary {
           font-size: 14px; font-weight: 500;
@@ -131,6 +127,15 @@ export default function Home() {
           display: inline-flex; align-items: center; gap: 8px;
         }
         .btn-secondary:hover { color: #f0ede8; border-color: rgba(240,237,232,0.25); }
+        .btn-merchant {
+          font-size: 14px; font-weight: 400;
+          color: #7ec898;
+          padding: 12px 28px; border-radius: 100px;
+          text-decoration: none; transition: color 0.2s, border-color 0.2s;
+          border: 1px solid rgba(126,200,152,0.25);
+          display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-merchant:hover { color: #a0ddb5; border-color: rgba(126,200,152,0.45); }
 
         /* HERO RIGHT — dual audience cards */
         .hero-right {
@@ -167,14 +172,6 @@ export default function Home() {
           color: rgba(240,237,232,0.5); font-weight: 300;
           margin-bottom: 18px;
         }
-        .audience-detail {
-          font-size: 13px; color: rgba(240,237,232,0.35);
-          display: flex; align-items: center; gap: 8px;
-        }
-        .audience-detail::before {
-          content: ''; width: 16px; height: 1px;
-          background: rgba(240,237,232,0.2); flex-shrink: 0;
-        }
         .audience-link {
           font-size: 13px; font-weight: 500;
           color: rgba(240,237,232,0.55); text-decoration: none;
@@ -182,6 +179,27 @@ export default function Home() {
           margin-top: 14px; transition: color 0.2s;
         }
         .audience-link:hover { color: #f0ede8; }
+
+        /* SOCIAL PROOF */
+        .social-proof {
+          max-width: 1100px; margin: 0 auto;
+          padding: 0 48px 60px;
+          display: flex; align-items: center; justify-content: center;
+          gap: 48px; flex-wrap: wrap;
+          animation: fadeUp 0.8s 0.4s ease both;
+        }
+        .proof-label {
+          font-size: 11px; font-weight: 400; letter-spacing: 0.08em;
+          text-transform: uppercase; color: rgba(240,237,232,0.2);
+        }
+        .proof-badge {
+          display: flex; align-items: center; gap: 8px;
+          font-size: 13px; color: rgba(240,237,232,0.35);
+          font-weight: 400;
+        }
+        .proof-badge-dot {
+          width: 6px; height: 6px; border-radius: 50%;
+        }
 
         /* DIVIDER */
         .section-divider {
@@ -227,13 +245,8 @@ export default function Home() {
           font-size: 13px; line-height: 1.6;
           color: rgba(240,237,232,0.4); font-weight: 300;
         }
-        .flow-rail {
-          display: inline-flex; align-items: center; gap: 5px;
-          font-size: 11px; margin-top: 12px;
-          color: rgba(240,237,232,0.25);
-        }
 
-        /* RAILS */
+        /* TRUST SECTION */
         .rails-grid {
           display: grid; grid-template-columns: 1fr 1fr;
           gap: 16px; margin-top: 48px;
@@ -259,14 +272,35 @@ export default function Home() {
         .rail-desc {
           font-size: 14px; line-height: 1.6;
           color: rgba(240,237,232,0.45); font-weight: 300;
+        }
+
+        /* RAILS SECTION */
+        .dual-rails {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 16px; margin-top: 48px;
+        }
+        .dual-rail-card {
+          border: 1px solid rgba(240,237,232,0.08);
+          border-radius: 16px; padding: 40px;
+          background: rgba(240,237,232,0.02);
+          transition: border-color 0.2s;
+        }
+        .dual-rail-card:hover { border-color: rgba(240,237,232,0.14); }
+        .dual-rail-title {
+          font-family: 'DM Serif Display', serif;
+          font-size: 24px; color: #f0ede8; margin-bottom: 10px;
+        }
+        .dual-rail-desc {
+          font-size: 14px; line-height: 1.6;
+          color: rgba(240,237,232,0.45); font-weight: 300;
           margin-bottom: 24px;
         }
-        .rail-props { display: flex; flex-direction: column; gap: 10px; }
-        .rail-prop {
+        .dual-rail-props { display: flex; flex-direction: column; gap: 10px; }
+        .dual-rail-prop {
           display: flex; align-items: center; gap: 12px;
           font-size: 13px; color: rgba(240,237,232,0.5);
         }
-        .rail-prop-check { color: #c8b99a; font-size: 11px; }
+        .dual-rail-check { color: #c8b99a; font-size: 11px; }
 
         /* PRICING */
         .pricing-block {
@@ -288,9 +322,6 @@ export default function Home() {
         .pricing-forever {
           font-size: 14px; color: rgba(240,237,232,0.4);
           font-weight: 300; margin-bottom: 32px;
-        }
-        .pricing-comparison {
-          display: flex; flex-direction: column; gap: 12px;
         }
         .pricing-context {
           display: flex; flex-direction: column; gap: 14px; margin-top: 4px;
@@ -353,6 +384,29 @@ export default function Home() {
         .c-blue { color: #89b4e8; }
         .c-white { color: #f0ede8; }
 
+        /* CTA BANNER */
+        .cta-banner {
+          margin-top: 48px;
+          border: 1px solid rgba(200,185,154,0.15);
+          border-radius: 20px; padding: 60px;
+          background: linear-gradient(135deg, rgba(200,185,154,0.04) 0%, rgba(126,200,152,0.04) 100%);
+          text-align: center;
+        }
+        .cta-banner-heading {
+          font-family: 'DM Serif Display', serif;
+          font-size: 36px; color: #f0ede8;
+          margin-bottom: 16px;
+        }
+        .cta-banner-sub {
+          font-size: 16px; color: rgba(240,237,232,0.5);
+          font-weight: 300; margin-bottom: 32px;
+          max-width: 500px; margin-left: auto; margin-right: auto;
+          line-height: 1.6;
+        }
+        .cta-banner-actions {
+          display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+        }
+
         /* FOOTER */
         .footer {
           border-top: 1px solid rgba(240,237,232,0.07);
@@ -382,11 +436,16 @@ export default function Home() {
           .section { padding: 72px 24px; }
           .flow-grid { grid-template-columns: 1fr 1fr; }
           .rails-grid { grid-template-columns: 1fr; }
+          .dual-rails { grid-template-columns: 1fr; }
           .pricing-block { grid-template-columns: 1fr; gap: 40px; padding: 40px 28px; }
           .pricing-big { font-size: 72px; }
+          .social-proof { gap: 24px; padding: 0 24px 48px; }
+          .cta-banner { padding: 40px 28px; }
+          .cta-banner-heading { font-size: 28px; }
           .footer { flex-direction: column; gap: 24px; align-items: flex-start; padding: 40px 24px; }
         }
       `}</style>
+
       {/* NAV */}
       <nav className={`nav${scrolled ? " scrolled" : ""}`}>
         <Link href="/" className="nav-logo">
@@ -399,7 +458,7 @@ export default function Home() {
           <a href="https://github.com/delegare/delegare" className="nav-link">
             GitHub
           </a>
-          <a href={process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://app.delegare.dev'} className="nav-cta">
+          <a href={dashboardUrl} className="nav-cta">
             Sign in
           </a>
         </div>
@@ -410,20 +469,28 @@ export default function Home() {
         <div className="hero-left">
           <div className="hero-eyebrow">
             <div className="hero-eyebrow-dot" />
-            A payment authorization layer
+            The payment layer for AI agents
           </div>
           <h1 className="hero-heading">
             Let AI agents pay for things—<em>safely.</em>
           </h1>
           <p className="hero-sub">
-            From ordering pizza to paying for APIs, give agents real spending power with user-defined constraints and approvals.
+            Give agents real spending power with hard limits they
+            can&apos;t override. Users set the rules. Agents execute.
+            Merchants get paid. 3&cent; flat.
           </p>
-          <div className="hero-demo">
-            Drop 60-90s Demo Video / GIF here
-          </div>
           <div className="hero-actions">
-            <a href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://app.delegare.dev'}/setup?ref=hero`} className="btn-primary">
-              Connect your wallet
+            <a
+              href={`${dashboardUrl}/setup?ref=hero`}
+              className="btn-primary"
+            >
+              Get started free
+            </a>
+            <a
+              href={`${dashboardUrl}`}
+              className="btn-merchant"
+            >
+              Integrate as a merchant
             </a>
             <a href="https://docs.delegare.dev" className="btn-secondary">
               Read the docs
@@ -432,33 +499,59 @@ export default function Home() {
         </div>
 
         <div className="hero-right">
-          {/* AHA MOMENT */}
+          {/* BUYER CARD */}
           <div className="audience-card">
-            <span className="audience-tag tag-user">
-              The "Aha" Moment
-            </span>
+            <span className="audience-tag tag-user">For Buyers</span>
             <div className="audience-title">Your agent orders dinner.</div>
             <p className="audience-body">
-              You approve a $30 food budget. Your agent finds a restaurant, places the order, and pays automatically. It's the future of agentic commerce.
+              You set a $30 food budget. Your agent finds a restaurant,
+              places the order, and pays — automatically. You stay in control.
+              It can never spend more than you approved.
             </p>
-            <a href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://app.delegare.dev'}/setup?ref=card`} className="audience-link">
-              Set up your spending delegate →
+            <a
+              href={`${dashboardUrl}/setup?ref=card`}
+              className="audience-link"
+            >
+              Set up your spending delegate &rarr;
             </a>
           </div>
 
-          {/* CORE BUSINESS CASE */}
+          {/* MERCHANT CARD */}
           <div className="audience-card">
-            <span className="audience-tag tag-merchant">The Core Business</span>
-            <div className="audience-title">Autonomous API payments.</div>
+            <span className="audience-tag tag-merchant">For Merchants</span>
+            <div className="audience-title">Accept payments from any AI agent.</div>
             <p className="audience-body">
-              Agents increasingly interact with paid services. Delegare lets them seamlessly handle 402 Payment Required challenges and retry automatically via our SDK or MCP tools.
+              Add 5 lines of code. When an agent hits your API, Delegare
+              handles authentication, spending validation, and settlement — via
+              Stripe or USDC on Base. You get paid; they get access.
             </p>
-            <a href="https://docs.delegare.dev" className="audience-link">
-              Read the x402 integration docs →
+            <a href="https://docs.delegare.dev/quickstart" className="audience-link">
+              See the integration guide &rarr;
             </a>
           </div>
         </div>
       </section>
+
+      {/* SOCIAL PROOF */}
+      <div className="social-proof">
+        <span className="proof-label">Built on</span>
+        <span className="proof-badge">
+          <span className="proof-badge-dot" style={{ background: "#635BFF" }} />
+          Stripe
+        </span>
+        <span className="proof-badge">
+          <span className="proof-badge-dot" style={{ background: "#0052FF" }} />
+          Base (Coinbase L2)
+        </span>
+        <span className="proof-badge">
+          <span className="proof-badge-dot" style={{ background: "#2775CA" }} />
+          USDC
+        </span>
+        <span className="proof-badge">
+          <span className="proof-badge-dot" style={{ background: "#FF9900" }} />
+          AWS
+        </span>
+      </div>
 
       <div className="section-divider" />
 
@@ -469,23 +562,23 @@ export default function Home() {
           {[
             {
               n: "01",
-              title: "Setup session",
-              body: "Merchant requests a payment session. Integrates easily into your existing backend or via x402 middleware.",
+              title: "User sets the rules",
+              body: "Connect a card or crypto wallet. Set a monthly cap, per-transaction limit, and which merchants are allowed. Takes 60 seconds.",
             },
             {
               n: "02",
-              title: "User approves mandate",
-              body: "User sets rules: max per transaction, monthly cap, allowed merchants. Set once in a browser.",
+              title: "Agent gets a mandate",
+              body: "Your agent receives a signed spending mandate — a cryptographic credential that proves what it's allowed to spend, with whom, and how much.",
             },
             {
               n: "03",
-              title: "Agent executes payment",
-              body: "The agent uses the mandate to pay autonomously. Delegare validates limits and executes atomically.",
+              title: "Agent pays autonomously",
+              body: "When it's time to pay, the agent presents the mandate to Delegare. Limits are validated atomically. The payment executes on Stripe or Base.",
             },
             {
               n: "04",
-              title: "Merchant receives funds",
-              body: "Settlement via Stripe (Fiat) or Base (Crypto). Immutable receipt delivered. Done.",
+              title: "Everyone gets a receipt",
+              body: "The merchant gets paid instantly. You get an immutable receipt. The mandate balance updates. Your card number is never exposed.",
             },
           ].map((s) => (
             <div key={s.n} className="flow-step">
@@ -501,38 +594,141 @@ export default function Home() {
 
       {/* TRUST */}
       <section className="section">
-        <div className="section-label">Built for Trust</div>
-        <p style={{ textAlign: 'center', color: 'rgba(240,237,232,0.6)', maxWidth: 650, margin: '0 auto 40px', lineHeight: 1.6 }}>
-          People are rightfully skeptical around money. Delegare is built on strict boundaries and cryptographic guarantees to ensure your agent never goes rogue.
+        <div className="section-label">Built for trust</div>
+        <p
+          style={{
+            textAlign: "center",
+            color: "rgba(240,237,232,0.6)",
+            maxWidth: 650,
+            margin: "0 auto 40px",
+            lineHeight: 1.6,
+          }}
+        >
+          People are rightfully skeptical when money is involved. Delegare is
+          built on strict boundaries and cryptographic guarantees so your agent
+          can never go rogue.
         </p>
         <div className="rails-grid">
           <div className="rail-card">
-            <div className="rail-icon rail-icon-crypto">🛡️</div>
-            <div className="rail-name">Spend Limits</div>
+            <div className="rail-icon rail-icon-crypto">
+              <span role="img" aria-label="shield">&#x1F6E1;&#xFE0F;</span>
+            </div>
+            <div className="rail-name">Hard Spend Limits</div>
             <p className="rail-desc">
-              Atomic server-side counters prevent overspending. If the user-defined limit is $10, it cannot spend $10.01. Race conditions are mathematically prevented.
+              Atomic server-side counters enforce your budget to the cent. If
+              your limit is $10, the agent cannot spend $10.01 — even under
+              concurrent requests. Race conditions are mathematically
+              impossible.
             </p>
           </div>
           <div className="rail-card">
-            <div className="rail-icon rail-icon-fiat">🔒</div>
-            <div className="rail-name">No Credential Exposure</div>
+            <div className="rail-icon rail-icon-fiat">
+              <span role="img" aria-label="lock">&#x1F512;</span>
+            </div>
+            <div className="rail-name">Zero Credential Exposure</div>
             <p className="rail-desc">
-              Agents hold a signed <em>Intent Mandate</em> (SD-JWT-VC). Your credit card number, private keys, and seed phrases are never exposed to the agent or the LLM.
+              Agents never see your card number, private keys, or seed phrase.
+              They hold a signed <em>spending mandate</em> — a scoped,
+              revocable credential that proves what they&apos;re allowed to
+              spend. Nothing more.
             </p>
           </div>
           <div className="rail-card">
-            <div className="rail-icon rail-icon-fiat">✅</div>
+            <div className="rail-icon rail-icon-fiat">
+              <span role="img" aria-label="check">&#x2705;</span>
+            </div>
             <div className="rail-name">Merchant Allowlists</div>
             <p className="rail-desc">
-              Mandates are strictly locked to explicitly approved merchants. A mandate authorized for an API provider cannot be used at a pizza shop.
+              Every mandate is locked to the merchants you explicitly approve.
+              A mandate authorized for an API provider cannot be used at a
+              pizza shop. The agent has no way to circumvent this.
             </p>
           </div>
           <div className="rail-card">
-            <div className="rail-icon rail-icon-crypto">⏳</div>
-            <div className="rail-name">Expiration Controls</div>
+            <div className="rail-icon rail-icon-crypto">
+              <span role="img" aria-label="clock">&#x23F3;</span>
+            </div>
+            <div className="rail-name">Auto-Expiration &amp; Revocation</div>
             <p className="rail-desc">
-              Mandates have a strict time-to-live (TTL) and expire automatically. Users can also instantly revoke an active mandate from their dashboard at any time.
+              Mandates have a strict time-to-live and expire automatically. You
+              can also revoke any active mandate instantly from your dashboard
+              — the agent&apos;s access is killed in under a second.
             </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="section-divider" />
+
+      {/* PAYMENT RAILS */}
+      <section className="section">
+        <div className="section-label">Payment rails</div>
+        <p
+          style={{
+            textAlign: "center",
+            color: "rgba(240,237,232,0.6)",
+            maxWidth: 580,
+            margin: "0 auto 0",
+            lineHeight: 1.6,
+          }}
+        >
+          One integration, two settlement options. Delegare handles the
+          authorization layer — you keep your existing payment stack.
+        </p>
+        <div className="dual-rails">
+          <div className="dual-rail-card">
+            <div
+              className="rail-icon rail-icon-fiat"
+              style={{ marginBottom: 20 }}
+            >
+              &#x1F4B3;
+            </div>
+            <div className="dual-rail-title">Fiat via Stripe</div>
+            <p className="dual-rail-desc">
+              Credit cards, debit cards, and bank accounts. Settle in 190+
+              countries with Stripe Connect.
+            </p>
+            <div className="dual-rail-props">
+              <div className="dual-rail-prop">
+                <span className="dual-rail-check">&#x2713;</span> Stripe
+                Connect onboarding
+              </div>
+              <div className="dual-rail-prop">
+                <span className="dual-rail-check">&#x2713;</span> 135+
+                currencies
+              </div>
+              <div className="dual-rail-prop">
+                <span className="dual-rail-check">&#x2713;</span> PCI DSS
+                compliant
+              </div>
+            </div>
+          </div>
+          <div className="dual-rail-card">
+            <div
+              className="rail-icon rail-icon-crypto"
+              style={{ marginBottom: 20 }}
+            >
+              &#x26D3;&#xFE0F;
+            </div>
+            <div className="dual-rail-title">Crypto on Base</div>
+            <p className="dual-rail-desc">
+              USDC stablecoin on Coinbase&apos;s L2. Instant settlement, no
+              chargebacks, near-zero gas.
+            </p>
+            <div className="dual-rail-props">
+              <div className="dual-rail-prop">
+                <span className="dual-rail-check">&#x2713;</span> USDC &amp;
+                USDT (6 decimals)
+              </div>
+              <div className="dual-rail-prop">
+                <span className="dual-rail-check">&#x2713;</span> On-chain
+                session key limits
+              </div>
+              <div className="dual-rail-prop">
+                <span className="dual-rail-check">&#x2713;</span> Verified
+                smart contract on BaseScan
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -545,20 +741,22 @@ export default function Home() {
         <div className="pricing-block">
           <div className="pricing-left">
             <div className="pricing-big">
-              3<span>¢</span>
+              3<span>&cent;</span>
             </div>
             <div className="pricing-forever">
               per successful transaction. flat. forever.
             </div>
             <div className="pricing-context">
               <p className="pricing-context-line">
-                Delegare is not a payment processor — it&apos;s the
-                <strong> AP2 authorization layer</strong> and <strong>x402 facilitator</strong> that makes your existing payments agent-ready.
+                Delegare is not a payment processor — it&apos;s the{" "}
+                <strong>authorization layer</strong> that makes your existing
+                payments agent-ready. Think of it as the identity and
+                permissions middleware between your agent and your money.
               </p>
               <p className="pricing-context-line">
-                Your Stripe or USDC setup stays exactly as it is. Delegare sits in front
-                of it, handling agent identity, spending limits, and autonomous
-                "set-and-forget" x402 negotiations.
+                Your Stripe or USDC setup stays exactly as it is. Delegare
+                sits in front of it, handling agent identity, spending limits,
+                and autonomous payment negotiation.
               </p>
               <p className="pricing-context-note">
                 For reference: Stripe&apos;s base fee on a $25 transaction is
@@ -570,19 +768,19 @@ export default function Home() {
           <div className="pricing-right">
             {[
               {
-                icon: "∞",
+                icon: "\u221E",
                 title: "No volume pricing",
-                desc: "100 or 10 million transactions — the price never changes. No tiers, no thresholds, no upgrade conversations.",
+                desc: "100 or 10 million transactions \u2014 the price never changes. No tiers, no thresholds, no upgrade conversations.",
               },
               {
                 icon: "0",
-                title: "Free for users",
-                desc: "Connecting a card or crypto wallet, setting spending limits, revoking delegates — always free. You only pay as a merchant.",
+                title: "Free for buyers",
+                desc: "Connecting a wallet, setting spending limits, revoking mandates \u2014 always free. Only merchants pay the 3\u00A2.",
               },
               {
-                icon: "⊕",
+                icon: "\u2295",
                 title: "No percentage fees",
-                desc: "A $10 transaction and a $10,000 transaction both cost 3¢. The rails are free. You keep your margin.",
+                desc: "A $10 transaction and a $10,000 transaction both cost 3\u00A2. You keep your margin.",
               },
             ].map((f) => (
               <div key={f.title} className="pricing-feature">
@@ -601,13 +799,13 @@ export default function Home() {
 
       {/* CODE */}
       <section className="section">
-        <div className="section-label">Integration</div>
+        <div className="section-label">Merchant integration</div>
         <div className="code-block">
           <div className="code-header">
             <div className="code-dot" style={{ background: "#ff5f57" }} />
             <div className="code-dot" style={{ background: "#febc2e" }} />
             <div className="code-dot" style={{ background: "#28c840" }} />
-            <span className="code-tab">merchant integration · ~5 minutes</span>
+            <span className="code-tab">5 minutes to first payment</span>
           </div>
           <div className="code-body">
             <div>
@@ -641,24 +839,9 @@ export default function Home() {
             <div>&nbsp;</div>
             <div>
               <span className="c-dim">
-                {"// 3. fetch any paywalled resource (x402 handled automatically)"}
-              </span>
-            </div>
-            <div>
-              <span className="c-blue">const</span>
-              <span className="c-white"> res </span>
-              <span className="c-dim">=</span>
-              <span className="c-blue"> await</span>
-              <span className="c-white"> delegare.</span>
-              <span className="c-green">fetch</span>
-              <span className="c-white">(</span>
-              <span className="c-gold">&apos;https://api.merchant.com/premium&apos;</span>
-              <span className="c-white">, {"{"}{"}"}, intentMandate)</span>
-            </div>
-            <div>&nbsp;</div>
-            <div>
-              <span className="c-dim">
-                {"// 4. or charge explicitly via AP2 intent mandate"}
+                {
+                  "// 3. charge via spending mandate (agent presents this automatically)"
+                }
               </span>
             </div>
             <div>
@@ -687,12 +870,12 @@ export default function Home() {
             </div>
             <div>
               <span className="c-white">{"  "}description: </span>
-              <span className="c-gold">&apos;Pro plan · Jan 2026&apos;</span>
+              <span className="c-gold">&apos;Pro plan &middot; Jan 2026&apos;</span>
               <span className="c-dim">,</span>
             </div>
             <div>
               <span className="c-white">{"  "}idempotencyKey: </span>
-              <span className="c-gold">`pro_{"${userId}"}_2026_01`</span>
+              <span className="c-gold">{"`pro_${userId}_2026_01`"}</span>
               <span className="c-dim">,</span>
             </div>
             <div>
@@ -701,7 +884,9 @@ export default function Home() {
             <div>&nbsp;</div>
             <div>
               <span className="c-dim">
-                {"// receipt.receiptId · receipt.railUsed · receipt.txHash"}
+                {
+                  "// receipt.receiptId \u00B7 receipt.status \u00B7 receipt.railUsed \u00B7 receipt.txHash"
+                }
               </span>
             </div>
           </div>
@@ -710,13 +895,58 @@ export default function Home() {
 
       <div className="section-divider" />
 
+      {/* BOTTOM CTA */}
+      <section className="section">
+        <div className="cta-banner">
+          <div className="cta-banner-heading">
+            Ready to make your payments agent-ready?
+          </div>
+          <p className="cta-banner-sub">
+            Buyers connect for free. Merchants integrate in 5 minutes. Every
+            transaction costs 3&cent;.
+          </p>
+          <div className="cta-banner-actions">
+            <a
+              href={`${dashboardUrl}/setup?ref=cta`}
+              className="btn-primary"
+            >
+              Get started free
+            </a>
+            <a
+              href={`${dashboardUrl}`}
+              className="btn-merchant"
+            >
+              Integrate as a merchant
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* FOOTER */}
       <footer style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <div className="footer">
           <div className="footer-logo">
             delegare<span>.</span>
-            <div style={{ fontSize: '11px', fontWeight: 300, color: 'rgba(240,237,232,0.3)', marginTop: '8px', letterSpacing: '0.02em' }}>
-              Built by <a href="https://securelend.com" style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid rgba(240,237,232,0.2)' }}>SecureLend</a>
+            <div
+              style={{
+                fontSize: "11px",
+                fontWeight: 300,
+                color: "rgba(240,237,232,0.3)",
+                marginTop: "8px",
+                letterSpacing: "0.02em",
+              }}
+            >
+              Built by{" "}
+              <a
+                href="https://securelend.ai"
+                style={{
+                  color: "inherit",
+                  textDecoration: "none",
+                  borderBottom: "1px solid rgba(240,237,232,0.2)",
+                }}
+              >
+                SecureLend
+              </a>
             </div>
           </div>
           <div className="footer-links">
@@ -729,7 +959,7 @@ export default function Home() {
             >
               GitHub
             </a>
-            <a href={process.env.NEXT_PUBLIC_DASHBOARD_URL || "https://app.delegare.dev"} className="footer-link">
+            <a href={dashboardUrl} className="footer-link">
               Dashboard
             </a>
             <a
