@@ -17,27 +17,45 @@ interface MerchantPublicView {
 
 export default function PublicProfilePage() {
   const params = useParams();
-  const rawHandle = Array.isArray(params.handle) ? params.handle[0] : params.handle;
+  let rawHandle = Array.isArray(params.handle) ? params.handle[0] : params.handle;
 
-  // Only `/@foo` is valid — anything else is a 404. This keeps the root
-  // namespace free for future static routes and gives @-handles a canonical shape.
-  if (!rawHandle || !rawHandle.startsWith("@") || rawHandle.length < 2) {
+  if (!rawHandle) {
     notFound();
   }
 
-  // Strip the leading @ for the API call; the backend stores merchantIds without it.
+  // Handle URL-encoded @ or trailing slashes that might have seeped into the param
+  rawHandle = decodeURIComponent(rawHandle).replace(/\/$/, "");
+
+  // Only `/@foo` is valid — anything else is a 404. 
+  // If the segment doesn't start with @, we don't want to capture it here
+  // (prevents collision with future static root routes).
+  if (!rawHandle.startsWith("@") || rawHandle.length < 2) {
+    notFound();
+  }
+
+  // Strip the leading @ for the API call
   const handle = rawHandle.slice(1);
 
   const [merchant, setMerchant] = useState<MerchantPublicView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.delegare.dev';
+  // Determine API URL based on environment
+  const [apiUrl, setApiUrl] = useState('https://api.delegare.dev');
 
   useEffect(() => {
-    if (!handle) return;
+    const hostname = window.location.hostname;
+    if (hostname.includes('sandbox') || hostname.includes('localhost')) {
+      setApiUrl('https://api.sandbox.delegare.dev/v1');
+    } else {
+      setApiUrl('https://api.delegare.dev/v1');
+    }
+  }, []);
 
-    fetch(`${API_URL}/v1/merchants/${handle}`)
+  useEffect(() => {
+    if (!handle || !apiUrl) return;
+
+    fetch(`${apiUrl}/merchants/${handle}`)
       .then(res => {
         if (!res.ok) throw new Error("Merchant not found");
         return res.json();
