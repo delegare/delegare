@@ -1,6 +1,9 @@
 export { Delegare } from './client';
+export { isOAuthConfig } from './types';
 export type {
   DelegareConfig,
+  ApiKeyAuth,
+  OAuthAuth,
   ChargeRequest,
   ChargeResponse,
   BalanceResponse,

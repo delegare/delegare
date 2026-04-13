@@ -103,19 +103,13 @@ export default function Home() {
           font-weight: 300; max-width: 420px;
           animation: fadeUp 0.8s 0.1s ease both;
         }
-        .hero-price {
-          display: flex; align-items: baseline; gap: 8px;
-          animation: fadeUp 0.8s 0.2s ease both;
+        .hero-demo {
+          width: 100%; aspect-ratio: 16/9; background: rgba(240,237,232,0.03);
+          border: 1px dashed rgba(240,237,232,0.2); border-radius: 12px;
+          display: flex; align-items: center; justify-content: center;
+          color: rgba(240,237,232,0.4); font-size: 14px; font-style: italic;
+          animation: fadeUp 0.8s 0.2s ease both; margin-bottom: 24px;
         }
-        .hero-price-num {
-          font-family: 'DM Serif Display', serif;
-          font-size: 52px; color: #f0ede8; letter-spacing: -2px;
-        }
-        .hero-price-label {
-          font-size: 14px; color: rgba(240,237,232,0.45);
-          font-weight: 300; line-height: 1.4;
-        }
-        .hero-price-label strong { color: #f0ede8; font-weight: 500; display: block; }
         .hero-actions {
           display: flex; gap: 12px; flex-wrap: wrap;
           animation: fadeUp 0.8s 0.3s ease both;
@@ -416,21 +410,16 @@ export default function Home() {
         <div className="hero-left">
           <div className="hero-eyebrow">
             <div className="hero-eyebrow-dot" />
-            Agentic Commerce Protocols
+            A payment authorization layer
           </div>
           <h1 className="hero-heading">
-            The standard payment layer for <em>AI agents.</em>
+            Let AI agents pay for things—<em>safely.</em>
           </h1>
           <p className="hero-sub">
-            The unified <strong>AP2</strong> and <strong>x402</strong> facilitator. 
-            Set a secure spending limit once, and let your agent autonomously negotiate and settle paywalls across the web — without ever popping up a wallet.
+            From ordering pizza to paying for APIs, give agents real spending power with user-defined constraints and approvals.
           </p>
-          <div className="hero-price">
-            <div className="hero-price-num">3¢</div>
-            <div className="hero-price-label">
-              <strong>per transaction. always.</strong>
-              10× cheaper than Stripe. No percentage fees. No tiers.
-            </div>
+          <div className="hero-demo">
+            Drop 60-90s Demo Video / GIF here
           </div>
           <div className="hero-actions">
             <a href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://app.delegare.dev'}/setup?ref=hero`} className="btn-primary">
@@ -443,39 +432,29 @@ export default function Home() {
         </div>
 
         <div className="hero-right">
-          {/* USER CARD */}
+          {/* AHA MOMENT */}
           <div className="audience-card">
             <span className="audience-tag tag-user">
-              For agent users — always free
+              The "Aha" Moment
             </span>
-            <div className="audience-title">Give your agent a wallet.</div>
+            <div className="audience-title">Your agent orders dinner.</div>
             <p className="audience-body">
-              Set a spending limit. Connect your card or USDC wallet once. Your
-              agent gets a delegate token — not your credentials. It pays for
-              services autonomously, within the limits you set.
+              You approve a $30 food budget. Your agent finds a restaurant, places the order, and pays automatically. It's the future of agentic commerce.
             </p>
-            <div className="audience-detail">
-              Works with Claude, ChatGPT, and any MCP-compatible agent
-            </div>
             <a href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://app.delegare.dev'}/setup?ref=card`} className="audience-link">
               Set up your spending delegate →
             </a>
           </div>
 
-          {/* MERCHANT CARD */}
+          {/* CORE BUSINESS CASE */}
           <div className="audience-card">
-            <span className="audience-tag tag-merchant">For merchants</span>
-            <div className="audience-title">Accept payments from agents.</div>
+            <span className="audience-tag tag-merchant">The Core Business</span>
+            <div className="audience-title">Autonomous API payments.</div>
             <p className="audience-body">
-              Drop in the SDK. Your service accepts agent-initiated payments on
-              any rail — card, USDC, bank transfer. Already on Stripe?
-              You&apos;re 95% done.
+              Agents increasingly interact with paid services. Delegare lets them seamlessly handle 402 Payment Required challenges and retry automatically via our SDK or MCP tools.
             </p>
-            <div className="audience-detail">
-              3¢ flat per transaction · no percentage · no volume pricing
-            </div>
             <a href="https://docs.delegare.dev" className="audience-link">
-              Read the integration docs →
+              Read the x402 integration docs →
             </a>
           </div>
         </div>
@@ -490,23 +469,23 @@ export default function Home() {
           {[
             {
               n: "01",
-              title: "User sets limits",
-              body: "Max per transaction. Monthly cap. Allowed merchants. Set once in a browser — takes 60 seconds.",
+              title: "Setup session",
+              body: "Merchant requests a payment session. Integrates easily into your existing backend or via x402 middleware.",
             },
             {
               n: "02",
-              title: "Delegate token issued",
-              body: "A scoped token goes into the agent's context. Not your card. Not your private key. Just an authorization.",
+              title: "User approves mandate",
+              body: "User sets rules: max per transaction, monthly cap, allowed merchants. Set once in a browser.",
             },
             {
               n: "03",
-              title: "Agent pays autonomously",
-              body: "Agent calls pay(). Delegare validates limits, routes to the right rail, executes atomically.",
+              title: "Agent executes payment",
+              body: "The agent uses the mandate to pay autonomously. Delegare validates limits and executes atomically.",
             },
             {
               n: "04",
-              title: "Receipt delivered",
-              body: "Immutable receipt logged. 3¢ charged to the merchant. User notified passively. Done.",
+              title: "Merchant receives funds",
+              body: "Settlement via Stripe (Fiat) or Base (Crypto). Immutable receipt delivered. Done.",
             },
           ].map((s) => (
             <div key={s.n} className="flow-step">
@@ -520,54 +499,40 @@ export default function Home() {
 
       <div className="section-divider" />
 
-      {/* RAILS */}
+      {/* TRUST */}
       <section className="section">
-        <div className="section-label">Two rails. One interface.</div>
+        <div className="section-label">Built for Trust</div>
         <p style={{ textAlign: 'center', color: 'rgba(240,237,232,0.6)', maxWidth: 650, margin: '0 auto 40px', lineHeight: 1.6 }}>
-          By issuing <strong>AP2 Intent Mandates</strong> (SD-JWT-VC), agents can securely pay any compatible merchant. By integrating <strong>x402</strong>, those agents can bypass paywalls on the fly—zero popups required.
+          People are rightfully skeptical around money. Delegare is built on strict boundaries and cryptographic guarantees to ensure your agent never goes rogue.
         </p>
         <div className="rails-grid">
           <div className="rail-card">
-            <div className="rail-icon rail-icon-fiat">💳</div>
-            <div className="rail-name">Fiat</div>
+            <div className="rail-icon rail-icon-crypto">🛡️</div>
+            <div className="rail-name">Spend Limits</div>
             <p className="rail-desc">
-              Stripe Connect handles card and bank payments. Already on Stripe?
-              Your existing integration works — Delegare sits in front of it as
-              the authorization layer.
+              Atomic server-side counters prevent overspending. If the user-defined limit is $10, it cannot spend $10.01. Race conditions are mathematically prevented.
             </p>
-            <div className="rail-props">
-              {[
-                "Cards, bank accounts, Apple Pay, Google Pay",
-                "Stripe Link users pay with one click",
-                "Funds land in your existing Stripe balance",
-                "Your webhooks and reconciliation unchanged",
-              ].map((p) => (
-                <div key={p} className="rail-prop">
-                  <span className="rail-prop-check">✦</span> {p}
-                </div>
-              ))}
-            </div>
           </div>
           <div className="rail-card">
-            <div className="rail-icon rail-icon-crypto">🔵</div>
-            <div className="rail-name">Crypto</div>
+            <div className="rail-icon rail-icon-fiat">🔒</div>
+            <div className="rail-name">No Credential Exposure</div>
             <p className="rail-desc">
-              USDC and USDT on Base L2. ERC-4337 session keys mean the agent
-              signs transactions without ever holding the user&apos;s master
-              private key.
+              Agents hold a signed <em>Intent Mandate</em> (SD-JWT-VC). Your credit card number, private keys, and seed phrases are never exposed to the agent or the LLM.
             </p>
-            <div className="rail-props">
-              {[
-                "USDC · USDT on Base mainnet",
-                "~2 second settlement, gas under $0.001",
-                "Session key scoped to Delegare contract only",
-                "Master key never leaves user's wallet",
-              ].map((p) => (
-                <div key={p} className="rail-prop">
-                  <span className="rail-prop-check">✦</span> {p}
-                </div>
-              ))}
-            </div>
+          </div>
+          <div className="rail-card">
+            <div className="rail-icon rail-icon-fiat">✅</div>
+            <div className="rail-name">Merchant Allowlists</div>
+            <p className="rail-desc">
+              Mandates are strictly locked to explicitly approved merchants. A mandate authorized for an API provider cannot be used at a pizza shop.
+            </p>
+          </div>
+          <div className="rail-card">
+            <div className="rail-icon rail-icon-crypto">⏳</div>
+            <div className="rail-name">Expiration Controls</div>
+            <p className="rail-desc">
+              Mandates have a strict time-to-live (TTL) and expire automatically. Users can also instantly revoke an active mandate from their dashboard at any time.
+            </p>
           </div>
         </div>
       </section>
@@ -750,6 +715,9 @@ export default function Home() {
         <div className="footer">
           <div className="footer-logo">
             delegare<span>.</span>
+            <div style={{ fontSize: '11px', fontWeight: 300, color: 'rgba(240,237,232,0.3)', marginTop: '8px', letterSpacing: '0.02em' }}>
+              Built by <a href="https://securelend.com" style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid rgba(240,237,232,0.2)' }}>SecureLend</a>
+            </div>
           </div>
           <div className="footer-links">
             <a href="https://docs.delegare.dev" className="footer-link">

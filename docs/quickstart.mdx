@@ -1,60 +1,84 @@
 ---
 title: Quickstart
-description: Set up your first spending mandate in 5 minutes.
+description: Get your first Delegare payment working in 10 minutes.
 ---
 
-To start accepting agent payments with Delegare, you'll need to register as a Merchant and integrate our SDK.
+The fastest way to understand Delegare is to run our end-to-end example. You will act as both the **Merchant** (setting up a server) and the **User** (authorizing a spending mandate).
 
 <Note>
-  **Environment URLs**
-  - **Sandbox:** `https://api.sandbox.delegare.dev` (Use test API keys, Stripe test cards, and Base Sepolia).
-  - **Production:** `https://api.delegare.dev` (Real money).
+  **Prerequisites:** You need Node >=22 and pnpm >=9 installed on your machine.
 </Note>
 
-### 1. Register as a Merchant
-Currently, merchant registration is handled via our [Dashboard](https://app.delegare.dev). You will receive:
-- `merchantId`: Your unique identifier.
-- `apiKey`: Your secret key for authorizing session requests (use your Test Key for Sandbox).
+### 1. Get Sandbox Credentials
+1. Go to the [Delegare Sandbox Dashboard](https://app.sandbox.delegare.dev).
+2. Register a new test merchant account.
+3. Copy your `merchantId` and `testApiKey`.
 
-### 2. Request a Setup Session
-When a user wants to enable payments for an agent, your backend creates a setup session.
+### 2. Clone the Example App
+We have provided an Express server that acts as a mock merchant (e.g., a pizza shop or API service).
 
 ```bash
-curl -X POST https://api.sandbox.delegare.dev/v1/mandates \
-  -H "X-Delegare-Merchant-Id: your_merchant_id" \
-  -H "X-Delegare-Api-Key: your_test_api_key" \
+git clone https://github.com/delegare/delegare.git
+cd delegare/examples/express-checkout
+npm install
+```
+
+### 3. Configure the Environment
+Create an environment file:
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and paste your sandbox credentials:
+```env
+DELEGARE_API_URL="https://api.sandbox.delegare.dev"
+DELEGARE_MERCHANT_ID="your_merchant_id"
+DELEGARE_API_KEY="your_test_api_key"
+```
+
+### 4. Run the Merchant Server
+Start your mock merchant backend:
+
+```bash
+npm run dev
+```
+*(Leave this running in the terminal)*
+
+### 5. Generate a Buyer Mandate
+Open a **new terminal tab** in the same directory. We will now run a script that simulates a user approving a budget for an AI agent.
+
+```bash
+npm run setup
+```
+
+1. The script will generate a Setup URL. Click the link to open it in your browser.
+2. In the Sandbox UI, authorize a $50/month limit for this agent. You can use Stripe test cards.
+3. Once approved, return to your terminal. The script will print out a long string starting with `eyJhbGci...` - this is your **Intent Mandate**.
+
+### 6. Execute an Agent Charge
+Now, pretend you are the AI agent who holds this mandate and wants to buy something from the merchant.
+
+Run this `curl` command, replacing the `intentMandate` with your token:
+
+```bash
+curl -X POST http://localhost:4000/api/checkout \
   -H "Content-Type: application/json" \
   -d '{
-    "maxPerTxCents": 1000,
-    "maxMonthlySpendCents": 5000,
-    "rail": "both"
+    "intentMandate": "eyJhbGciOiJFU...",
+    "item": "large_pepperoni_pizza",
+    "deliveryAddress": "123 AI Avenue"
   }'
 ```
 
-This returns a `sessionToken` and a `setupUrl`.
+### 7. View the Result
+Look at your first terminal (the merchant server). You should see logs indicating that the Delegare SDK successfully executed the charge against the agent's limit. 
 
-### 3. Redirect the User
-Send the user to the `setupUrl`. There, they will:
-1. Connect their payment method (Stripe or Wallet).
-2. Confirm the limits you requested.
-3. Once finished, they are redirected back to your configured URL.
+**Congratulations!** You just processed an agent-authorized payment without sharing any credit card details.
 
-### 4. Collect the Intent Mandate
-After the user completes setup, your agent can retrieve the **Intent Mandate** (a cryptographic SD-JWT-VC that proves authorization) from your backend. The Vault sends a webhook to your configured endpoint when the session is completed.
+---
 
-### 5. Charge the Mandate
-Your agent can now execute payments directly using the Intent Mandate.
-
-```bash
-curl -X POST https://api.sandbox.delegare.dev/v1/payments/charge \
-  -H "X-Delegare-Merchant-Id: your_merchant_id" \
-  -H "X-Delegare-Api-Key: your_test_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "intentMandate": "eyJhbGciOiJFUz...",
-    "amountCents": 500,
-    "currency": "usd",
-    "description": "API Subscription",
-    "idempotencyKey": "unique_request_id_123"
-  }'
-```
+### Next Steps
+- Learn how to integrate the [Typescript SDK](/sdk-tools/typescript-sdk) into your own backend.
+- Read about our [Security Model](/concepts/security-model) to see how limits are enforced.
+- Add payment capabilities to Claude Desktop with our [MCP Tools](/sdk-tools/mcp-tools).

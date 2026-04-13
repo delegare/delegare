@@ -1,0 +1,38 @@
+---
+title: Security Model
+description: How Delegare ensures safe, spend-limited payments for AI agents.
+---
+
+When giving an AI agent economic capabilities, the most critical question is: **"What happens if the agent goes rogue or the merchant is compromised?"**
+
+Delegare's architecture is designed around "least privilege" and strict enforcement.
+
+## Core Security Principles
+
+### 1. No Credential Sharing
+AI models (and the agents running them) are highly susceptible to prompt injection and data leakage. Therefore, **Delegare never exposes credit card numbers, private keys, or seed phrases to the agent.** 
+
+The agent only holds an **Intent Mandate**—a cryptographic Verifiable Credential (SD-JWT-VC) that grants tightly scoped permission to spend *up to* a specific limit at a specific merchant.
+
+### 2. Atomic Server-Side Limits
+When an agent attempts a charge, the `amountCents` is evaluated against the mandate's remaining limit by the Delegare Vault backend.
+- We use DynamoDB atomic counters (`UpdateItem` with `ADD`) to enforce the budget.
+- This prevents race conditions where an agent might try to send 10 concurrent requests to exhaust a $5 limit multiple times over.
+- **Can an agent exceed its limit?** No. The Vault strictly enforces the budget and will reject any transaction that pushes the `balance_spent` over the `limit`.
+
+### 3. Merchant Allowlists
+Intent Mandates are strictly bound to a single merchant (via their `merchantId`) or a specific allowlist of merchants. If an agent tries to use a mandate authorized for Merchant A at Merchant B, the Vault's cryptographic verification will fail.
+
+### 4. Ephemeral and Revokable
+- Mandates have strict time-to-live (TTL) expirations.
+- Users can instantly revoke an active mandate via the Delegare dashboard, immediately bricking the agent's ability to spend.
+
+### 5. Idempotency & Retries
+The `/charge` endpoint requires an `idempotencyKey`. If a network timeout occurs, the agent can safely retry the request with the same key without worrying about double-charging the user's underlying payment method.
+
+## What "Trustless" Means Here
+Delegare minimizes trust in the agent and the merchant. 
+- You do not trust the agent with your full card limit. You trust it with a $10 allowance.
+- You do not trust the merchant with your card details. You trust Delegare to route the exact amount of funds authorized by the mandate.
+
+If the merchant's API is compromised, the attacker only gains access to the remaining balance on the specific mandates issued to that merchant, not the user's underlying bank account or crypto wallet.

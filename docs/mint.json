@@ -30,11 +30,18 @@
       ]
     },
     {
+      "group": "Guides",
+      "pages": [
+        "examples/express-checkout",
+        "concepts/x402-payments"
+      ]
+    },
+    {
       "group": "Concepts",
       "pages": [
         "concepts/intent-mandates",
         "concepts/dual-rail-payments",
-        "concepts/x402-payments"
+        "concepts/security-model"
       ]
     },
     {
@@ -66,7 +73,7 @@
       "group": "SDK & Tools",
       "pages": [
         "sdk-tools/typescript-sdk",
-        "sdk-tools/mcp-server",
+        "sdk-tools/mcp-tools",
         "sdk-tools/openclaw-plugin",
         "sdk-tools/shopify-app"
       ]

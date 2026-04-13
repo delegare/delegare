@@ -3,10 +3,26 @@ export type Rail = 'fiat' | 'crypto';
 export type DelegateStatus = 'active' | 'paused' | 'revoked' | 'expired';
 export type RailPreference = 'auto' | 'fiat_first' | 'crypto_first' | 'cheapest' | 'fastest';
 
-export interface DelegareConfig {
+/** API-key authentication (legacy / merchant-facing) */
+export interface ApiKeyAuth {
   merchantId: string;
   apiKey: string;
   baseUrl?: string;
+}
+
+/** OAuth Bearer token authentication (primary method for buyers / agents) */
+export interface OAuthAuth {
+  accessToken: string;
+  refreshToken?: string;
+  /** Called when the SDK auto-refreshes; lets callers persist the new tokens. */
+  onTokenRefresh?: (newAccessToken: string, newRefreshToken?: string) => void;
+  baseUrl?: string;
+}
+
+export type DelegareConfig = ApiKeyAuth | OAuthAuth;
+
+export function isOAuthConfig(c: DelegareConfig): c is OAuthAuth {
+  return 'accessToken' in c;
 }
 
 export interface ChargeRequest {
