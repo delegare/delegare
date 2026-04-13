@@ -68,7 +68,7 @@ export default function PublicProfilePage() {
         setError(err.message);
         setLoading(false);
       });
-  }, [handle, API_URL]);
+  }, [handle, apiUrl]);
 
   if (loading) {
     return (
