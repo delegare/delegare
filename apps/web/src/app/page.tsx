@@ -481,7 +481,7 @@ export default function Home() {
           </p>
           <div className="hero-actions">
             <a
-              href={`${dashboardUrl}/setup?ref=hero`}
+              href={`${dashboardUrl}/onboarding?type=buyer`}
               className="btn-primary"
             >
               Get started free
