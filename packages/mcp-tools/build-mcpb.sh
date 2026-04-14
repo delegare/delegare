@@ -45,11 +45,11 @@ cat > "$TEMP_DIR/manifest.json" << MANIFEST
     "entry_point": "dist/server.cjs",
     "mcp_config": {
       "command": "node",
-      "args": ["\${__dirname}/dist/server.cjs"],
+      "args": ["${__dirname}/dist/server.cjs", "--api-url=https://api.delegare.dev"],
       "env": {}
-    }
-  },
-  "tools": [
+      }
+      },
+      "tools": [
     {
       "name": "delegare_fetch",
       "description": "A drop-in replacement for the standard web fetch that automatically negotiates and settles x402 payment requirements."
