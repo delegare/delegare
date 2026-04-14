@@ -55,8 +55,8 @@ cat > "$TEMP_DIR/manifest.json" << MANIFEST
       "description": "A drop-in replacement for the standard web fetch that automatically negotiates and settles x402 payment requirements."
     },
     {
-      "name": "delegare_pay",
-      "description": "Directly push funds to a recipient wallet or merchant handle."
+      "name": "authorize_agent_payment",
+      "description": "Execute a payment through the Delegare vault using AP2. The agent presents its Intent Mandate (SD-JWT-VC). Spending limits are enforced server-side."
     },
     {
       "name": "setup_spending_mandate",
@@ -67,11 +67,11 @@ cat > "$TEMP_DIR/manifest.json" << MANIFEST
       "description": "Poll the status of a setup session to check if the user has approved the mandate."
     },
     {
-      "name": "check_balance",
+      "name": "check_mandate_balance",
       "description": "Check the remaining allowed budget on a spending mandate."
     },
     {
-      "name": "revoke_spending_mandate",
+      "name": "revoke_mandate",
       "description": "Permanently revoke an active spending mandate."
     }
   ],
