@@ -127,6 +127,10 @@ function ProfileContent() {
             <span className="text-[#f0ede8]/50">Rail</span>
             <span className="text-[#7ec898] font-medium">{merchant.railRequirement === 'crypto_only' ? 'USDC / USDT (Stablecoins)' : 'Any'}</span>
           </div>
+          <div className="flex justify-between pb-1">
+            <span className="text-[#f0ede8]/30 text-xs">Fee per transaction</span>
+            <span className="text-[#f0ede8]/30 text-xs">3¢ flat</span>
+          </div>
         </div>
 
         <div className="bg-[#f0ede8]/5 rounded-xl p-5 mb-6 text-center border border-[#f0ede8]/10">
