@@ -477,7 +477,7 @@ export default function Home() {
           <p className="hero-sub">
             Give agents real spending power with hard limits they
             can&apos;t override. Users set the rules. Agents execute.
-            Merchants get paid. 3&cent; flat.
+            Merchants get paid. From 3&cent; per transaction.
           </p>
           <div className="hero-actions">
             <a
@@ -744,7 +744,7 @@ export default function Home() {
               3<span>&cent;</span>
             </div>
             <div className="pricing-forever">
-              per successful transaction. flat. forever.
+              per successful transaction &mdash; or 3% under $1.
             </div>
             <div className="pricing-context">
               <p className="pricing-context-line">
@@ -757,6 +757,10 @@ export default function Home() {
                 Your Stripe or USDC setup stays exactly as it is. Delegare
                 sits in front of it, handling agent identity, spending limits,
                 and autonomous payment negotiation.
+              </p>
+              <p className="pricing-context-line">
+                Under $1, the fee drops to 3% — making API micropayments and
+                agent-to-agent transactions commercially viable for everyone.
               </p>
               <p className="pricing-context-note">
                 For reference: Stripe&apos;s base fee on a $25 transaction is
@@ -775,12 +779,12 @@ export default function Home() {
               {
                 icon: "0",
                 title: "Free for buyers",
-                desc: "Connecting a wallet, setting spending limits, revoking mandates \u2014 always free. Only merchants pay the 3\u00A2.",
+                desc: "Connecting a wallet, setting spending limits, revoking mandates \u2014 always free. Only merchants pay the fee.",
               },
               {
-                icon: "\u2295",
-                title: "No percentage fees",
-                desc: "A $10 transaction and a $10,000 transaction both cost 3\u00A2. You keep your margin.",
+                icon: "\u00B5",
+                title: "Micropayment-ready",
+                desc: "Under $1, the fee is just 3% \u2014 a 10\u00A2 API call costs 0.3\u00A2. Above $1, it\u2019s a flat 3\u00A2 no matter the amount.",
               },
             ].map((f) => (
               <div key={f.title} className="pricing-feature">
@@ -902,8 +906,8 @@ export default function Home() {
             Ready to make your payments agent-ready?
           </div>
           <p className="cta-banner-sub">
-            Buyers connect for free. Merchants integrate in 5 minutes. Every
-            transaction costs 3&cent;.
+            Buyers connect for free. Merchants integrate in 5 minutes. From
+            3&cent; per transaction.
           </p>
           <div className="cta-banner-actions">
             <a
