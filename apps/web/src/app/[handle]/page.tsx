@@ -136,10 +136,24 @@ export default function PublicProfilePage() {
           <p className="text-xs text-[#f0ede8]/60 leading-relaxed mb-4">
             Copy the prompt below and paste it into ChatGPT, Claude, or OpenClaw to autonomously send a payment.
           </p>
-          <div className="bg-[#000000] p-3 rounded-lg text-left overflow-x-auto border border-[#f0ede8]/10">
+          <div className="bg-[#000000] p-3 rounded-lg text-left overflow-x-auto border border-[#f0ede8]/10 mb-4">
             <code className="text-xs text-[#7ec898] whitespace-pre">
               "Pay 5 USDC to @{merchant.merchantId} for a coffee"
             </code>
+          </div>
+
+          <div className="border-t border-[#f0ede8]/10 pt-4 mt-4 text-left">
+            <h4 className="text-xs font-semibold text-[#f0ede8]/80 mb-2 uppercase tracking-wide">Agent Setup</h4>
+            <div className="flex flex-col gap-2">
+              <a href="/delegare.mcpb" download className="flex items-center gap-2 text-xs bg-[#f0ede8]/5 hover:bg-[#f0ede8]/10 text-[#f0ede8] py-2 px-3 rounded-lg border border-[#f0ede8]/10 transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Install for Claude Desktop (1-Click .mcpb)
+              </a>
+              <a href="https://docs.delegare.dev/sdk-tools/mcp-tools" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs bg-[#f0ede8]/5 hover:bg-[#f0ede8]/10 text-[#f0ede8] py-2 px-3 rounded-lg border border-[#f0ede8]/10 transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                View ChatGPT & OpenClaw Instructions
+              </a>
+            </div>
           </div>
         </div>
 
