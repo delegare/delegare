@@ -22,7 +22,7 @@ const dmMono = DM_Mono({
 
 export const metadata: Metadata = {
   title: "Delegare | Trustless Agent Payments",
-  description: "Empower your AI agents to spend securely without handing over credit card numbers or private keys. 3¢ per transaction. Always.",
+  description: "Empower your AI agents to spend securely without handing over credit card numbers or private keys. Micro-payments from 3%. Flat 3¢ over $1.",
   icons: {
     icon: [
       { url: '/favicon/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
