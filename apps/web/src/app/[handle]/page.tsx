@@ -137,7 +137,7 @@ function ProfileContent() {
           </p>
           <div className="bg-[#000000] p-3 rounded-lg text-left overflow-x-auto border border-[#f0ede8]/10 mb-4">
             <code className="text-xs text-[#7ec898] whitespace-pre">
-              &quot;Pay 5 USDC to @{merchant.merchantId} for a coffee&quot;
+              &quot;Buy @{merchant.merchantId} a coffee for 5 USDC&quot;
             </code>
           </div>
 
@@ -224,7 +224,7 @@ function ProfileContent() {
                 <div className="flex-shrink-0 w-6 h-6 bg-[#c8b99a]/20 text-[#c8b99a] rounded-full flex items-center justify-center text-[11px] font-bold">3</div>
                 <div>
                   <h4 className="text-sm font-medium mb-1">Start a conversation</h4>
-                  <p className="text-xs text-[#f0ede8]/50">Open a new chat, click the <span className="text-white">+</span> button, select <strong>Delegare</strong>, and say <em>&quot;list all tools&quot;</em>.</p>
+                  <p className="text-xs text-[#f0ede8]/50">Open a new chat, click the <span className="text-white">+</span> button, select <strong>Delegare</strong>, and say <em>&quot;Buy @{merchant.merchantId} a coffee for 5 USDC&quot;</em>.</p>
                 </div>
               </div>
             </div>
