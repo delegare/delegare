@@ -23,7 +23,7 @@ const express = require('express');
 const delegare = new Delegare({
   merchantId: process.env.DELEGARE_MERCHANT_ID,
   apiKey: process.env.DELEGARE_API_KEY,
-  baseUrl: 'https://api.sandbox.delegare.dev'
+  baseUrl: 'https://api.sandbox.delegare.dev/v1'
 });
 
 const app = express();

@@ -13,64 +13,136 @@ Delegare solves this by combining the `x402` protocol with **Intent Mandates**, 
 
 ## How It Works
 
-With Delegare, the human user authorizes a spending budget *once* (e.g., "$50 per month"). When the AI agent encounters an `x402` challenge, Delegare automatically signs an EIP-3009 `TransferWithAuthorization` using the mandate's secure session key and resubmits the request.
+With Delegare, the human user authorizes a spending budget *once* (e.g., "$50 per month"). When the AI agent encounters an `x402` challenge, the Delegare SDK automatically resolves the payment using the mandate's session key and resubmits the request.
 
-1. **Agent** requests `GET /api/premium-data`.
-2. **Merchant** returns `402 Payment Required` with `X-PAYMENT` requirements (price, asset, network).
-3. **Delegare SDK** intercepts the 402, verifies it's within the agent's monthly budget, and automatically signs the payment.
-4. **Agent** automatically retries the request with the `X-PAYMENT` header.
-5. **Merchant** verifies the signature, settles the payment on-chain, and returns the data.
+<Steps>
+  <Step title="Agent requests data">
+    The agent calls `GET /api/premium-data` on the merchant's server.
+  </Step>
+  <Step title="Merchant returns 402 challenge">
+    The merchant's `@delegare/x402` middleware responds with `402 Payment Required` and a standard x402 `accepts` body describing the price, asset, and network.
+  </Step>
+  <Step title="SDK auto-pays via Delegare">
+    The `@delegare/sdk` intercepts the 402, verifies the amount is within the agent's budget, and forwards the intent mandate to Delegare's settlement infrastructure.
+  </Step>
+  <Step title="Settlement on Base">
+    Delegare settles the payment on Base (L2) using the mandate's dedicated session key and the on-chain DelegareRouter contract. The merchant's wallet receives USDC directly. No popups, no user interaction.
+  </Step>
+  <Step title="Agent receives data">
+    The agent retries the original request with a payment receipt. The middleware verifies it and returns the gated resource.
+  </Step>
+</Steps>
 
 ---
 
 ## For Merchants: Monetizing APIs
 
-If you are building an API and want to charge agents per request, you can use Vault's `x402` middleware to instantly monetize any Express route.
+Install the `@delegare/x402` middleware to gate any Express route behind a USDC micropayment:
+
+```bash
+npm install @delegare/x402
+```
 
 ```typescript
-import { requireX402Payment } from '@delegare/vault/middleware/x402';
+import express from 'express';
+import { requireX402Payment } from '@delegare/x402';
 
-// Protect this route: Charge 0.05 USDC per call
-app.get('/premium-data', 
-  requireX402Payment({ 
-    price: '0.05', 
-    currency: 'usdc', 
-    payTo: '0xYourMerchantWalletAddress' 
-  }), 
+const app = express();
+
+// Gate this route: charge 0.05 USDC per call
+app.get('/premium-data',
+  requireX402Payment({
+    price: '0.05',
+    payTo: '0xYourMerchantWalletAddress',
+  }),
   (req, res) => {
-    // The middleware ensures the payment is settled before reaching here
+    // Only reached after payment is verified
     res.json({ secret: 'AI agents love this data' });
   }
 );
 ```
 
-The middleware automatically handles returning the 402 challenge, validating the incoming EIP-3009 signature against the user's balance or Delegare mandate limit, and broadcasting the transaction to the Base network.
+### What the middleware handles
+
+| Step | What happens |
+|---|---|
+| **No payment** | Returns `402` with x402 `PaymentRequirements` body |
+| **`X-DELEGARE-MANDATE` header** | Forwards to Delegare's settlement API, which charges the buyer's smart wallet via the on-chain router |
+| **`X-PAYMENT-RESPONSE` header** | Verifies the receipt against Delegare's API |
+
+<Note>
+  **You never touch private keys or on-chain logic.** Delegare handles settlement. Your middleware only advertises the price and verifies the receipt. USDC arrives in your wallet directly from the Base blockchain.
+</Note>
+
+### Configuration options
+
+```typescript
+requireX402Payment({
+  price: '0.05',                    // Decimal USDC amount
+  payTo: '0xYourWallet',            // Your Base wallet address
+  testMode: true,                   // Use Base Sepolia for development
+  apiUrl: 'https://api.sandbox.delegare.dev/v1', // Sandbox API
+  resource: '/api/premium-data',    // Optional: override resource ID
+  mimeType: 'application/json',     // Optional: content type
+  maxTimeoutSeconds: 3600,          // Optional: payment validity window
+});
+```
+
+### Accessing payment context
+
+After successful payment, the middleware attaches context to the request:
+
+```typescript
+app.get('/premium-data',
+  requireX402Payment({ price: '0.05', payTo: '0xYourWallet' }),
+  (req, res) => {
+    // Who paid and the on-chain tx hash
+    const payer = (req as any).x402Payer;       // e.g. "0x1828..."
+    const txHash = (req as any).x402Transaction; // e.g. "0x4f77..."
+    
+    res.json({ data: '...', paidBy: payer });
+  }
+);
+```
 
 ---
 
 ## For Agents: Seamlessly Paying Paywalls
 
-If you are building an AI agent, you can use the `@delegare/sdk` to seamlessly navigate `x402` paywalls without interrupting the user.
-
-Simply replace your standard `fetch` calls with `delegare.fetch`. Pass the user's `intentMandate` as the third argument. 
+If you are building an AI agent, replace your standard `fetch` calls with the Delegare SDK's `delegare.fetch`. When the target API returns a 402 challenge, the SDK resolves it automatically using the user's intent mandate.
 
 ```typescript
 import { Delegare } from '@delegare/sdk';
 
 const delegare = new Delegare({ merchantId: '...', apiKey: '...' });
 
-// If the API returns a 402, the SDK will automatically pay it
-// using the user's mandate and retry the request.
+// If the API returns a 402, the SDK auto-pays using the mandate
+// and retries — no wallet popups, no user interaction.
 const response = await delegare.fetch(
-  'https://merchant.com/premium-data', 
-  { method: 'GET' }, 
+  'https://merchant.com/premium-data',
+  { method: 'GET' },
   userIntentMandate
 );
 
 const data = await response.json();
-console.log(data); // { secret: 'AI agents love this data' }
 ```
+
+### How the SDK resolves x402
+
+1. Makes the initial request to the merchant's URL.
+2. If the response is `402` with a valid x402 `accepts` body, the SDK sends the intent mandate via the `X-DELEGARE-MANDATE` header.
+3. The merchant's `@delegare/x402` middleware forwards it to Delegare for settlement.
+4. Delegare settles on-chain via the mandate's session key and the DelegareRouter contract.
+5. The SDK returns the final response with the gated data.
+
+The agent never holds private keys. The session key that signs the transaction is scoped to the individual mandate and stored in AWS Secrets Manager — not accessible to the agent, the merchant, or Delegare itself.
 
 ### Model Context Protocol (MCP)
 
-If your agent is powered by MCP (like Claude Desktop or OpenClaw), the `delegare_fetch` tool handles this automatically. The LLM simply calls the tool with a URL, and Delegare handles the underlying economic negotiation.
+If your agent is powered by MCP (Claude, ChatGPT, or any MCP-compatible client), the `delegare_fetch` tool handles x402 automatically. The LLM simply calls the tool with a URL and its mandate, and Delegare handles the underlying economic negotiation.
+
+```
+"Fetch the data from https://merchant.com/premium-data using my mandate"
+```
+
+No code required — the MCP server resolves the 402 challenge behind the scenes.

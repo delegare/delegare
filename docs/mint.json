@@ -74,6 +74,7 @@
       "pages": [
         "sdk-tools/typescript-sdk",
         "sdk-tools/mcp-tools",
+        "sdk-tools/x402-middleware",
         "sdk-tools/openclaw-plugin",
         "sdk-tools/shopify-app"
       ]

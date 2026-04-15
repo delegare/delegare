@@ -1,0 +1,120 @@
+---
+title: "x402 Middleware"
+description: "Gate your API routes behind USDC micropayments with a single line of Express middleware."
+---
+
+The `@delegare/x402` package lets merchants monetize API endpoints using the [x402 protocol](/concepts/x402-payments). It handles the 402 challenge and payment verification — settlement is handled by Delegare's infrastructure on the Base blockchain.
+
+## Installation
+
+```bash
+npm install @delegare/x402
+```
+
+## Quick Start
+
+```typescript
+import express from 'express';
+import { requireX402Payment } from '@delegare/x402';
+
+const app = express();
+
+app.get('/premium-data',
+  requireX402Payment({
+    price: '0.05',                  // 5 cents USDC per call
+    payTo: '0xYourWalletAddress',   // Your Base wallet
+  }),
+  (req, res) => {
+    res.json({ data: 'premium content' });
+  }
+);
+
+app.listen(4000);
+```
+
+That's it. Any AI agent using `@delegare/sdk` or the Delegare MCP tools will automatically resolve the 402 challenge and pay.
+
+## How It Works
+
+```
+Agent → GET /premium-data → 402 Payment Required (x402 challenge)
+Agent → GET /premium-data + X-DELEGARE-MANDATE header
+     → Middleware forwards mandate to Delegare API
+     → Delegare settles on Base via DelegareRouter contract
+     → USDC arrives in your wallet
+     → 200 OK + data
+```
+
+The middleware never touches private keys or on-chain logic. Delegare handles settlement; the Base blockchain handles custody; your wallet receives USDC directly.
+
+## Configuration
+
+```typescript
+requireX402Payment({
+  // Required
+  price: '0.05',                    // Decimal USDC (e.g. "0.05" = 5 cents)
+  payTo: '0xYourWallet',            // Base wallet that receives payment
+
+  // Optional
+  testMode: true,                   // Use Base Sepolia (default: false)
+  apiUrl: 'https://api.sandbox.delegare.dev/v1', // Sandbox API
+  resource: '/api/premium-data',    // Override resource ID
+  mimeType: 'application/json',     // Content type advertised in challenge
+  maxTimeoutSeconds: 3600,          // Payment validity window
+});
+```
+
+## Accessing Payment Context
+
+After a successful payment, the middleware attaches metadata to the request:
+
+```typescript
+app.get('/premium-data',
+  requireX402Payment({ price: '0.05', payTo: '0xYourWallet' }),
+  (req, res) => {
+    const payer = (req as any).x402Payer;        // Payer's wallet address
+    const txHash = (req as any).x402Transaction;  // On-chain tx hash
+
+    // You can verify the tx on BaseScan:
+    // https://basescan.org/tx/{txHash}
+
+    res.json({ data: '...', paidBy: payer });
+  }
+);
+```
+
+The `X-PAYMENT-RESPONSE` header is also set on the response, allowing the agent to confirm payment was settled.
+
+## Testing with Sandbox
+
+For development, use testnet mode:
+
+```typescript
+requireX402Payment({
+  price: '0.01',
+  payTo: '0xYourTestnetWallet',
+  testMode: true,
+  apiUrl: 'https://api.sandbox.delegare.dev/v1',
+});
+```
+
+This uses Base Sepolia and testnet USDC — no real funds involved.
+
+## TypeScript Types
+
+The package exports all relevant types:
+
+```typescript
+import type {
+  X402Options,         // Middleware config
+  X402Requirement,     // Single entry in 402 challenge
+  X402Challenge,       // Full 402 response body
+  X402PaymentReceipt,  // Decoded X-PAYMENT-RESPONSE
+} from '@delegare/x402';
+```
+
+## Related
+
+- [x402 Payments (concept)](/concepts/x402-payments) — How x402 works end-to-end
+- [TypeScript SDK](/sdk-tools/typescript-sdk) — Agent-side `delegare.fetch()` for auto-paying 402s
+- [MCP Tools](/sdk-tools/mcp-tools) — `delegare_fetch` tool for LLM agents

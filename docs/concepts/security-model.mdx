@@ -5,34 +5,81 @@ description: How Delegare ensures safe, spend-limited payments for AI agents.
 
 When giving an AI agent economic capabilities, the most critical question is: **"What happens if the agent goes rogue or the merchant is compromised?"**
 
-Delegare's architecture is designed around "least privilege" and strict enforcement.
+Delegare's architecture is designed around least privilege, strict enforcement, and zero custody.
 
 ## Core Security Principles
 
 ### 1. No Credential Sharing
-AI models (and the agents running them) are highly susceptible to prompt injection and data leakage. Therefore, **Delegare never exposes credit card numbers, private keys, or seed phrases to the agent.** 
+AI models (and the agents running them) are highly susceptible to prompt injection and data leakage. Therefore, **Delegare never exposes credit card numbers, private keys, or seed phrases to the agent.**
 
-The agent only holds an **Intent Mandate**—a cryptographic Verifiable Credential (SD-JWT-VC) that grants tightly scoped permission to spend *up to* a specific limit at a specific merchant.
+The agent only holds an **Intent Mandate** — a cryptographic Verifiable Credential (SD-JWT-VC) that grants tightly scoped permission to spend *up to* a specific limit.
 
-### 2. Atomic Server-Side Limits
-When an agent attempts a charge, the `amountCents` is evaluated against the mandate's remaining limit by the Delegare Vault backend.
-- We use DynamoDB atomic counters (`UpdateItem` with `ADD`) to enforce the budget.
-- This prevents race conditions where an agent might try to send 10 concurrent requests to exhaust a $5 limit multiple times over.
-- **Can an agent exceed its limit?** No. The Vault strictly enforces the budget and will reject any transaction that pushes the `balance_spent` over the `limit`.
+### 2. Session Key Isolation (Crypto Rail)
 
-### 3. Merchant Allowlists
-Intent Mandates are strictly bound to a single merchant (via their `merchantId`) or a specific allowlist of merchants. If an agent tries to use a mandate authorized for Merchant A at Merchant B, the Vault's cryptographic verification will fail.
+Each spending mandate gets its own **dedicated ERC-4337 session key** — a unique keypair generated at mandate creation time. This is the only key authorized to initiate payments from the buyer's smart wallet.
 
-### 4. Ephemeral and Revokable
+**Who holds the session key?**
+The private key is stored in **AWS Secrets Manager**, encrypted at rest, and scoped to the individual mandate. It is:
+- **Not accessible to Delegare staff** — Secrets Manager access is audit-logged and restricted by IAM policy.
+- **Not accessible to the agent** — the agent only holds the intent mandate (a spending *permission*), never the signing key.
+- **Not accessible to the merchant** — the merchant receives USDC directly from the Base blockchain, routed by the on-chain DelegareRouter contract.
+
+The session key can only execute `payMerchant()` calls through the DelegareRouter smart contract, which enforces token whitelisting and payment parameters on-chain. It cannot drain the wallet, transfer arbitrary tokens, or call other contracts.
+
+<Note>
+  **Delegare does not custody your funds.** Your USDC stays in your own smart wallet (e.g. Coinbase Smart Wallet). The session key is authorized by *you* during setup to spend from your wallet up to the mandate's limit — the same way you'd authorize a subscription in your bank's app. Delegare provides the infrastructure to route these payments; the blockchain enforces the rules.
+</Note>
+
+### 3. Atomic Server-Side Limits
+When an agent attempts a charge, the `amountCents` is evaluated against the mandate's remaining limit server-side.
+- DynamoDB atomic counters (`UpdateItem` with `ADD`) enforce the budget with zero race conditions.
+- An agent cannot send 10 concurrent requests to exhaust a $5 limit multiple times over.
+- **Can an agent exceed its limit?** No. The limit is enforced atomically before any payment is initiated.
+
+### 4. Merchant Allowlists
+Intent Mandates are bound to a single merchant (via their `merchantId`) or a specific allowlist. If an agent tries to use a mandate authorized for Merchant A at Merchant B, the cryptographic verification fails. The mandate is useless outside its scope.
+
+### 5. Ephemeral and Revokable
 - Mandates have strict time-to-live (TTL) expirations.
-- Users can instantly revoke an active mandate via the Delegare dashboard, immediately bricking the agent's ability to spend.
+- Users can instantly revoke an active mandate via the [Delegare dashboard](https://app.delegare.dev), immediately killing the agent's ability to spend.
+- Revoking a mandate does not affect your wallet or any other mandate — it only disables the specific session key associated with that mandate.
 
-### 5. Idempotency & Retries
-The `/charge` endpoint requires an `idempotencyKey`. If a network timeout occurs, the agent can safely retry the request with the same key without worrying about double-charging the user's underlying payment method.
+### 6. Idempotency & Retries
+The `/charge` endpoint requires an `idempotencyKey`. If a network timeout occurs, the agent can safely retry with the same key without double-charging.
 
-## What "Trustless" Means Here
-Delegare minimizes trust in the agent and the merchant. 
-- You do not trust the agent with your full card limit. You trust it with a $10 allowance.
-- You do not trust the merchant with your card details. You trust Delegare to route the exact amount of funds authorized by the mandate.
+---
 
-If the merchant's API is compromised, the attacker only gains access to the remaining balance on the specific mandates issued to that merchant, not the user's underlying bank account or crypto wallet.
+## What You Trust — And What You Don't
+
+Delegare minimizes trust by building on existing, battle-tested infrastructure rather than asking you to trust a new system:
+
+| Layer | What handles it | Trust basis |
+|---|---|---|
+| **Fiat payments** | [Stripe](https://stripe.com) | PCI-DSS Level 1, bank-grade fraud detection, established since 2010 |
+| **Crypto payments** | [Base](https://base.org) (Coinbase L2) | Open-source EVM chain, ~$0.002/tx, secured by Ethereum L1 |
+| **Smart contract** | DelegareRouter | On-chain, auditable, enforces token whitelisting and payment routing |
+| **Session key storage** | AWS Secrets Manager | AES-256 encryption at rest, IAM-scoped, audit-logged |
+| **Spending limits** | DynamoDB atomic counters | Race-condition-free enforcement, server-side |
+
+**Delegare is the infrastructure layer** that abstracts across these systems. It does not hold your funds, does not have access to your full wallet, and does not have the ability to spend beyond what each mandate authorizes.
+
+### What this means in practice
+
+- **You do not trust the agent** with your card or wallet. You trust it with a scoped $10 allowance that auto-expires.
+- **You do not trust the merchant** with your payment credentials. The merchant receives USDC on-chain (crypto) or a Stripe charge (fiat) — they never see your card number or private key.
+- **You do not trust Delegare with custody.** Your funds stay in your Stripe-linked account or your own smart wallet. Delegare routes authorized amounts using session keys you approved, over infrastructure (Stripe, Base) that exists independently of Delegare.
+
+If a merchant is compromised, the attacker only gains access to the remaining balance on mandates issued to that merchant — not your bank account, not your wallet, not any other mandate.
+
+---
+
+## Platform Fee Transparency
+
+Delegare charges a small platform fee per transaction, separate from the underlying rail costs:
+
+| Transaction amount | Delegare fee |
+|---|---|
+| < $1.00 | 3% of amount |
+| ≥ $1.00 | Flat 3 cents |
+
+Rail costs (Stripe acquiring fees for fiat, Base L2 gas for crypto) are passed through at cost. On Base, gas is approximately $0.002 per transaction — paid from the mandate's session key gas stipend, not from your USDC balance.
