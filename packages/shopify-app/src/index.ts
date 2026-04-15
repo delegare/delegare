@@ -94,7 +94,7 @@ app.post('/api/payments/payment', async (req, res) => {
   logger.info({ payload }, 'Received payment request from Shopify');
 
   // We return a redirect URL to our "Payment Capture" page.
-  // This page will ask for the delegateToken.
+  // This page will ask for the intentMandate.
   const paymentSessionId = payload.id;
   const redirectUrl = `${process.env.SHOPIFY_APP_URL}/payment-capture?id=${paymentSessionId}`;
 
