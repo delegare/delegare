@@ -38,22 +38,38 @@ To prevent unauthorized tool calls, the MCP server implements an `mcpAuthGuard`.
 - Credentials (`merchantId`, `apiKey`) are never exposed to the LLM prompt.
 - The guard injects the required metadata into the tool context based on the bearer token in the request header.
 
+## Usage with Claude.ai
+
+Connect Delegare as a remote MCP connector on Claude.ai:
+
+1. Go to **Settings** → **Connectors** → **Add custom connector**.
+2. Set the **Name** to `Delegare`.
+3. Set the **Remote MCP server URL** to:
+
+| Environment | URL |
+|---|---|
+| Sandbox | `https://api.sandbox.delegare.dev/mcp` |
+| Production | `https://api.delegare.dev/mcp` |
+
+4. Click **Add**. Claude.ai will automatically handle OAuth authentication when you first use a Delegare tool.
+
+## Usage with ChatGPT
+
+1. Go to **Settings** → **Apps** and enable **Developer mode**.
+2. Click **Add app** and paste the MCP URL from the table above.
+3. Open a new chat, click **+**, select **Delegare**, and start a conversation.
+
 ## Usage in Claude Desktop
 
-Add Delegare to your `claude_desktop_config.json`:
+Add Delegare as a remote MCP server in your `claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "delegare": {
-      "command": "npx",
-      "args": ["-y", "@delegare/mcp-tools"],
-      "env": {
-        "DELEGARE_API_URL": "https://api.sandbox.delegare.dev"
-      }
+      "type": "streamableHttp",
+      "url": "https://api.sandbox.delegare.dev/mcp"
     }
   }
 }
-```
-
 ```

@@ -147,21 +147,33 @@ function ProfileContent() {
 
           <div className="border-t border-[#f0ede8]/10 pt-4 mt-4 text-left">
             <h4 className="text-xs font-semibold text-[#f0ede8]/80 mb-3 uppercase tracking-wide">Agent Setup</h4>
+            <div className="bg-black border border-white/10 rounded-lg p-2 flex items-center gap-2 mb-3">
+              <span className="text-[10px] text-[#f0ede8]/40 flex-shrink-0">MCP URL</span>
+              <code className="text-[11px] text-[#7ec898] flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{mcpUrl}</code>
+              <button
+                onClick={() => navigator.clipboard.writeText(mcpUrl)}
+                className="p-1.5 hover:bg-white/5 rounded text-[#f0ede8]/40 hover:text-[#f0ede8] transition-colors flex-shrink-0"
+                title="Copy URL"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+            </div>
             <div className="flex flex-col gap-2">
-              <a 
-                href="/delegare.mcpb" 
-                download 
+              <a
+                href="https://claude.ai/settings/integrations"
+                target="_blank"
+                rel="noreferrer"
                 className="w-full flex items-center gap-2 text-xs bg-[#f0ede8]/5 hover:bg-[#f0ede8]/10 text-[#f0ede8] py-2.5 px-3 rounded-lg border border-[#f0ede8]/10 transition-colors cursor-pointer no-underline font-medium"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                Install for Claude Desktop (1-Click)
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                Add Connector on Claude.ai
               </a>
-              <button 
+              <button
                 onClick={() => setShowChatGptModal(true)}
                 className="w-full flex items-center gap-2 text-xs bg-[#f0ede8]/5 hover:bg-[#f0ede8]/10 text-[#f0ede8] py-2.5 px-3 rounded-lg border border-[#f0ede8]/10 transition-colors cursor-pointer text-left font-medium"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                ChatGPT Manual Setup
+                Add App on ChatGPT
               </button>
             </div>
           </div>
