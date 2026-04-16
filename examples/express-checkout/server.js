@@ -48,7 +48,8 @@ app.get('/api/premium-data',
   requireX402Payment({
     price: '0.05',
     payTo: process.env.MERCHANT_USDC_WALLET || '0x0000000000000000000000000000000000000000',
-    apiUrl: process.env.DELEGARE_BASE_URL || 'https://api.sandbox.delegare.dev/v1'
+    apiUrl: process.env.DELEGARE_BASE_URL || 'https://api.sandbox.delegare.dev/v1',
+    testMode: true
   }),
   (req, res) => {
     res.json({
