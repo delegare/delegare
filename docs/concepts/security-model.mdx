@@ -19,8 +19,8 @@ The agent only holds an **Intent Mandate** — a cryptographic Verifiable Creden
 Each spending mandate gets its own **dedicated ERC-4337 session key** — a unique keypair generated at mandate creation time. This is the only key authorized to initiate payments from the buyer's smart wallet.
 
 **Who holds the session key?**
-The private key is stored in **AWS Secrets Manager**, encrypted at rest, and scoped to the individual mandate. It is:
-- **Not accessible to Delegare staff** — Secrets Manager access is audit-logged and restricted by IAM policy.
+The private key is **KMS-encrypted** and stored as a ciphertext field on the mandate's own row in DynamoDB. It is:
+- **Not accessible to Delegare staff** — decryption requires the exact KMS encryption context bound to that specific `mandateId`; no other context — including broad IAM access — can decrypt it. All KMS calls are audit-logged in CloudTrail.
 - **Not accessible to the agent** — the agent only holds the intent mandate (a spending *permission*), never the signing key.
 - **Not accessible to the merchant** — the merchant receives USDC directly from the Base blockchain, routed by the on-chain DelegareRouter contract.
 
@@ -58,7 +58,7 @@ Delegare minimizes trust by building on existing, battle-tested infrastructure r
 | **Fiat payments** | [Stripe](https://stripe.com) | PCI-DSS Level 1, bank-grade fraud detection, established since 2010 |
 | **Crypto payments** | [Base](https://base.org) (Coinbase L2) | Open-source EVM chain, ~$0.002/tx, secured by Ethereum L1 |
 | **Smart contract** | DelegareRouter | On-chain, auditable, enforces token whitelisting and payment routing |
-| **Session key storage** | AWS Secrets Manager | AES-256 encryption at rest, IAM-scoped, audit-logged |
+| **Session key storage** | AWS KMS + DynamoDB | KMS envelope encryption; decryption requires mandate-bound context — cross-mandate reuse is cryptographically impossible |
 | **Spending limits** | DynamoDB atomic counters | Race-condition-free enforcement, server-side |
 
 **Delegare is the infrastructure layer** that abstracts across these systems. It does not hold your funds, does not have access to your full wallet, and does not have the ability to spend beyond what each mandate authorizes.

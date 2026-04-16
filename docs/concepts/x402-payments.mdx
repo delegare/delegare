@@ -135,7 +135,7 @@ const data = await response.json();
 4. Delegare settles on-chain via the mandate's session key and the DelegareRouter contract.
 5. The SDK returns the final response with the gated data.
 
-The agent never holds private keys. The session key that signs the transaction is scoped to the individual mandate and stored in AWS Secrets Manager — not accessible to the agent, the merchant, or Delegare itself.
+The agent never holds private keys. The session key that signs the transaction is scoped to the individual mandate — KMS-encrypted with a mandate-bound encryption context and stored on the mandate row in DynamoDB. It is not accessible to the agent, the merchant, or Delegare itself.
 
 ### Model Context Protocol (MCP)
 
