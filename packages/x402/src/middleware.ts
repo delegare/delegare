@@ -120,7 +120,7 @@ export function requireX402Payment(options: X402Options) {
           const err = await settleRes.json().catch(() => ({ message: 'Settlement failed' }));
           res.status(402).json({
             code: 'payment_settlement_failed',
-            message: (err as any).message || 'Delegare settlement failed',
+            message: (err as any).errorReason || (err as any).message || 'Delegare settlement failed',
           });
           return;
         }
