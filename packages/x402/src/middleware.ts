@@ -69,11 +69,11 @@ export function requireX402Payment(options: X402Options) {
 
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const xMandate = req.header('x-delegare-mandate');
+    const xPayment = req.header('x-payment');
     const xPaymentResponse = req.header('x-payment-response');
 
     // ── Case A: no payment → return 402 challenge ───────────────────────
-    if (!xMandate && !xPaymentResponse) {
-      const maxAmountRequired = priceToAtomicUsdc(options.price);
+    if (!xMandate && !xPayment && !xPaymentResponse) {
       const resource = options.resource || req.originalUrl;
 
       res.status(402).json({
@@ -83,7 +83,8 @@ export function requireX402Payment(options: X402Options) {
             scheme: 'exact',
             network,
             asset,
-            maxAmountRequired,
+            // Keep decimal format to match manual implementation compatibility
+            maxAmountRequired: options.price,
             payTo: options.payTo,
             resource,
             description: `USDC payment for ${resource}`,
@@ -96,19 +97,23 @@ export function requireX402Payment(options: X402Options) {
       return;
     }
 
-    // ── Case B: mandate header → settle via Delegare API ────────────────
-    if (xMandate) {
+    // ── Case B: mandate or direct payment → settle via Delegare API ──────
+    if (xMandate || xPayment) {
       try {
+        const payload: any = {
+          price: options.price,
+          payTo: options.payTo,
+          resource: options.resource || req.originalUrl,
+          network,
+        };
+
+        if (xMandate) payload.mandate = xMandate;
+        if (xPayment) payload.payment = JSON.parse(Buffer.from(xPayment, 'base64').toString('utf8'));
+
         const settleRes = await fetch(`${apiUrl}/x402/settle`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            mandate: xMandate,
-            price: options.price,
-            payTo: options.payTo,
-            resource: options.resource || req.originalUrl,
-            network,
-          }),
+          body: JSON.stringify(payload),
         });
 
         if (!settleRes.ok) {
@@ -131,9 +136,9 @@ export function requireX402Payment(options: X402Options) {
         next();
         return;
       } catch (err) {
-        res.status(502).json({
+        res.status(400).json({
           code: 'x402_settlement_error',
-          message: 'Could not reach Delegare settlement API',
+          message: err instanceof Error ? err.message : 'Settlement failed',
         });
         return;
       }
