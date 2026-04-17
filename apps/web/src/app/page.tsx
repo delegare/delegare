@@ -487,7 +487,7 @@ export default function Home() {
               Get started free
             </a>
             <a
-              href={`${dashboardUrl}`}
+              href={`${dashboardUrl}/onboarding?type=merchant`}
               className="btn-merchant"
             >
               Integrate as a merchant
@@ -917,7 +917,7 @@ export default function Home() {
               Get started free
             </a>
             <a
-              href={`${dashboardUrl}`}
+              href={`${dashboardUrl}/onboarding?type=merchant`}
               className="btn-merchant"
             >
               Integrate as a merchant
