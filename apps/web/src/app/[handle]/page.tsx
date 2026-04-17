@@ -129,7 +129,7 @@ function ProfileContent() {
           </div>
           <div className="flex justify-between pb-1">
             <span className="text-[#f0ede8]/30 text-xs">Fee per transaction</span>
-            <span className="text-[#f0ede8]/30 text-xs">3% or 3¢ max</span>
+            <span className="text-[#f0ede8]/30 text-xs">3% (3¢ max, 0.5¢ min)</span>
           </div>
         </div>
 
@@ -141,7 +141,7 @@ function ProfileContent() {
           </p>
           <div className="bg-[#000000] p-3 rounded-lg text-left overflow-x-auto border border-[#f0ede8]/10 mb-4">
             <code className="text-xs text-[#7ec898] whitespace-pre">
-              &quot;Buy @{merchant.merchantId} a coffee for 5 USDC&quot;
+              &quot;Buy @{merchant.merchantHandle || merchant.merchantId}{" "}a coffee for 5 USDC&quot;
             </code>
           </div>
 
@@ -240,7 +240,7 @@ function ProfileContent() {
                 <div className="flex-shrink-0 w-6 h-6 bg-[#c8b99a]/20 text-[#c8b99a] rounded-full flex items-center justify-center text-[11px] font-bold">3</div>
                 <div>
                   <h4 className="text-sm font-medium mb-1">Start a conversation</h4>
-                  <p className="text-xs text-[#f0ede8]/50">Open a new chat, click the <span className="text-white">+</span> button, select <strong>Delegare</strong>, and say <em>&quot;Buy @{merchant.merchantId} a coffee for 5 USDC&quot;</em>.</p>
+                  <p className="text-xs text-[#f0ede8]/50">Open a new chat, click the <span className="text-white">+</span> button, select <strong>Delegare</strong>, and say <em>&quot;Buy @{merchant.merchantHandle || merchant.merchantId}{" "}a coffee for 5 USDC&quot;</em>.</p>
                 </div>
               </div>
             </div>
