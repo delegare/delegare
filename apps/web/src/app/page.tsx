@@ -477,7 +477,7 @@ export default function Home() {
           <p className="hero-sub">
             Give agents real spending power with hard limits they
             can&apos;t override. Users set the rules. Agents execute.
-            Merchants get paid. From 3&cent; per transaction.
+            Merchants get paid. Max 3&cent; per transaction.
           </p>
           <div className="hero-actions">
             <a
@@ -784,7 +784,7 @@ export default function Home() {
               {
                 icon: "\u00B5",
                 title: "Micropayment-ready",
-                desc: "Under $1, the fee is just 3% \u2014 a 50\u00A2 API call costs 1.5\u00A2. Above $1, it\u2019s a flat 3\u00A2 no matter the amount.",
+                desc: "Under $1, the fee is just 3% with a 0.5\u00A2 minimum \u2014 a 50\u00A2 API call costs 1.5\u00A2. Above $1, it\u2019s capped at a flat 3\u00A2 no matter the amount.",
               },
             ].map((f) => (
               <div key={f.title} className="pricing-feature">
@@ -906,7 +906,7 @@ export default function Home() {
             Ready to make your payments agent-ready?
           </div>
           <p className="cta-banner-sub">
-            Buyers connect for free. Merchants integrate in 5 minutes. From
+            Buyers connect for free. Merchants integrate in 5 minutes. Max
             3&cent; per transaction.
           </p>
           <div className="cta-banner-actions">
