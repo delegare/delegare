@@ -543,23 +543,34 @@ export default function TermsPage() {
 
             <h3>Platform fee</h3>
             <p>
-              SecureLend charges merchants{" "}
-              <strong>
-                $0.03 (three cents USD) per successful transaction
-              </strong>{" "}
-              routed through the Delegare platform. This fee applies regardless
-              of transaction amount, currency, or rail used. The platform fee is
-              non-refundable once a transaction is marked completed.
+              SecureLend charges merchants a platform fee per successful
+              transaction routed through the Delegare platform, according to the
+              following schedule:
+            </p>
+            <ul>
+              <li>
+                <strong>Transactions of $1.00 or more:</strong> a flat{" "}
+                <strong>$0.03 (three cents USD)</strong>.
+              </li>
+              <li>
+                <strong>Transactions under $1.00:</strong>{" "}
+                <strong>3% of the transaction amount</strong>, subject to a
+                minimum of <strong>$0.005 (one-half cent USD)</strong>.
+              </li>
+            </ul>
+            <p>
+              The platform fee is non-refundable once a transaction is marked
+              completed.
             </p>
 
             <div className="callout callout-green">
               <div className="callout-title">Price commitment</div>
               <p>
-                The $0.03 per-transaction fee is Delegare&apos;s commitment to
-                simple, predictable pricing. We will provide at least 90 days&apos;
-                written notice before any change to this fee. Any fee change
-                will not apply to transactions initiated before the effective
-                date of the change.
+                The above fee schedule is Delegare&apos;s commitment to simple,
+                predictable pricing. We will provide at least 90 days&apos; written
+                notice before any change to this schedule. Any fee change will
+                not apply to transactions initiated before the effective date of
+                the change.
               </p>
             </div>
 
@@ -839,8 +850,8 @@ export default function TermsPage() {
               Merchants may initiate refunds for fiat transactions via{" "}
               <code>POST /v1/payments/:receiptId/refund</code>. Refunds are
               processed via Stripe and are subject to Stripe&apos;s refund timelines
-              (typically 5–10 business days). The $0.03 platform fee is not
-              refunded when a transaction is refunded.
+              (typically 5–10 business days). The platform fee is not refunded
+              when a transaction is refunded.
             </p>
             <p>
               Crypto transactions cannot be refunded by Delegare. If a merchant

@@ -455,7 +455,7 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>Billing:</strong> Stripe Customer ID and Subscription
-                Item ID for metered billing at $0.03 per successful transaction.
+                Item ID for metered billing per successful transaction.
                 We never store your billing card details directly.
               </li>
               <li>
@@ -662,7 +662,7 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>Operate the merchant platform:</strong> Manage accounts,
-                collect the $0.03 platform fee via Stripe metered billing,
+                collect the platform fee via Stripe metered billing,
                 deliver webhook notifications
               </li>
               <li>

@@ -784,7 +784,7 @@ export default function Home() {
               {
                 icon: "\u00B5",
                 title: "Micropayment-ready",
-                desc: "Under $1, the fee is just 3% \u2014 a 10\u00A2 API call costs 0.3\u00A2. Above $1, it\u2019s a flat 3\u00A2 no matter the amount.",
+                desc: "Under $1, the fee is just 3% \u2014 a 50\u00A2 API call costs 1.5\u00A2. Above $1, it\u2019s a flat 3\u00A2 no matter the amount.",
               },
             ].map((f) => (
               <div key={f.title} className="pricing-feature">
