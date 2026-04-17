@@ -6,6 +6,7 @@ import Link from "next/link";
 
 interface MerchantPublicView {
   merchantId: string;
+  merchantHandle?: string;
   name: string;
   totalTransactions: number;
   totalVolumeCents: number;
