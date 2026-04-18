@@ -93,3 +93,6 @@ pnpm x402
 ```
 
 The script uses `delegare.fetch()` to automatically detect the `402 Payment Required` challenge, authorize the $0.05 USDC payment via the Delegare SDK, and retry the request to securely fetch the premium data!
+
+> **💡 Note on Dashboard Tracking:**
+> If you provide a raw 0x address in `MERCHANT_USDC_WALLET` inside your `.env` that is *not* connected to your Merchant profile, the payment will succeed on-chain, but the Delegare backend won't know it belongs to you! It will be recorded under a generic "Web3 Merchant" and won't appear in your dashboard. To see x402 transactions in your dashboard, make sure you connect that exact USDC wallet via the **Payment Methods** tab first.
