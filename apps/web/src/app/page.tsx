@@ -201,6 +201,30 @@ export default function Home() {
           width: 6px; height: 6px; border-radius: 50%;
         }
 
+        /* VIDEO */
+        .video-section {
+          max-width: 1100px; margin: 0 auto;
+          padding: 20px 48px 60px;
+          animation: fadeUp 0.8s 0.5s ease both;
+        }
+        .video-frame {
+          position: relative; width: 100%;
+          padding-bottom: 56.25%; /* 16:9 */
+          border: 1px solid rgba(240,237,232,0.08);
+          border-radius: 16px; overflow: hidden;
+          background: rgba(240,237,232,0.02);
+          box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .video-frame iframe {
+          position: absolute; top: 0; left: 0;
+          width: 100%; height: 100%; border: 0;
+        }
+        .video-caption {
+          text-align: center; margin-top: 20px;
+          font-size: 13px; color: rgba(240,237,232,0.35);
+          font-weight: 300; letter-spacing: 0.02em;
+        }
+
         /* DIVIDER */
         .section-divider {
           width: 100%; height: 1px;
@@ -440,6 +464,7 @@ export default function Home() {
           .pricing-block { grid-template-columns: 1fr; gap: 40px; padding: 40px 28px; }
           .pricing-big { font-size: 72px; }
           .social-proof { gap: 24px; padding: 0 24px 48px; }
+          .video-section { padding: 12px 24px 40px; }
           .cta-banner { padding: 40px 28px; }
           .cta-banner-heading { font-size: 28px; }
           .footer { flex-direction: column; gap: 24px; align-items: flex-start; padding: 40px 24px; }
@@ -552,6 +577,21 @@ export default function Home() {
           AWS
         </span>
       </div>
+
+      {/* DEMO VIDEO */}
+      <section className="video-section">
+        <div className="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/9ZAfqtAeco4?rel=0&modestbranding=1"
+            title="Delegare demo"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        </div>
+        <div className="video-caption">Watch: Delegare in 90 seconds</div>
+      </section>
 
       <div className="section-divider" />
 
