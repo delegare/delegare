@@ -44,16 +44,36 @@ pnpm setup
 
 ## 🧪 Testing the API
 
+### Method 1: Standard Checkout (Agent ordering an item)
+
 Now that you have your `eyJhbGci...` mandate, you can simulate your AI agent ordering a pizza by sending a POST request to your new server:
 
 ```bash
 curl -X POST http://localhost:4000/api/checkout \
   -H "Content-Type: application/json" \
   -d '{
-    "intentMandate": "eyJhbGciOiJFU...",
+    "intentMandate": "YOUR_MANDATE_HERE",
     "item": "large_pepperoni_pizza",
     "deliveryAddress": "123 AI Avenue"
   }'
 ```
 
 If the agent's mandate is valid, hasn't expired, and has enough budget, the payment will succeed, and the pizza will be "ordered"! Check your backend terminal logs to see the Delegare SDK processing the charge in real time.
+
+### Method 2: The x402 API Paywall (Monetizing Data/Endpoints)
+
+This example also includes the `@delegare/x402` middleware, which automatically protects the `/api/premium-data` endpoint and charges AI agents per request.
+
+To test this locally without an LLM/MCP client, open your `.env` file and add the mandate you generated in the setup step:
+
+```env
+DELEGARE_MANDATE=eyJhbGci...
+```
+
+Then run the provided `x402.js` script to simulate an agent successfully navigating the paywall:
+
+```bash
+pnpm x402
+```
+
+The script will automatically detect the `402 Payment Required` challenge, authorize the $0.05 USDC payment via the Delegare SDK, and retry the request to fetch the premium data!
