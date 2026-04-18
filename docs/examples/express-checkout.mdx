@@ -67,3 +67,23 @@ Then, in a separate terminal, run the buyer setup script:
 node setup-buyer.js
 ```
 This script will give you a setup URL. Open it, complete the flow in Sandbox mode, and the script will automatically output a `curl` command you can use to test the checkout!
+
+## Testing the x402 API Paywall
+
+This example also demonstrates the `@delegare/x402` middleware, which automatically protects the `/api/premium-data` endpoint and charges AI agents $0.05 per request.
+
+You can test this flow locally using the provided `x402.js` script! 
+
+Simply add your generated mandate token to your `.env` file:
+
+```env
+DELEGARE_MANDATE=eyJhbGci...
+```
+
+Then run the script:
+
+```bash
+pnpm x402
+```
+
+The script uses `delegare.fetch()` to automatically detect the `402 Payment Required` challenge, authorize the $0.05 USDC payment via the Delegare SDK, and retry the request to securely fetch the premium data!
