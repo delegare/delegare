@@ -31,7 +31,8 @@ async function main() {
     console.log("\n✅ Session created successfully!");
     console.log("\n👉 CLICK THIS LINK TO CONNECT YOUR WALLET OR CARD:");
     console.log(`   ${session.setupUrl}\n`);
-    console.log("⏳ Waiting for you to complete the setup in your browser...");
+    console.log("   (If testing the x402 paywall, you MUST use a separate Buyer account and authorize Crypto/USDC)");
+    console.log("\n⏳ Waiting for you to complete the setup in your browser...");
 
     // 2. Poll the backend until the user completes the flow
     const pollIntervalMs = 3000;

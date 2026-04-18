@@ -64,7 +64,13 @@ If the agent's mandate is valid, hasn't expired, and has enough budget, the paym
 
 This example also includes the `@delegare/x402` middleware, which automatically protects the `/api/premium-data` endpoint and charges AI agents per request.
 
-To test this locally without an LLM/MCP client, open your `.env` file and add the mandate you generated in the setup step:
+> **⚠️ IMPORTANT: x402 requires Crypto (USDC)**
+> The `x402` protocol settles natively on-chain. To test this flow, your "Buyer" account MUST have a **Crypto Wallet** connected.
+> 1. Ensure you are testing from a separate "Buyer" account (not your Merchant account). Use an incognito window if necessary.
+> 2. Ensure that Buyer account has connected a Coinbase Smart Wallet (or similar) loaded with testnet USDC and ETH on Base Sepolia.
+> 3. When you run `pnpm setup` to generate the mandate, **you must authorize the Crypto spending option**, which will require you to actively sign a transaction on the Sepolia blockchain in your wallet. (A Fiat-only mandate will fail the x402 check!)
+
+To test this locally without an LLM/MCP client, open your `.env` file and add the *Crypto-authorized* mandate you generated in the setup step:
 
 ```env
 DELEGARE_MANDATE=eyJhbGci...
