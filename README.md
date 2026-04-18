@@ -80,7 +80,7 @@ Run our Express Checkout example to see both the merchant and agent experience:
 
 ---
 
-[Read the Docs](https://docs.delegare.dev) • [Sandbox Dashboard](https://app.sandbox.delegare.dev) • [Discord](https://discord.gg/delegare)
+[Read the Docs](https://docs.delegare.dev) • [Sandbox Dashboard](https://app.sandbox.delegare.dev) • [Discord](https://discord.gg/Z4WpQPqafK)
 
 <br/>
 <p align="center">
