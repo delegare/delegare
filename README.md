@@ -9,7 +9,7 @@ Let AI agents pay for things—safely. From ordering pizza to paying for APIs, g
 
 ---
 
-> **Demo Placeholder:** _(Drop your 60-90 second launch demo GIF/Video here showing the agent requesting an action, the user approving once, and the agent completing the payment)_
+<video src="https://github.com/user-attachments/assets/7ed2c3a1-03f7-41f9-9007-9341b035b028" controls muted playsinline width="100%"></video>
 
 ---
 
