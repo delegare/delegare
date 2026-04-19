@@ -43,24 +43,22 @@ function ProfileContent() {
   const [error, setError] = useState("");
   const [showChatGptModal, setShowChatGptModal] = useState(false);
 
-  // Determine API URL based on environment (default to empty so we don't fetch until we know)
-  const [apiUrl, setApiUrl] = useState('');
-
-  useEffect(() => {
+  // Determine API URL based on environment (lazy init avoids a redundant re-render)
+  const [apiUrl] = useState(() => {
+    if (typeof window === 'undefined') return 'https://api.delegare.dev/v1';
     const hostname = window.location.hostname;
-    if (hostname.includes('sandbox') || hostname.includes('localhost')) {
-      setApiUrl('https://api.sandbox.delegare.dev/v1');
-    } else {
-      setApiUrl('https://api.delegare.dev/v1');
-    }
-  }, []);
+    return hostname.includes('sandbox') || hostname.includes('localhost')
+      ? 'https://api.sandbox.delegare.dev/v1'
+      : 'https://api.delegare.dev/v1';
+  });
 
   const mcpUrl = apiUrl ? apiUrl.replace('/v1', '/mcp') : 'https://api.delegare.dev/mcp';
 
   useEffect(() => {
     if (!handle || !apiUrl) return;
-    
+
     // Reset states for new fetch
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError("");
 

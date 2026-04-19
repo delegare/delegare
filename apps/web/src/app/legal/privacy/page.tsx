@@ -999,7 +999,7 @@ export default function PrivacyPage() {
               © {new Date().getFullYear()} SecureLend, Inc.
             </div>
             <div className="policy-footer-links">
-              <a href="/legal/terms">Terms of Service</a>
+              <Link href="/legal/terms">Terms of Service</Link>
               <a href="https://securelend.ai/legal/privacy">
                 SecureLend Privacy
               </a>

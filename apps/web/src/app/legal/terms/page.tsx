@@ -327,7 +327,7 @@ export default function TermsPage() {
               By accessing or using the Services — including setting up a
               spending delegate, registering as a merchant, or installing the{" "}
               <code>@delegare/sdk</code> — you agree to be bound by these Terms
-              and our <a href="/legal/privacy">Privacy Policy</a>. If you do not
+              and our <Link href="/legal/privacy">Privacy Policy</Link>. If you do not
               agree, do not use the Services.
             </p>
             <div className="callout callout-warn">
@@ -1055,7 +1055,7 @@ export default function TermsPage() {
               © {new Date().getFullYear()} SecureLend, Inc.
             </div>
             <div className="terms-footer-links">
-              <a href="/legal/privacy">Privacy Policy</a>
+              <Link href="/legal/privacy">Privacy Policy</Link>
               <a href="https://securelend.ai/legal/terms">SecureLend Terms</a>
             </div>
           </div>

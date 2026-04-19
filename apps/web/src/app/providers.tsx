@@ -119,6 +119,7 @@ const theme = {
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     <ThemeProvider theme={theme as any}>
       {children}
     </ThemeProvider>
