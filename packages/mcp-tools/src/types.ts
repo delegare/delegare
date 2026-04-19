@@ -2,7 +2,8 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 export interface RegisterDelegareToolsOptions {
   merchantId: string;
-  apiKey: string;
+  /** Optional when using the standalone MCP server — auth is resolved from MCP context headers at runtime. */
+  apiKey?: string;
   baseUrl?: string;
   /**
    * Optional whitelist of allowed charge amounts in cents.

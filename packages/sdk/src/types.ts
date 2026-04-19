@@ -6,7 +6,8 @@ export type RailPreference = 'auto' | 'fiat_first' | 'crypto_first' | 'cheapest'
 /** API-key authentication (legacy / merchant-facing) */
 export interface ApiKeyAuth {
   merchantId: string;
-  apiKey: string;
+  /** Optional when auth is resolved from MCP context headers at runtime (standalone server). */
+  apiKey?: string;
   baseUrl?: string;
 }
 

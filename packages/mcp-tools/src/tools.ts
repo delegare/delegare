@@ -9,7 +9,7 @@ export function registerDelegareTools(
 ): void {
   const client = new Delegare({
     merchantId: options.merchantId,
-    apiKey: options.apiKey,
+    apiKey: options.apiKey ?? '',
     baseUrl: options.baseUrl,
   });
 
