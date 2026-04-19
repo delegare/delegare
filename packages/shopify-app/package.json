@@ -1,6 +1,6 @@
 {
   "name": "@delegare/shopify-app",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "description": "Shopify Payments App for Delegare Agentic Commerce",
   "main": "dist/index.js",
   "type": "module",
