@@ -784,7 +784,7 @@ export default function Home() {
               3<span>&cent;</span>
             </div>
             <div className="pricing-forever">
-              per successful transaction &mdash; or 3% under $1.
+              per successful transaction &mdash; or 3% under $1. Minimum 0.5&cent; includes gas on Base.
             </div>
             <div className="pricing-context">
               <p className="pricing-context-line">
@@ -824,7 +824,7 @@ export default function Home() {
               {
                 icon: "\u00B5",
                 title: "Micropayment-ready",
-                desc: "Under $1, the fee is just 3% with a 0.5\u00A2 minimum \u2014 a 50\u00A2 API call costs 1.5\u00A2. Above $1, it\u2019s capped at a flat 3\u00A2 no matter the amount.",
+                desc: "Under $1, the fee is 3% with a 0.5\u00A2 minimum \u2014 a 50\u00A2 API call costs 1.5\u00A2. Above $1, it\u2019s a flat 3\u00A2. The minimum covers gas on Base so neither party pays separately.",
               },
             ].map((f) => (
               <div key={f.title} className="pricing-feature">

@@ -128,7 +128,7 @@ function ProfileContent() {
           </div>
           <div className="flex justify-between pb-1">
             <span className="text-[#f0ede8]/30 text-xs">Fee per transaction</span>
-            <span className="text-[#f0ede8]/30 text-xs">3% (3¢ max, 0.5¢ min)</span>
+            <span className="text-[#f0ede8]/30 text-xs">3% (3¢ max, 0.5¢ min incl. gas)</span>
           </div>
         </div>
 
