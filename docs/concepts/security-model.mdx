@@ -55,7 +55,7 @@ Each spending mandate gets its own **dedicated ERC-4337 session key** — a uniq
 The private key is **KMS-encrypted** and stored as a ciphertext field on the mandate's own row in DynamoDB. It is:
 - **Not accessible to Delegare staff** — decryption requires the exact KMS encryption context bound to that specific `mandateId`; no other context — including broad IAM access — can decrypt it. All KMS calls are audit-logged in CloudTrail.
 - **Not accessible to the agent** — the agent only holds the intent mandate (a spending *permission*), never the signing key.
-- **Not accessible to the merchant** — the merchant receives USDC directly from the Base blockchain, routed by the on-chain [DelegareRouter](https://sepolia.basescan.org/address/0x85f2afB670E54a3a0F31966F49A18C73ea6a0f62) contract.
+- **Not accessible to the merchant** — the merchant receives USDC directly from the Base blockchain, routed by the on-chain DelegareRouter contract. The proxy is deployed at [`0x2dD6…FB03`](https://basescan.org/address/0x2dD63b8aB1F6058C626Aa977616b0c3Fd4CDFB03) on Base mainnet and [`0x85f2…0f62`](https://sepolia.basescan.org/address/0x85f2afB670E54a3a0F31966F49A18C73ea6a0f62) on Base Sepolia.
 
 The session key can only execute `payMerchant()` calls through the DelegareRouter smart contract, which enforces token whitelisting and payment parameters on-chain. It cannot drain the wallet, transfer arbitrary tokens, or call other contracts.
 
@@ -137,6 +137,7 @@ Delegare minimizes trust by building on existing, battle-tested infrastructure r
 | **Session key storage** | AWS KMS + DynamoDB | KMS envelope encryption; decryption requires mandate-bound context — cross-mandate reuse is cryptographically impossible |
 | **Spending limits** | DynamoDB atomic counters | Race-condition-free enforcement, server-side |
 | **Transport** | TLS 1.2+ with HSTS | Every API + dashboard hop; certificates managed by AWS ACM |
+| **Operational compliance** | SOC 2 Type 2 audited AWS infra | Operated by SecureLend; full compliance posture at [securelend.trustshare.com](https://securelend.trustshare.com/home) |
 
 **Delegare is the infrastructure layer** that abstracts across these systems. It does not hold your funds, does not have access to your full wallet, and does not have the ability to spend beyond what each mandate authorizes.
 
@@ -167,8 +168,7 @@ We believe honesty builds more trust than polish. Where we've chosen a trade-off
 
 - **We rely on AWS KMS.** If AWS itself is compromised, our at-rest encryption is only as good as AWS's. We consider this acceptable because the alternative — rolling our own key management — is almost always worse.
 - **Fiat payments require us to store a Stripe `pm_` pointer.** This is a reference, not a card number, but it is a piece of data we retain about each buyer. Revoking a mandate and deleting the account removes it.
-- **No third-party security audit yet.** A full audit of the vault (application + smart contract) is scheduled for Q3 2026; results will be published here. Until then, treat Delegare as "pre-audit" and use mandate limits that match your risk tolerance.
-- **Mainnet DelegareRouter is not yet deployed.** The production launch runs on Base Sepolia with real USDC-bridged testnet flow. Mainnet deploy follows the Q3 audit. The [Sepolia router](https://sepolia.basescan.org/address/0x85f2afB670E54a3a0F31966F49A18C73ea6a0f62) is public and can be read by anyone.
+- **No standalone third-party security audit of the vault application yet.** Delegare runs on SOC 2 Type 2 audited AWS infrastructure operated by SecureLend — the full compliance posture is published at [securelend.trustshare.com](https://securelend.trustshare.com/home). A dedicated third-party audit of the vault application and smart contract is on the roadmap and results will be published here when complete. Until then, use mandate limits that match your risk tolerance.
 - **Session key gas is funded by Delegare.** The 0.5¢ minimum transaction fee covers gas so neither the buyer nor the merchant pays separately. Abuse protection is rate-based; a compromised mandate could consume some gas stipend, but cannot exceed its spend limits.
 - **Revocation is effective for the next charge, not mid-charge.** A charge that has already passed the atomic limit check and reached the rail will complete. In practice this window is sub-second, but it is not zero.
 
