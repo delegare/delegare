@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import LiteYouTubeEmbed from "react-lite-youtube-embed";
+import "react-lite-youtube-embed/dist/LiteYouTubeEmbed.css";
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
@@ -26,8 +28,6 @@ export default function Home() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap');
-
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         .nav {
@@ -37,6 +37,7 @@ export default function Home() {
           transition: background 0.3s, border-color 0.3s;
           border-bottom: 1px solid transparent;
         }
+
         .nav.scrolled {
           background: rgba(12,12,12,0.92);
           backdrop-filter: blur(12px);
@@ -581,13 +582,12 @@ export default function Home() {
       {/* DEMO VIDEO */}
       <section className="video-section">
         <div className="video-frame">
-          <iframe
-            src="https://www.youtube-nocookie.com/embed/9ZAfqtAeco4?rel=0&modestbranding=1"
+          <LiteYouTubeEmbed
+            id="9ZAfqtAeco4"
             title="Delegare demo"
-            loading="lazy"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
+            noCookie={true}
+            adNetwork={true}
+            params="rel=0&modestbranding=1"
           />
         </div>
         <div className="video-caption">Watch: Delegare in 90 seconds</div>

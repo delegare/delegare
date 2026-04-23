@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, DM_Serif_Display, DM_Mono } from "next/font/google";
-import Script from "next/script";
+import { GoogleTagManager } from '@next/third-parties/google'
 import Providers from "./providers";
 import "./globals.css";
 
@@ -86,19 +86,7 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
-        {/* Google Analytics */}
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GA_ID}');
-          `}
-        </Script>
+        <GoogleTagManager gtmId={GA_ID} />
       </body>
     </html>
   );
