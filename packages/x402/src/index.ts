@@ -4,4 +4,9 @@ export type {
   X402Requirement,
   X402Challenge,
   X402PaymentReceipt,
+  // Credit-bundle fallback (non-crypto payment rail)
+  CreditBundleConfig,
+  CreditBundleTier,
+  CreditBundlePaymentMethod,
+  BundleValidationResult,
 } from './types';
