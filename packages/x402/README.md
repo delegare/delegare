@@ -10,7 +10,7 @@ This package implements the merchant side of the [x402 protocol](https://delegar
 ## Installation
 
 ```bash
-npm install @delegare/x402
+pnpm add @delegare/x402
 ```
 
 ## Quick Start (Crypto/USDC)
