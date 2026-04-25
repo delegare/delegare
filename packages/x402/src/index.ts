@@ -1,4 +1,6 @@
 export { requireX402Payment } from './middleware';
+export { declareDiscoveryExtension } from './discovery';
+export type { DiscoveryExtensionConfig } from './discovery';
 export type {
   X402Options,
   X402Requirement,

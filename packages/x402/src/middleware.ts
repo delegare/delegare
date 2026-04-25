@@ -169,6 +169,11 @@ export function requireX402Payment(options: X402Options) {
           network,
         };
 
+        const bazaarExt = (req as any)._x402BazaarExtension;
+        if (bazaarExt) {
+          payload.extensions = { bazaar: bazaarExt };
+        }
+
         if (xMandate) payload.mandate = xMandate;
         if (xPayment) payload.payment = JSON.parse(Buffer.from(xPayment, 'base64').toString('utf8'));
 
@@ -218,15 +223,22 @@ export function requireX402Payment(options: X402Options) {
           return;
         }
 
+        const verifyPayload: Record<string, unknown> = {
+          transaction:    receipt.transaction,
+          network:        receipt.network,
+          expectedPayTo:  options.payTo,
+          expectedAmount: priceToAtomicUsdc(options.price),
+        };
+
+        const bazaarExt = (req as any)._x402BazaarExtension;
+        if (bazaarExt) {
+          verifyPayload.extensions = { bazaar: bazaarExt };
+        }
+
         const verifyRes = await fetch(`${apiUrl}/x402/verify`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            transaction:    receipt.transaction,
-            network:        receipt.network,
-            expectedPayTo:  options.payTo,
-            expectedAmount: priceToAtomicUsdc(options.price),
-          }),
+          body: JSON.stringify(verifyPayload),
         });
 
         if (!verifyRes.ok) {
