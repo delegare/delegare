@@ -32,20 +32,69 @@ app.get('/premium-data',
 app.listen(4000);
 ```
 
-That's it. Any AI agent using `@delegare/sdk` or the Delegare MCP tools will automatically resolve the 402 challenge and pay.
+That's it. Any AI agent using `@delegare/sdk` or the Delegare MCP tools will automatically resolve the 402 challenge and pay via their configured crypto wallet or fiat balance.
 
-## How It Works
+## Dual-Rail Payments (Fiat Fallback)
 
+Not all agent developers have a crypto wallet. To support B2B clients, you can configure a **Credit Bundle Fallback**. This adds a fiat path (e.g., Stripe) alongside the crypto path. 
+
+Agents will automatically see the options in the `paymentMethods` array of the 402 response.
+
+```typescript
+app.post('/api/agent',
+  requireX402Payment({
+    price: '0.02',
+    payTo: '0xYourWalletAddress',
+    creditBundle: {
+      tiers: [
+        { name: 'Starter', usdCents: 1000, requests: 500 },
+        { name: 'Pro', usdCents: 5000, requests: 3000 }
+      ],
+      purchaseUrl: 'https://yourapp.com/billing/bundles',
+      validateAndDeduct: async (token: string) => {
+        // Your logic to validate the JWT token and deduct 1 credit from your DB
+        // ...
+        return { valid: true, creditsRemaining: 499, tenantId: 'org-123' };
+      },
+    },
+  }),
+  (req, res) => res.json({ success: true })
+);
 ```
-Agent → GET /premium-data → 402 Payment Required (x402 challenge)
-Agent → GET /premium-data + X-DELEGARE-MANDATE header
-     → Middleware forwards mandate to Delegare API
-     → Delegare settles on Base via DelegareRouter contract
-     → USDC arrives in your wallet
-     → 200 OK + data
+
+Clients pay once via Stripe, receive a bundle token, and send it via the `X-Bundle-Token` header.
+
+## CDP Bazaar Discovery Indexing
+
+If you want your agent or API endpoint to be semantically searchable on the [Coinbase Developer Platform (CDP) Bazaar](https://docs.cdp.coinbase.com/agentkit/docs/bazaar), use `declareDiscoveryExtension` right before the payment gate.
+
+```typescript
+import { requireX402Payment, declareDiscoveryExtension } from '@delegare/x402';
+
+app.post('/api/extract',
+  declareDiscoveryExtension({
+    description: "Structured financial data from unstructured loan documents.",
+    input: { documentId: "doc-123" },
+    inputSchema: {
+      type: "object",
+      properties: {
+        documentId: { type: "string" }
+      },
+      required: ["documentId"]
+    },
+    bodyType: "json",
+    output: {
+      example: { extractedData: { gross_income: 1250000 }, costCents: 15 }
+    }
+  }),
+  requireX402Payment({ price: '0.15', payTo: '0xYourWalletAddress' }),
+  async (req, res) => {
+    // ...
+  }
+);
 ```
 
-The middleware never touches private keys or on-chain logic. Delegare handles settlement; the Base blockchain handles custody; your wallet receives USDC directly.
+When a user settles a payment via Delegare's Facilitator, the metadata attached via `declareDiscoveryExtension` is automatically pushed to the CDP Bazaar index, making your service publicly discoverable by other AI agents.
 
 ## Configuration
 

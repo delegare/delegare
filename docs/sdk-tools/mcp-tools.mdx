@@ -28,9 +28,19 @@ The core tool for making purchases.
 
 ### 4. `delegare_fetch`
 A tool for scraping or fetching data from third-party APIs that may be monetized.
-- **Input:** `url`, `method`, `body`
+- **Input:** `url`, `method`, `body`, `bundleToken` (optional)
 - **Output:** The fetched HTTP response content.
-- **x402 Auto-Payment:** If the target URL returns a `402 Payment Required` challenge, this tool intercepts it, automatically signs the payment with the agent's mandate, and resubmits the request to fetch the data.
+- **x402 Auto-Payment:** If the target URL returns a `402 Payment Required` challenge, this tool intercepts it. It evaluates the payment options (Crypto USDC vs. Fiat Credit Bundle), resolves the payment using the agent's mandate or bundle token, and resubmits the request to fetch the data.
+
+### 5. `purchase_bundle`
+Allows the agent to purchase an API credit bundle if a merchant requires fiat payment or if the agent doesn't have a crypto wallet.
+- **Input:** `merchantBundleUrl`
+- **Output:** A checkout link for the user to complete the fiat payment via Stripe, plus available tiers.
+
+### 6. `check_bundle_balance`
+Checks the remaining requests on a purchased API credit bundle.
+- **Input:** `merchantBalanceUrl`, `bundleToken`
+- **Output:** Remaining credits and tier details.
 
 ## MCP Authentication Guard
 To prevent unauthorized tool calls, the MCP server implements an `mcpAuthGuard`. 

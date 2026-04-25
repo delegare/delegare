@@ -66,13 +66,22 @@ app.get('/premium-data',
 
 | Step | What happens |
 |---|---|
-| **No payment** | Returns `402` with x402 `PaymentRequirements` body |
+| **No payment** | Returns `402` with x402 `PaymentRequirements` body (and optional fiat credit bundle options) |
+| **`X-Bundle-Token` header** | Validates fiat bundle token, deducts a credit from your DB, bypassing crypto rails |
 | **`X-DELEGARE-MANDATE` header** | Forwards to Delegare's settlement API, which charges the buyer's smart wallet via the on-chain router |
 | **`X-PAYMENT-RESPONSE` header** | Verifies the receipt against Delegare's API |
 
 <Note>
   **You never touch private keys or on-chain logic.** Delegare handles settlement. Your middleware only advertises the price and verifies the receipt. USDC arrives in your wallet directly from the Base blockchain.
 </Note>
+
+### Extended Capabilities
+
+The `@delegare/x402` middleware goes beyond basic crypto payments:
+* **Fiat Fallbacks (Credit Bundles):** Not all B2B agents have crypto wallets. The middleware supports a fallback path allowing organizations to pre-purchase API access via Stripe or credit card, generating a JWT token that satisfies the 402 challenge.
+* **CDP Bazaar Discovery:** Use the `declareDiscoveryExtension()` tool to semantically index your paid API routes on the [Coinbase Developer Platform Bazaar](https://docs.cdp.coinbase.com/agentkit/docs/bazaar).
+
+Read the [x402 Middleware Documentation](/sdk-tools/x402-middleware) for full configuration details.
 
 ### Configuration options
 
