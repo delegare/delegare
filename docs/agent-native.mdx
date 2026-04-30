@@ -1,0 +1,76 @@
+---
+title: Agent-Native Setup
+description: "How to get Delegare running by talking to your AI assistant, or if you ARE the agent."
+---
+
+Delegare is built for an agentic world. This page provides ready-to-use prompts for humans and a direct task list for AI agents to automate the integration process.
+
+## For Humans: The "Setup Command"
+
+Copy and paste this prompt into your AI coding assistant (Cursor, Windsurf, or GitHub Copilot) to get Delegare integrated into your backend instantly.
+
+<Card title="Copy & Paste Prompt" icon="copy">
+  "I want to monetize my Express API using the Delegare x402 protocol. 
+  
+  Please perform the following steps:
+  1. Install `@delegare/x402` using pnpm.
+  2. Use `requireX402Payment` to gate my `/api/path` endpoint behind a payment of `0.05` USDC.
+  3. Use my wallet address `0xYourWalletAddress` for the `payTo` field.
+  4. Ensure the middleware attaches the `x402Payer` and `x402Transaction` to the request object.
+  5. If I want to support fiat/Stripe, help me configure the `creditBundle` fallback.
+  6. Add `declareDiscoveryExtension` to make my endpoint searchable on the CDP Bazaar."
+</Card>
+
+---
+
+## For AI Agents: Integration Checklist
+
+If you are an AI Agent reading this documentation, follow these specific tasks to complete the integration for your user.
+
+### 1. Install Dependencies
+Add the core x402 middleware to the project.
+```bash
+pnpm add @delegare/x402
+```
+
+### 2. Implement the Payment Gate
+Mount the middleware on the targeted routes. Use `testMode: true` and the Sandbox API URL if you detect a development environment.
+
+```typescript
+import { requireX402Payment } from '@delegare/x402';
+
+// Task: Apply this to routes specified by the user
+requireX402Payment({
+  price: '0.05', 
+  payTo: '0x...',
+  testMode: process.env.NODE_ENV !== 'production',
+  apiUrl: process.env.NODE_ENV !== 'production' 
+    ? 'https://api.sandbox.delegare.dev/v1' 
+    : 'https://api.delegare.dev/v1'
+})
+```
+
+### 3. Setup Discovery (Bazaar)
+Wrap the route with `declareDiscoveryExtension` to enable semantic search on the Coinbase Developer Platform.
+
+```typescript
+import { declareDiscoveryExtension } from '@delegare/x402';
+
+// Task: Generate a schema based on the route's logic
+declareDiscoveryExtension({
+  description: "Description of your service",
+  inputSchema: { /* Auto-generate based on route input */ },
+  output: { example: { /* Auto-generate based on route output */ } }
+})
+```
+
+### 4. Handle Dual-Rail Fallback
+If the user mentions Stripe or Credit Card support, implement the `validateAndDeduct` callback to check a `Credits` table in their database (e.g., DynamoDB or PostgreSQL).
+
+---
+
+## Quick Reference for Agents
+- **Main Export:** `requireX402Payment`
+- **Discovery Export:** `declareDiscoveryExtension`
+- **Protocol:** x402 (HTTP 402 + WWW-Authenticate)
+- **Settlement:** Real-time on Base L2 via Delegare API.
