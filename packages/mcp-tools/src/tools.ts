@@ -111,11 +111,11 @@ export function registerDelegareTools(
   server.registerTool(
     'authorize_agent_payment',
     {
-      description: 'Execute a payment through the Delegare vault using AP2. The agent presents its Intent Mandate (SD-JWT-VC). Spending limits are enforced server-side.',
+      description: 'Execute a payment through the Delegare vault using AP2. The agent presents its Intent Mandate (SD-JWT-VC). Spending limits are enforced server-side. IMPORTANT: amountCents is in US cents — divide by 100 for the dollar amount (e.g. amountCents=50 means $0.50, NOT 50 dollars or 50 USDC).',
       inputSchema: z.object({
         intentMandate: z.string().describe('The intentMandate stored in agent context'),
-        amountCents: z.number().int().positive().describe('Amount to charge in cents (e.g. 9900 = $99.00)'),
-        currency: z.enum(['usd', 'usdc', 'usdt']).describe('Currency for the charge'),
+        amountCents: z.number().int().positive().describe('Amount in US cents (1/100th of a dollar). amountCents=50 = $0.50. amountCents=499 = $4.99. DO NOT display this as the dollar amount.'),
+        currency: z.enum(['usd', 'usdc', 'usdt']).describe('Settlement currency (usdc = USDC stablecoin on Base). The dollar amount is amountCents / 100.'),
         description: z.string().describe('Human-readable description of what is being paid for'),
         idempotencyKey: z.string().describe('Unique key to prevent duplicate charges. Use a stable identifier like a subscription ID.'),
         metadataJson: z.string().optional().describe('Optional JSON string of key-value metadata (e.g. \'{"planId":"growth"}\')'),
@@ -158,11 +158,16 @@ export function registerDelegareTools(
         metadata,
       });
 
+      const usdAmount = (amountCents / 100).toFixed(2);
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(receipt),
+            text: JSON.stringify({
+              ...receipt,
+              amountUsd: `$${usdAmount}`,
+              note: `Payment of $${usdAmount} (${amountCents} cents) processed via ${currency.toUpperCase()} on Base.`,
+            }),
           },
         ],
       };
