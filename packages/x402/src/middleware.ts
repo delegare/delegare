@@ -119,8 +119,12 @@ export function requireX402Payment(options: X402Options) {
       }
     }
 
+    // Also accept MPP-native credentials (RFC 7235 Authorization: Payment)
+    const authHeader = req.header('authorization') ?? '';
+    const mppCredential = authHeader.startsWith('Payment ') ? authHeader.slice(8) : null;
+
     // ── Case A: no payment headers → return 402 challenge ────────────────
-    if (!xMandate && !xPayment && !xPaymentResponse) {
+    if (!xMandate && !xPayment && !xPaymentResponse && !mppCredential) {
       const resource = options.resource || req.originalUrl;
 
       const usdcRequirement: X402Requirement = {
@@ -135,6 +139,16 @@ export function requireX402Payment(options: X402Options) {
         maxTimeoutSeconds: options.maxTimeoutSeconds ?? 3600,
         extra: { name: 'USD Coin', version: '2' },
       };
+
+      // MPP RFC 7235 challenge header — enables Tempo wallet and MPP-native clients
+      // to discover and pay this endpoint. x402 clients use the JSON body as before.
+      const challengeId = Math.random().toString(36).slice(2, 10);
+      const host = req.headers.host || 'api.delegare.dev';
+      const challengeB64 = Buffer.from(JSON.stringify(usdcRequirement)).toString('base64url');
+      res.setHeader('WWW-Authenticate',
+        `Payment id="${challengeId}", realm="${host}", method="delegare", ` +
+        `intent="charge", request="${challengeB64}"`
+      );
 
       res.status(402).json({
         x402Version: 1,
@@ -160,7 +174,9 @@ export function requireX402Payment(options: X402Options) {
     }
 
     // ── Case C: mandate or direct payment → settle via Delegare API ──────
-    if (xMandate || xPayment) {
+    // Also handles MPP Authorization: Payment credentials (treated same as X-PAYMENT)
+    const effectivePayment = xPayment || mppCredential;
+    if (xMandate || effectivePayment) {
       try {
         const payload: Record<string, unknown> = {
           price: options.price,
@@ -175,7 +191,7 @@ export function requireX402Payment(options: X402Options) {
         }
 
         if (xMandate) payload.mandate = xMandate;
-        if (xPayment) payload.payment = JSON.parse(Buffer.from(xPayment, 'base64').toString('utf8'));
+        if (effectivePayment) payload.payment = JSON.parse(Buffer.from(effectivePayment, 'base64').toString('utf8'));
 
         const settleRes = await fetch(`${apiUrl}/x402/settle`, {
           method: 'POST',
@@ -195,6 +211,7 @@ export function requireX402Payment(options: X402Options) {
         const receipt = (await settleRes.json()) as X402PaymentReceipt;
         const responseHeader = Buffer.from(JSON.stringify(receipt)).toString('base64');
         res.setHeader('X-PAYMENT-RESPONSE', responseHeader);
+        res.setHeader('Payment-Receipt', responseHeader); // MPP RFC 7235
         (req as any).x402Payer       = receipt.payer;
         (req as any).x402Transaction = receipt.transaction;
 
@@ -250,6 +267,7 @@ export function requireX402Payment(options: X402Options) {
         }
 
         res.setHeader('X-PAYMENT-RESPONSE', xPaymentResponse);
+        res.setHeader('Payment-Receipt', xPaymentResponse); // MPP RFC 7235
         (req as any).x402Payer       = receipt.payer;
         (req as any).x402Transaction = receipt.transaction;
 
