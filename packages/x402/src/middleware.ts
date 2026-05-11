@@ -191,22 +191,31 @@ export function requireX402Payment(options: X402Options) {
         res.setHeader('BAZAAR-EXTENSION', Buffer.from(JSON.stringify(bazaarExtHeader)).toString('base64'));
       }
 
+      // Bazaar extension from declareDiscoveryExtension() if present
+      const bazaarExt2 = (req as any)._x402BazaarExtension;
+
       res.status(402).json({
         x402Version: 1,
-        error: '', // MPPScan requires string not null
-        // Backward-compatible `accepts` array (x402 spec v1 clients read this).
+        error: '',
+        // v2 spec: top-level resource object
+        resource: {
+          url: options.resource || `${req.protocol}://${req.headers.host}${req.originalUrl}`,
+          description: `USDC payment required for ${req.originalUrl}`,
+          mimeType: options.mimeType || 'application/json',
+        },
+        // Bazaar extension — required for agentic.market indexing
+        ...(bazaarExt2 && {
+          extensions: { bazaar: bazaarExt2 },
+        }),
+        // Backward-compatible accepts array
         accepts: [usdcRequirement],
-        // Extended `paymentMethods` listing all rails — present only when
-        // creditBundle is configured so existing USDC-only clients are unaffected.
         ...(options.creditBundle && {
           paymentMethods: [
             { type: 'x402-usdc', details: usdcRequirement },
             {
               type: 'credit-bundle',
               purchaseUrl: options.creditBundle.purchaseUrl,
-              ...(options.creditBundle.balanceUrl && {
-                balanceUrl: options.creditBundle.balanceUrl,
-              }),
+              ...(options.creditBundle.balanceUrl && { balanceUrl: options.creditBundle.balanceUrl }),
               tiers: options.creditBundle.tiers,
             },
           ],
