@@ -144,18 +144,28 @@ export function requireX402Payment(options: X402Options) {
       // v2 spec requires the PaymentRequired payload in a base64-encoded header.
       // We emit both the header (v2, for Bazaar discovery) and the JSON body
       // (v1, for backward compat with existing x402 clients).
-      const v2Payload = {
+      const resourceUrl = `https://${req.headers.host}${req.originalUrl}`;
+      const bazaarExtV2 = (req as any)._x402BazaarExtension;
+
+      const v2Payload: Record<string, unknown> = {
         x402Version: 2,
+        error: 'Payment required',
+        resource: {
+          url: options.resource || resourceUrl,
+          description: options.resource
+            ? `USDC payment required for ${options.resource}`
+            : `USDC payment required for ${req.originalUrl}`,
+          mimeType: options.mimeType || 'application/json',
+        },
         accepts: [{
           scheme: 'exact',
           network: `eip155:${network === 'base-sepolia' ? '84532' : '8453'}`,
           asset,
           amount: priceToAtomicUsdc(options.price),
           payTo: options.payTo,
-          maxTimeoutSeconds: options.maxTimeoutSeconds ?? 3600,
-          extra: { name: 'USD Coin', version: '2' },
+          maxTimeoutSeconds: options.maxTimeoutSeconds ?? 300,
         }],
-        error: '',  // MPPScan requires string not null
+        ...(bazaarExtV2 && { extensions: { bazaar: bazaarExtV2 } }),
       };
       res.setHeader('PAYMENT-REQUIRED', Buffer.from(JSON.stringify(v2Payload)).toString('base64'));
 

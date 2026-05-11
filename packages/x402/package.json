@@ -1,6 +1,6 @@
 {
   "name": "@delegare/x402",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "Express middleware for monetizing API routes with x402 micropayments via Delegare",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
