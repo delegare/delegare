@@ -199,7 +199,7 @@ export function requireX402Payment(options: X402Options) {
         error: '',
         // v2 spec: top-level resource object
         resource: {
-          url: options.resource || `${req.protocol}://${req.headers.host}${req.originalUrl}`,
+          url: options.resource || `https://${req.headers.host}${req.originalUrl}`,
           description: `USDC payment required for ${req.originalUrl}`,
           mimeType: options.mimeType || 'application/json',
         },
