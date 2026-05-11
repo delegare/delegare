@@ -155,16 +155,33 @@ export function requireX402Payment(options: X402Options) {
           maxTimeoutSeconds: options.maxTimeoutSeconds ?? 3600,
           extra: { name: 'USD Coin', version: '2' },
         }],
-        error: null,
+        error: '',  // MPPScan requires string not null
       };
       res.setHeader('PAYMENT-REQUIRED', Buffer.from(JSON.stringify(v2Payload)).toString('base64'));
 
-      // MPP RFC 7235 challenge header
-      const challengeId = Math.random().toString(36).slice(2, 10);
+      // ── MPP payment challenge (RFC 7235 WWW-Authenticate) ──────────────────
+      // MPPScan reads this to validate the payment challenge format.
+      // MPP challenge fields: expires (RFC3339), currency (token addr),
+      // amount (raw units), recipient (wallet), resource (object with url).
+      const expires = new Date(Date.now() + (options.maxTimeoutSeconds ?? 3600) * 1000).toISOString();
+      const mppChallenge = {
+        method: 'tempo',
+        intent: 'charge',
+        expires,
+        resource: {
+          url: options.resource || req.originalUrl,
+          description: `USDC payment for ${options.resource || req.originalUrl}`,
+        },
+        // Tempo chain pathUSD — MPP native. Also include EVM USDC for cross-chain.
+        currency: asset, // USDC contract address
+        amount: priceToAtomicUsdc(options.price), // raw token units
+        recipient: options.payTo,
+        error: '',
+      };
+      const challengeB64 = Buffer.from(JSON.stringify(mppChallenge)).toString('base64url');
       const host = req.headers.host || 'api.delegare.dev';
-      const challengeB64 = Buffer.from(JSON.stringify(usdcRequirement)).toString('base64url');
       res.setHeader('WWW-Authenticate',
-        `Payment id="${challengeId}", realm="${host}", method="delegare", ` +
+        `Payment realm="${host}", method="delegare+x402+mpp", ` +
         `intent="charge", request="${challengeB64}"`
       );
 
@@ -176,6 +193,7 @@ export function requireX402Payment(options: X402Options) {
 
       res.status(402).json({
         x402Version: 1,
+        error: '', // MPPScan requires string not null
         // Backward-compatible `accepts` array (x402 spec v1 clients read this).
         accepts: [usdcRequirement],
         // Extended `paymentMethods` listing all rails — present only when
