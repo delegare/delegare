@@ -140,8 +140,26 @@ export function requireX402Payment(options: X402Options) {
         extra: { name: 'USD Coin', version: '2' },
       };
 
-      // MPP RFC 7235 challenge header — enables Tempo wallet and MPP-native clients
-      // to discover and pay this endpoint. x402 clients use the JSON body as before.
+      // ── x402 v2: PAYMENT-REQUIRED header (required by CDP Bazaar / agentic.market) ──
+      // v2 spec requires the PaymentRequired payload in a base64-encoded header.
+      // We emit both the header (v2, for Bazaar discovery) and the JSON body
+      // (v1, for backward compat with existing x402 clients).
+      const v2Payload = {
+        x402Version: 2,
+        accepts: [{
+          scheme: 'exact',
+          network: `eip155:${network === 'base-sepolia' ? '84532' : '8453'}`,
+          asset,
+          amount: priceToAtomicUsdc(options.price),
+          payTo: options.payTo,
+          maxTimeoutSeconds: options.maxTimeoutSeconds ?? 3600,
+          extra: { name: 'USD Coin', version: '2' },
+        }],
+        error: null,
+      };
+      res.setHeader('PAYMENT-REQUIRED', Buffer.from(JSON.stringify(v2Payload)).toString('base64'));
+
+      // MPP RFC 7235 challenge header
       const challengeId = Math.random().toString(36).slice(2, 10);
       const host = req.headers.host || 'api.delegare.dev';
       const challengeB64 = Buffer.from(JSON.stringify(usdcRequirement)).toString('base64url');
@@ -149,6 +167,12 @@ export function requireX402Payment(options: X402Options) {
         `Payment id="${challengeId}", realm="${host}", method="delegare", ` +
         `intent="charge", request="${challengeB64}"`
       );
+
+      // Also add Bazaar extension headers if declared
+      const bazaarExtHeader = (req as any)._x402BazaarExtension;
+      if (bazaarExtHeader) {
+        res.setHeader('BAZAAR-EXTENSION', Buffer.from(JSON.stringify(bazaarExtHeader)).toString('base64'));
+      }
 
       res.status(402).json({
         x402Version: 1,
