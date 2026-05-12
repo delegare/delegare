@@ -146,7 +146,34 @@ export function requireX402Payment(options: X402Options) {
       // We emit both the header (v2, for Bazaar discovery) and the JSON body
       // (v1, for backward compat with existing x402 clients).
       const resourceUrl = `https://${req.headers.host}${req.originalUrl}`;
-      const bazaarExtV2 = (req as any)._x402BazaarExtension;
+      const rawBazaarExt = (req as any)._x402BazaarExtension;
+
+      // Reshape to CDP Bazaar's required structure:
+      // { info: { input: { type, method, body, bodyType }, output: { type, example } }, schema, description }
+      const bazaarExtV2 = rawBazaarExt ? (() => {
+        const b = rawBazaarExt as any;
+        return {
+          ...(b.description && { description: b.description }),
+          info: {
+            input: {
+              type: 'http',
+              method: req.method || 'POST',
+              ...(b.input?.body || b.inputSchema ? {
+                body: b.input?.body || { documentId: 'string', workspaceId: 'string (optional)' },
+                bodyType: b.bodyType || 'json',
+              } : {}),
+            },
+            output: b.output ? {
+              type: 'json',
+              ...(b.output.example && { example: b.output.example }),
+              ...(b.output.schema && { schema: b.output.schema }),
+            } : undefined,
+          },
+          // schema at top level for CDP validation
+          ...(b.output?.schema && { schema: b.output.schema }),
+          ...(b.inputSchema && { inputSchema: b.inputSchema }),
+        };
+      })() : undefined;
 
       const v2Payload: Record<string, unknown> = {
         x402Version: 2,
