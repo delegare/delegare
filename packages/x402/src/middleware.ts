@@ -173,26 +173,41 @@ export function requireX402Payment(options: X402Options) {
       // MPPScan reads this to validate the payment challenge format.
       // MPP challenge fields: expires (RFC3339), currency (token addr),
       // amount (raw units), recipient (wallet), resource (object with url).
-      const expires = new Date(Date.now() + (options.maxTimeoutSeconds ?? 3600) * 1000).toISOString();
-      const mppChallenge = {
-        method: 'tempo',
+      const challengeId = `ch_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+      const expires = new Date(Date.now() + (options.maxTimeoutSeconds ?? 300) * 1000).toISOString();
+      // resourceUrl already declared above
+      const bazaarExtForChallenge = (req as any)._x402BazaarExtension;
+
+      const mppChallenge: Record<string, unknown> = {
+        id: challengeId,              // MPPScan: unique challenge id
+        method: 'x402',
         intent: 'charge',
-        expires,
+        expires,                       // MPPScan: RFC 3339 expiry
         resource: {
-          url: options.resource || req.originalUrl,
-          description: `USDC payment for ${options.resource || req.originalUrl}`,
+          url: options.resource || resourceUrl,
+          description: `USDC payment for ${req.originalUrl}`,
+          mimeType: options.mimeType || 'application/json',
         },
-        // Tempo chain pathUSD — MPP native. Also include EVM USDC for cross-chain.
-        currency: asset, // USDC contract address
-        amount: priceToAtomicUsdc(options.price), // raw token units
+        currency: asset,               // token contract address
+        amount: priceToAtomicUsdc(options.price),
         recipient: options.payTo,
         error: '',
+        // Include schemas from declareDiscoveryExtension() so MPPScan
+        // can show input/output schemas in the listing
+        ...(bazaarExtForChallenge?.inputSchema && { inputSchema: bazaarExtForChallenge.inputSchema }),
+        ...(bazaarExtForChallenge?.output?.example && {
+          outputSchema: {
+            type: 'object',
+            example: bazaarExtForChallenge.output.example,
+          }
+        }),
       };
       const challengeB64 = Buffer.from(JSON.stringify(mppChallenge)).toString('base64url');
       const host = req.headers.host || 'api.delegare.dev';
       res.setHeader('WWW-Authenticate',
-        `Payment realm="${host}", method="delegare+x402+mpp", ` +
-        `intent="charge", request="${challengeB64}"`
+        `Payment realm="${host}", method="x402+mpp", ` +
+        `intent="charge", id="${challengeId}", ` +
+        `expires="${expires}", request="${challengeB64}"`
       );
 
       // Also add Bazaar extension headers if declared
