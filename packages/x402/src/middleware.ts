@@ -159,19 +159,17 @@ export function requireX402Payment(options: X402Options) {
               type: 'http',
               method: req.method || 'POST',
               ...(b.input?.body || b.inputSchema ? {
-                body: b.input?.body || { documentId: 'string', workspaceId: 'string (optional)' },
+                body: b.input?.body || {},
                 bodyType: b.bodyType || 'json',
               } : {}),
             },
-            output: b.output ? {
-              type: 'json',
-              ...(b.output.example && { example: b.output.example }),
-              ...(b.output.schema && { schema: b.output.schema }),
-            } : undefined,
+            ...(b.output?.example && {
+              output: {
+                type: 'json',
+                example: b.output.example,
+              },
+            }),
           },
-          // schema at top level for CDP validation
-          ...(b.output?.schema && { schema: b.output.schema }),
-          ...(b.inputSchema && { inputSchema: b.inputSchema }),
         };
       })() : undefined;
 
