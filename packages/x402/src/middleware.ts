@@ -251,9 +251,52 @@ export function requireX402Payment(options: X402Options) {
       return;
     }
 
-    // ── Case C: mandate or direct payment → settle via Delegare API ──────
-    // Also handles MPP Authorization: Payment credentials (treated same as X-PAYMENT)
+    // ── Case C: mandate or direct payment → settle via appropriate facilitator ──
+    // - PAYMENT-SIGNATURE (v2): CDP x402 client — route to CDP facilitator
+    // - X-PAYMENT (v1) or X-DELEGARE-MANDATE: Delegare facilitator
+    const paymentSignature = req.header('payment-signature');
     const effectivePayment = xPayment || mppCredential;
+
+    // CDP x402 v2 client sends PAYMENT-SIGNATURE — settle via CDP facilitator
+    if (paymentSignature) {
+      try {
+        const decodedSig = JSON.parse(Buffer.from(paymentSignature, 'base64').toString('utf8'));
+        const cdpPayload = {
+          x402Version: 2,
+          paymentPayload: decodedSig,
+          paymentRequirements: {
+            scheme: 'exact',
+            network: `eip155:${network === 'base-sepolia' ? '84532' : '8453'}`,
+            asset,
+            amount: priceToAtomicUsdc(options.price),
+            payTo: options.payTo,
+            maxTimeoutSeconds: options.maxTimeoutSeconds ?? 300,
+            extra: { name: 'USD Coin', version: '2' },
+          },
+        };
+        const cdpRes = await fetch('https://api.cdp.coinbase.com/platform/v2/x402/settle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cdpPayload),
+          signal: AbortSignal.timeout(15_000),
+        });
+        if (!cdpRes.ok) {
+          const err = await cdpRes.json().catch(() => ({}));
+          res.status(402).json({ code: 'cdp_settlement_failed', message: (err as any).errorMessage ?? 'CDP settlement failed' });
+          return;
+        }
+        const cdpReceipt = await cdpRes.json();
+        const responseHeader = Buffer.from(JSON.stringify({ success: true, ...(cdpReceipt as object) })).toString('base64');
+        res.setHeader('X-PAYMENT-RESPONSE', responseHeader);
+        res.setHeader('PAYMENT-RESPONSE', responseHeader);
+        next();
+        return;
+      } catch (err) {
+        res.status(400).json({ code: 'cdp_settlement_error', message: err instanceof Error ? err.message : 'CDP settlement failed' });
+        return;
+      }
+    }
+
     if (xMandate || effectivePayment) {
       try {
         const payload: Record<string, unknown> = {
