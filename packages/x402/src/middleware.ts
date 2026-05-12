@@ -243,8 +243,8 @@ export function requireX402Payment(options: X402Options) {
         res.setHeader('BAZAAR-EXTENSION', Buffer.from(JSON.stringify(bazaarExtHeader)).toString('base64'));
       }
 
-      // Bazaar extension from declareDiscoveryExtension() if present
-      const bazaarExt2 = (req as any)._x402BazaarExtension;
+      // bazaarExtV2 already reshaped above — reuse it for the body too
+      const bazaarExt2 = bazaarExtV2;
 
       res.status(402).json({
         x402Version: 1,
