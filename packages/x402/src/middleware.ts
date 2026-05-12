@@ -261,12 +261,36 @@ export function requireX402Payment(options: X402Options) {
     if (paymentSignature) {
       try {
         const decodedSig = JSON.parse(Buffer.from(paymentSignature, 'base64').toString('utf8'));
+        // Build the full x402 paymentPayload CDP expects:
+        // { x402Version, accepted: { scheme, network, asset, amount, payTo, ... }, payload: { authorization, signature }, resource: {...} }
+        const cdpNetwork = `eip155:${network === 'base-sepolia' ? '84532' : '8453'}`;
+        const fullPaymentPayload = {
+          x402Version: 2,
+          accepted: {
+            scheme: 'exact',
+            network: cdpNetwork,
+            asset,
+            amount: priceToAtomicUsdc(options.price),
+            payTo: options.payTo,
+            maxTimeoutSeconds: options.maxTimeoutSeconds ?? 300,
+            extra: { name: 'USD Coin', version: '2' },
+          },
+          payload: decodedSig.payload ?? decodedSig,
+          resource: {
+            url: options.resource || `https://${req.headers.host}${req.originalUrl}`,
+            description: `USDC payment for ${req.originalUrl}`,
+            mimeType: options.mimeType || 'application/json',
+          },
+          ...(((req as any)._x402BazaarExtension) && {
+            extensions: { bazaar: (req as any)._x402BazaarExtension }
+          }),
+        };
         const cdpPayload = {
           x402Version: 2,
-          paymentPayload: decodedSig,
+          paymentPayload: fullPaymentPayload,
           paymentRequirements: {
             scheme: 'exact',
-            network: `eip155:${network === 'base-sepolia' ? '84532' : '8453'}`,
+            network: cdpNetwork,
             asset,
             amount: priceToAtomicUsdc(options.price),
             payTo: options.payTo,
@@ -281,8 +305,11 @@ export function requireX402Payment(options: X402Options) {
           signal: AbortSignal.timeout(15_000),
         });
         if (!cdpRes.ok) {
-          const err = await cdpRes.json().catch(() => ({}));
-          res.status(402).json({ code: 'cdp_settlement_failed', message: (err as any).errorMessage ?? 'CDP settlement failed' });
+          const errText = await cdpRes.text().catch(() => '{}');
+          let err: any = {};
+          try { err = JSON.parse(errText); } catch {}
+          console.error('[x402] CDP settlement failed:', cdpRes.status, errText.slice(0, 500));
+          res.status(402).json({ code: 'cdp_settlement_failed', message: err.errorMessage ?? err.message ?? errText.slice(0, 200) });
           return;
         }
         const cdpReceipt = await cdpRes.json();
