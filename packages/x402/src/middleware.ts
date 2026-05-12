@@ -164,6 +164,7 @@ export function requireX402Payment(options: X402Options) {
           amount: priceToAtomicUsdc(options.price),
           payTo: options.payTo,
           maxTimeoutSeconds: options.maxTimeoutSeconds ?? 300,
+          extra: { name: 'USD Coin', version: '2' }, // EIP-712 domain params required by x402 clients
         }],
         ...(bazaarExtV2 && { extensions: { bazaar: bazaarExtV2 } }),
       };
