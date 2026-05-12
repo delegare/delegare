@@ -8,8 +8,9 @@ applications:
             - nvm install 22
             - nvm use 22
             - corepack enable
-            - corepack prepare pnpm@latest --activate
-            - cd ../.. && NODE_ENV=development pnpm install --no-frozen-lockfile --prod=false
+            - corepack prepare pnpm@10.28.0 --activate
+            - cd ../.. && NODE_ENV=development pnpm install --no-frozen-lockfile --prod=false --ignore-scripts
+            - node ../../node_modules/esbuild/install.js 2>/dev/null || true
         build:
           commands:
             - cd ../.. && pnpm --filter web build
