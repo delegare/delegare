@@ -79,8 +79,9 @@ export function requireX402Payment(options: X402Options) {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const xBundleToken   = req.header('x-bundle-token');
     const xMandate       = req.header('x-delegare-mandate');
-    const xPayment       = req.header('x-payment');
-    const xPaymentResponse = req.header('x-payment-response');
+    // Accept both x402 v1 (X-PAYMENT) and v2 (PAYMENT-SIGNATURE) credential headers
+    const xPayment       = req.header('x-payment') || req.header('payment-signature');
+    const xPaymentResponse = req.header('x-payment-response') || req.header('payment-response');
 
     // ── Case B: credit-bundle token → validate and deduct ────────────────
     // Checked before USDC so non-crypto clients are served without any
