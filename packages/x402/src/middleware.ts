@@ -227,12 +227,11 @@ export function requireX402Payment(options: X402Options) {
         // Include schemas from declareDiscoveryExtension() so MPPScan
         // can show input/output schemas in the listing
         ...(bazaarExtForChallenge?.inputSchema && { inputSchema: bazaarExtForChallenge.inputSchema }),
-        ...(bazaarExtForChallenge?.output?.example && {
-          outputSchema: {
-            type: 'object',
-            example: bazaarExtForChallenge.output.example,
-          }
-        }),
+        ...((bazaarExtForChallenge as any)?.output?.schema
+          ? { outputSchema: (bazaarExtForChallenge as any).output.schema }
+          : ((bazaarExtForChallenge as any)?.output?.example
+              ? { outputSchema: { type: 'object', example: (bazaarExtForChallenge as any).output.example } }
+              : {})),
       };
       const challengeB64 = Buffer.from(JSON.stringify(mppChallenge)).toString('base64url');
       const host = req.headers.host || 'api.delegare.dev';
