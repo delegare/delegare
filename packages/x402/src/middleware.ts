@@ -152,14 +152,16 @@ export function requireX402Payment(options: X402Options) {
       // { info: { input: { type, method, body, bodyType }, output: { type, example } }, schema, description }
       const bazaarExtV2 = rawBazaarExt ? (() => {
         const b = rawBazaarExt as any;
+        // Prefer inputSchema (JSON Schema) over input.body (example) for body field
+        const bodySchema = b.inputSchema || b.input?.body;
         return {
           ...(b.description && { description: b.description }),
           info: {
             input: {
               type: 'http',
               method: req.method || 'POST',
-              ...(b.input?.body || b.inputSchema ? {
-                body: b.input?.body || {},
+              ...(bodySchema ? {
+                body: bodySchema,
                 bodyType: b.bodyType || 'json',
               } : {}),
             },
@@ -167,9 +169,12 @@ export function requireX402Payment(options: X402Options) {
               output: {
                 type: 'json',
                 example: b.output.example,
+                ...(b.output?.schema && { schema: b.output.schema }),
               },
             }),
           },
+          // Top-level schema field required by Bazaar SDK validator
+          ...(b.output?.schema && { schema: b.output.schema }),
         };
       })() : undefined;
 
