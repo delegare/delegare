@@ -289,41 +289,22 @@ export function requireX402Payment(options: X402Options) {
     // CDP x402 v2 client sends PAYMENT-SIGNATURE — settle via CDP facilitator
     if (paymentSignature) {
       try {
+        // decodedSig IS the full paymentPayload built by @x402/fetch — it already contains
+        // resource, accepted, extensions, and payload correctly structured by the official SDK.
+        // Pass it directly rather than reconstructing manually (which loses Bazaar extensions).
         const decodedSig = JSON.parse(Buffer.from(paymentSignature, 'base64').toString('utf8'));
         const cdpNetwork = `eip155:${network === 'base-sepolia' ? '84532' : '8453'}`;
-        const resourceUrl = options.resource || `https://${req.headers.host}${req.originalUrl}`;
-        const fullPaymentPayload = {
-          x402Version: 2,
-          accepted: {
-            scheme: 'exact',
-            network: cdpNetwork,
-            asset,
-            amount: priceToAtomicUsdc(options.price),
-            payTo: options.payTo,
-            maxTimeoutSeconds: options.maxTimeoutSeconds ?? 300,
-            extra: { name: 'USD Coin', version: '2' },
-          },
-          payload: decodedSig.payload ?? decodedSig,
-          resource: {
-            url: resourceUrl,
-            description: `USDC payment for ${req.originalUrl}`,
-            mimeType: options.mimeType || 'application/json',
-          },
-          ...(((req as any)._x402BazaarExtension) && {
-            extensions: { bazaar: (req as any)._x402BazaarExtension }
-          }),
-        };
+
         const cdpPayload = {
-          x402Version: 2,
-          paymentPayload: fullPaymentPayload,
+          x402Version: decodedSig.x402Version ?? 2,
+          paymentPayload: decodedSig,  // pass through as-is — includes resource + extensions from client
           paymentRequirements: {
+            // V2 paymentRequirements schema: no `resource` field, uses `amount` not `maxAmountRequired`
             scheme: 'exact',
             network: cdpNetwork,
             asset,
             amount: priceToAtomicUsdc(options.price),
             payTo: options.payTo,
-            resource: resourceUrl,          // required for Bazaar catalog indexing
-            mimeType: options.mimeType || 'application/json',
             maxTimeoutSeconds: options.maxTimeoutSeconds ?? 300,
             extra: { name: 'USD Coin', version: '2' },
           },
