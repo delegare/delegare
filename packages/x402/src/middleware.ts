@@ -290,9 +290,8 @@ export function requireX402Payment(options: X402Options) {
     if (paymentSignature) {
       try {
         const decodedSig = JSON.parse(Buffer.from(paymentSignature, 'base64').toString('utf8'));
-        // Build the full x402 paymentPayload CDP expects:
-        // { x402Version, accepted: { scheme, network, asset, amount, payTo, ... }, payload: { authorization, signature }, resource: {...} }
         const cdpNetwork = `eip155:${network === 'base-sepolia' ? '84532' : '8453'}`;
+        const resourceUrl = options.resource || `https://${req.headers.host}${req.originalUrl}`;
         const fullPaymentPayload = {
           x402Version: 2,
           accepted: {
@@ -306,7 +305,7 @@ export function requireX402Payment(options: X402Options) {
           },
           payload: decodedSig.payload ?? decodedSig,
           resource: {
-            url: options.resource || `https://${req.headers.host}${req.originalUrl}`,
+            url: resourceUrl,
             description: `USDC payment for ${req.originalUrl}`,
             mimeType: options.mimeType || 'application/json',
           },
@@ -323,13 +322,48 @@ export function requireX402Payment(options: X402Options) {
             asset,
             amount: priceToAtomicUsdc(options.price),
             payTo: options.payTo,
+            resource: resourceUrl,          // required for Bazaar catalog indexing
+            mimeType: options.mimeType || 'application/json',
             maxTimeoutSeconds: options.maxTimeoutSeconds ?? 300,
             extra: { name: 'USD Coin', version: '2' },
           },
         };
+
+        // Build CDP JWT if credentials are available in environment
+        const cdpSettleHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+        const cdpKeyId = process.env.COINBASE_API_KEY;
+        const cdpKeySecret = process.env.COINBASE_API_SECRET;
+        if (cdpKeyId && cdpKeySecret) {
+          try {
+            const { randomBytes: rb } = await import('crypto');
+            const { importJWK, SignJWT } = await import('jose');
+            const keyBytes = Buffer.from(cdpKeySecret, 'base64');
+            // CDP uses Ed25519 keys: first 32 bytes = seed (d), last 32 bytes = public key (x)
+            const jwk = {
+              kty: 'OKP', crv: 'Ed25519',
+              d: keyBytes.slice(0, 32).toString('base64url'),
+              x: keyBytes.slice(32, 64).toString('base64url'),
+            };
+            const privateKey = await importJWK(jwk, 'EdDSA');
+            const nonce = rb(16).toString('hex');
+            const jwt = await new SignJWT({
+              sub: cdpKeyId,
+              iss: 'cdp',
+              uris: ['POST api.cdp.coinbase.com/platform/v2/x402/settle'],
+            })
+              .setProtectedHeader({ alg: 'EdDSA', typ: 'JWT', kid: cdpKeyId, nonce })
+              .setNotBefore(Math.floor(Date.now() / 1000))
+              .setExpirationTime('2m')
+              .sign(privateKey);
+            cdpSettleHeaders['Authorization'] = `Bearer ${jwt}`;
+          } catch (jwtErr) {
+            console.warn('[x402] CDP JWT build failed, proceeding unauthenticated:', jwtErr instanceof Error ? jwtErr.message : jwtErr);
+          }
+        }
+
         const cdpRes = await fetch('https://api.cdp.coinbase.com/platform/v2/x402/settle', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: cdpSettleHeaders,
           body: JSON.stringify(cdpPayload),
           signal: AbortSignal.timeout(15_000),
         });
