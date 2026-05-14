@@ -383,6 +383,15 @@ export default function Home() {
               Agents running on Claude, ChatGPT, or any MCP-compatible client can discover your endpoint via tool use — input schema, output schema, and pricing all surfaced automatically from your middleware config.
             </p>
           </div>
+          <div className="rail-card">
+            <div className="rail-icon rail-icon-fiat">
+              <span role="img" aria-label="arrows">&#x21C4;</span>
+            </div>
+            <div className="rail-name">Built-in On &amp; Off Ramp</div>
+            <p className="rail-desc">
+              Agents and users can move between fiat and USDC without leaving the flow. Card-to-crypto and crypto-to-card conversion is built in — so a buyer with dollars can pay a merchant expecting USDC, and vice versa.
+            </p>
+          </div>
         </div>
       </section>
 
