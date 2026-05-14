@@ -33,6 +33,9 @@ export default function Home() {
           delegare<span>.</span>
         </Link>
         <div className="nav-links">
+          <a href="https://market.delegare.dev" className="nav-link">
+            Market
+          </a>
           <a href="https://docs.delegare.dev" className="nav-link">
             Docs
           </a>
@@ -104,7 +107,11 @@ export default function Home() {
             <p className="audience-body">
               Add 5 lines of code. When an agent hits your API, Delegare
               handles authentication, spending validation, and settlement — via
-              Stripe or USDC on Base. You get paid; they get access.
+              Stripe or USDC on Base. Your endpoint is automatically listed on{" "}
+              <a href="https://market.delegare.dev" style={{ color: "#c8b99a", textDecoration: "underline" }}>
+                Delegare Market
+              </a>{" "}
+              so agents can discover and pay you without any manual setup.
             </p>
             <a href="https://docs.delegare.dev/quickstart" className="audience-link">
               See the integration guide &rarr;
@@ -330,6 +337,57 @@ export default function Home() {
 
       <div className="section-divider" />
 
+      {/* DISCOVERY */}
+      <section className="section">
+        <div className="section-label">Agent discovery</div>
+        <p
+          style={{
+            textAlign: "center",
+            color: "rgba(240,237,232,0.6)",
+            maxWidth: 580,
+            margin: "0 auto 40px",
+            lineHeight: 1.6,
+          }}
+        >
+          Install <code style={{ color: "#c8b99a", fontSize: "0.9em" }}>@delegare/x402</code> and your endpoint is automatically listed everywhere agents look — no registration, no extra config.
+        </p>
+        <div className="rails-grid">
+          <div className="rail-card">
+            <div className="rail-icon rail-icon-crypto">
+              <span role="img" aria-label="store">&#x1F3EA;</span>
+            </div>
+            <div className="rail-name">
+              <a href="https://market.delegare.dev" style={{ color: "inherit", textDecoration: "none", borderBottom: "1px solid rgba(200,185,154,0.4)" }}>
+                Delegare Market
+              </a>
+            </div>
+            <p className="rail-desc">
+              Our unified API marketplace aggregates endpoints from both the x402 (CDP Bazaar) and MPP ecosystems in one place. Agents using the Delegare SDK discover and pay in a single query.
+            </p>
+          </div>
+          <div className="rail-card">
+            <div className="rail-icon rail-icon-fiat">
+              <span role="img" aria-label="globe">&#x1F310;</span>
+            </div>
+            <div className="rail-name">agentic.market + MPPScan</div>
+            <p className="rail-desc">
+              The middleware simultaneously emits x402 v2 and MPP headers on every 402 response. Your endpoint appears on Coinbase&apos;s agentic.market and MPPScan automatically — no separate registrations.
+            </p>
+          </div>
+          <div className="rail-card">
+            <div className="rail-icon rail-icon-crypto">
+              <span role="img" aria-label="robot">&#x1F916;</span>
+            </div>
+            <div className="rail-name">Searchable by Claude &amp; ChatGPT</div>
+            <p className="rail-desc">
+              Agents running on Claude, ChatGPT, or any MCP-compatible client can discover your endpoint via tool use — input schema, output schema, and pricing all surfaced automatically from your middleware config.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="section-divider" />
+
       {/* PRICING */}
       <section className="section">
         <div className="section-label">Pricing</div>
@@ -549,6 +607,9 @@ export default function Home() {
             </div>
           </div>
           <div className="footer-links">
+            <a href="https://market.delegare.dev" className="footer-link">
+              Market
+            </a>
             <a href="https://docs.delegare.dev" className="footer-link">
               Docs
             </a>
