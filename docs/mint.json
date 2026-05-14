@@ -13,6 +13,10 @@
   },
   "topbarLinks": [
     {
+      "name": "Marketplace",
+      "url": "https://market.delegare.dev"
+    },
+    {
       "name": "Contact Support",
       "url": "mailto:info@delegare.dev"
     }
@@ -42,7 +46,8 @@
       "pages": [
         "concepts/intent-mandates",
         "concepts/dual-rail-payments",
-        "concepts/security-model"
+        "concepts/security-model",
+        "concepts/delegare-market"
       ]
     },
     {

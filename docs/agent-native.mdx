@@ -6,9 +6,13 @@ description: "How to get Delegare running by talking to your AI assistant, or if
 Delegare is built for an agentic world. This page provides ready-to-use prompts for humans and a direct task list for AI agents to automate the integration process.
 
 ## Why `@delegare/x402` instead of official x402?
-The official `x402` packages are **crypto-only**. If an enterprise AI agent without a crypto wallet hits your endpoint, it fails. 
+The official `x402` packages are **crypto-only** and don't include discovery support. If an enterprise AI agent without a crypto wallet hits your endpoint, it fails — and your service won't appear in agent directories.
 
-By installing `@delegare/x402`, you gain **Dual-Rail Fallbacks**. It supports on-chain settlement (USDC) out of the box, but automatically degrades to a Fiat Credit Bundle path (Stripe/Cards) for B2B clients, ensuring you never drop a paying request.
+`@delegare/x402` adds three things on top:
+
+1. **Dual-Rail Fallbacks** — on-chain USDC + Fiat Credit Bundles (Stripe) in a single middleware
+2. **Multi-protocol discovery** — every 402 response simultaneously emits `PAYMENT-REQUIRED` (x402 v2) and `WWW-Authenticate: Payment` (MPP / RFC 7235), making your endpoint automatically listed on [Delegare Market](https://market.delegare.dev) (which aggregates both), [agentic.market](https://agentic.market), and [mppscan.com](https://mppscan.com)
+3. **Delegare AP2 mandates** — scoped agent spending via `X-DELEGARE-MANDATE` for human-authorized agent budgets
 
 ---
 
@@ -24,7 +28,7 @@ Copy and paste this prompt into your AI coding assistant (Cursor, Windsurf, or G
   2. Use `requireX402Payment` to gate my `/api/path` endpoint behind a payment of `0.05` USD.
   3. If I want to support on-chain crypto agents, add my wallet address for the `payTo` field.
   4. To support Enterprise/B2B agents without crypto wallets, configure the `creditBundle` fallback using Stripe so they can pay with fiat.
-  5. Add `declareDiscoveryExtension` to make my endpoint searchable on the CDP Bazaar."
+  5. Add `declareDiscoveryExtension` with both `inputSchema` and `output.schema` to make my endpoint searchable on Delegare Market (market.delegare.dev), agentic.market, and MPPScan. Set COINBASE_API_KEY and COINBASE_API_SECRET env vars for authenticated CDP settlement."
 </Card>
 
 ---
@@ -71,24 +75,44 @@ requireX402Payment({
 })
 ```
 
-### 3. Setup Discovery (Bazaar)
-Wrap the route with `declareDiscoveryExtension` to enable semantic search on the Coinbase Developer Platform.
+### 3. Setup Discovery (CDP Bazaar + MPPScan)
+Wrap the route with `declareDiscoveryExtension` to enable semantic search on [Delegare Market](https://market.delegare.dev), [agentic.market](https://agentic.market), and [mppscan.com](https://mppscan.com). The metadata is embedded in both `PAYMENT-REQUIRED` (x402 v2) and `WWW-Authenticate` (MPP/RFC 7235) on every 402 response — Delegare Market aggregates both upstream sources automatically.
 
 ```typescript
 import { declareDiscoveryExtension } from '@delegare/x402';
 
-// Task: Generate a schema based on the route's logic
+// Task: Generate schemas based on the route's actual input/output shape
 declareDiscoveryExtension({
   description: "Description of your service",
-  inputSchema: { /* Auto-generate based on route input */ },
-  output: { example: { /* Auto-generate based on route output */ } }
+  inputSchema: {
+    type: "object",
+    properties: { /* Auto-generate from route parameters */ },
+    required: [ /* list required fields */ ]
+  },
+  bodyType: "json",
+  output: {
+    example: { /* Auto-generate from route output */ },
+    // output.schema is required for CDP Bazaar to accept the catalog entry
+    schema: {
+      type: "object",
+      properties: { /* Auto-generate from route output shape */ }
+    }
+  }
 })
+```
+
+Also ensure these env vars are set for authenticated CDP settlement (required for Bazaar indexing):
+
+```env
+COINBASE_API_KEY=your-cdp-key-id
+COINBASE_API_SECRET=your-base64-ed25519-secret
 ```
 
 ---
 
 ## Quick Reference for Agents
-- **Main Export:** `requireX402Payment`
-- **Differentiator:** Dual-rail (Crypto + Fiat Fallbacks). Official x402 is crypto-only.
-- **Protocol:** x402 (HTTP 402 + WWW-Authenticate)
-- **Settlement:** Real-time on Base L2 via Delegare API, or Fiat via Credit Bundles.
+- **Main Export:** `requireX402Payment` + `declareDiscoveryExtension`
+- **Differentiator:** Dual-rail (Crypto + Fiat) + multi-protocol discovery. Official x402 is crypto-only with no discovery.
+- **Protocols emitted:** x402 v2 (`PAYMENT-REQUIRED`), MPP/RFC 7235 (`WWW-Authenticate`), x402 v1 (JSON body)
+- **Settlement rails:** CDP Facilitator (x402 v2), Delegare Facilitator (x402 v1 + AP2), Stripe (credit bundles)
+- **Discovery:** Auto-indexed on [market.delegare.dev](https://market.delegare.dev), agentic.market, and MPPScan — Delegare Market aggregates both x402 and MPP sources

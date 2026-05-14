@@ -1,0 +1,122 @@
+---
+title: "Delegare Market"
+description: "The unified discovery marketplace for monetized AI agent APIs — aggregating across CDP Bazaar (x402) and MPPScan (MPP) in one place."
+---
+
+[market.delegare.dev](https://market.delegare.dev) is Delegare's agent API marketplace. It aggregates endpoints from both major agent payment discovery networks — **CDP Bazaar / agentic.market** (x402) and **MPPScan** (MPP) — into a single searchable catalog.
+
+If you build a paid API with `@delegare/x402`, your endpoint gets listed on Delegare Market automatically, alongside the upstream directories.
+
+---
+
+## How Listing Works
+
+When you use `@delegare/x402` with `declareDiscoveryExtension`, your 402 response simultaneously emits:
+
+- **`PAYMENT-REQUIRED` header** — x402 v2 format, read by CDP Bazaar → agentic.market
+- **`WWW-Authenticate: Payment` header** — MPP/RFC 7235 format, read by MPPScan
+
+Delegare Market pulls from both upstream catalogs and re-indexes them with unified search, category filtering, and quality ranking. There's nothing extra to configure — one middleware, three directories.
+
+```
+@delegare/x402 middleware
+        │
+        ├── PAYMENT-REQUIRED ──→ CDP Bazaar ──→ agentic.market
+        │
+        ├── WWW-Authenticate ──→ MPPScan ──→ mppscan.com
+        │
+        └── Both ──────────────→ Delegare Market ──→ market.delegare.dev
+```
+
+---
+
+## Getting Listed
+
+### 1. Add `declareDiscoveryExtension` to your routes
+
+```typescript
+import { requireX402Payment, declareDiscoveryExtension } from '@delegare/x402';
+
+app.post('/api/your-endpoint',
+  declareDiscoveryExtension({
+    description: "What your endpoint does, written for AI agents to understand.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        yourParam: { type: "string", description: "What it does" }
+      },
+      required: ["yourParam"]
+    },
+    bodyType: "json",
+    output: {
+      example: { result: "...", costCents: 10 },
+      schema: {
+        type: "object",
+        properties: {
+          result: { type: "string" },
+          costCents: { type: "number" }
+        }
+      }
+    }
+  }),
+  requireX402Payment({ price: '0.10', payTo: '0xYourWallet' }),
+  handler
+);
+```
+
+### 2. Trigger the first CDP settlement
+
+CDP Bazaar indexes your endpoint after the first `PAYMENT-SIGNATURE` credential settles through their facilitator. The fastest way to trigger this without waiting for organic traffic:
+
+```bash
+# In your vault/scripts directory — uses @x402/fetch with your wallet
+PRIVATE_KEY=0x... node dist/cdp-payment/cdp-first-payment.js
+```
+
+Or make any real payment to your endpoint using an `@x402/fetch`-based client.
+
+### 3. Register on MPPScan
+
+Visit [mppscan.com/register](https://mppscan.com/register) and enter your server's base URL. MPPScan reads your `openapi.json` and `WWW-Authenticate` headers for discovery — no payment required.
+
+### 4. You're listed
+
+Once both upstream sources have your endpoint, Delegare Market automatically picks it up on its next crawl. Check your listing at [market.delegare.dev](https://market.delegare.dev).
+
+---
+
+## Required env vars
+
+For CDP Bazaar indexing to work (step 2), the middleware needs CDP credentials to authenticate the settlement call:
+
+```env
+COINBASE_API_KEY=your-cdp-key-id       # CDP API key UUID
+COINBASE_API_SECRET=your-base64-secret  # Base64-encoded Ed25519 key (64 bytes)
+```
+
+Without these, the USDC transfer still goes through but CDP won't write the catalog entry.
+
+---
+
+## What Agents See
+
+A listing on Delegare Market shows agents:
+
+- **Description** — from `declareDiscoveryExtension({ description })`
+- **Input parameters** — from `inputSchema.properties`
+- **Output shape** — from `output.schema`
+- **Price** — from `requireX402Payment({ price })`
+- **Payment methods** — USDC on Base, plus fiat credit bundle if configured
+- **Live endpoint URL** — directly callable by agents
+
+---
+
+## Why One Marketplace Matters
+
+| Directory | Protocol | Indexed via |
+|-----------|----------|-------------|
+| [agentic.market](https://agentic.market) | x402 v2 | CDP Bazaar settlement |
+| [mppscan.com](https://mppscan.com) | MPP / RFC 7235 | openapi.json + WWW-Authenticate |
+| [market.delegare.dev](https://market.delegare.dev) | Both | Aggregated from both |
+
+Agents discovering via Delegare SDK, Claude, or ChatGPT tool use can search across all x402 and MPP endpoints in one query. For merchants, one middleware integration gets you listed on all three without managing separate registrations for each protocol.
