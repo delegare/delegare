@@ -1,21 +1,16 @@
 # @delegare/x402
 
-[![npm version](https://img.shields.io/npm/v/@delegare/x402.svg)](https://www.npmjs.com/package/@delegare/x402)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+Gate your API routes behind USDC micropayments with multi-protocol discovery — CDP Bazaar, MPPScan, and Delegare AP2 mandates.
 
-Gate your Express API routes behind USDC micropayments or fiat credit bundles with a single line of middleware.
-
-This package implements the merchant side of the [x402 protocol](https://delegare.dev/concepts/x402-payments) with **multi-protocol discovery support**: it simultaneously handles x402 v2 (CDP Bazaar / agentic.market), MPP (MPPScan / RFC 7235), Delegare AP2 mandates, and fiat credit bundles. Settlement routes through either the CDP Facilitator or Delegare — whichever matches the client's payment credential.
-
-Endpoints listed automatically on **[Delegare Market](https://market.delegare.dev)** (aggregates x402 + MPP), [agentic.market](https://agentic.market), and [mppscan.com](https://mppscan.com).
+The `@delegare/x402` package lets merchants monetize API endpoints using the x402 protocol. It handles the 402 challenge, payment verification, and settlement across multiple payment rails. Crucially, it also embeds discovery metadata that makes your endpoint automatically indexable on [Delegare Market](https://market.delegare.dev), [agentic.market](https://agentic.market) (CDP Bazaar), and [mppscan.com](https://mppscan.com) (MPP) — one middleware, three directories.
 
 ## Installation
 
 ```bash
-pnpm add @delegare/x402
+npm install @delegare/x402
 ```
 
-## Quick Start (USDC/Crypto)
+## Quick Start
 
 ```typescript
 import express from 'express';
@@ -25,11 +20,11 @@ const app = express();
 
 app.get('/premium-data',
   requireX402Payment({
-    price: '0.05',                  // 5 cents USDC
+    price: '0.05',                  // 5 cents USDC per call
     payTo: '0xYourWalletAddress',   // Your Base wallet
   }),
   (req, res) => {
-    res.json({ data: 'premium content', paidBy: (req as any).x402Payer });
+    res.json({ data: 'premium content' });
   }
 );
 
@@ -38,7 +33,7 @@ app.listen(4000);
 
 ## Dual-Rail Payments (Fiat Fallback)
 
-Add a Stripe-backed credit bundle path for B2B clients without crypto wallets. Clients pre-purchase a bundle, receive a JWT, and send it via `X-Bundle-Token`.
+Not all agent developers have a crypto wallet. Configure a **Credit Bundle Fallback** to add a Stripe-backed fiat path alongside the crypto path.
 
 ```typescript
 app.post('/api/agent',
@@ -60,13 +55,13 @@ app.post('/api/agent',
 );
 ```
 
-## Agent Discovery (CDP Bazaar + MPPScan)
+Clients pay once via Stripe, receive a bundle token, and send it via `X-Bundle-Token` to bypass crypto.
 
-Use `declareDiscoveryExtension` to make your endpoint searchable on [Delegare Market](https://market.delegare.dev) (aggregates both), [agentic.market](https://agentic.market), and [mppscan.com](https://mppscan.com).
+## Agent Discovery (Delegare Market, CDP Bazaar + MPPScan)
 
-Place it **before** `requireX402Payment`. The metadata is embedded in both the `PAYMENT-REQUIRED` header (x402 v2, read by CDP Bazaar) and the `WWW-Authenticate` header (MPP/RFC 7235, read by MPPScan).
+Use `declareDiscoveryExtension` to make your endpoint automatically discoverable on [Delegare Market](https://market.delegare.dev), [agentic.market](https://agentic.market), and [mppscan.com](https://mppscan.com). Place it before `requireX402Payment`.
 
-**CDP Bazaar indexing** happens automatically the first time a payment settles through the CDP Facilitator. After that, the endpoint appears on [agentic.market](https://agentic.market) and [Delegare Market](https://market.delegare.dev).
+The metadata is embedded in both the `PAYMENT-REQUIRED` header (x402 v2, read by CDP Bazaar) and the `WWW-Authenticate` header (MPP/RFC 7235, read by MPPScan) on every 402 response.
 
 ```typescript
 import { requireX402Payment, declareDiscoveryExtension } from '@delegare/x402';
@@ -77,65 +72,49 @@ app.post('/api/extract',
     inputSchema: {
       type: "object",
       properties: {
-        documentId: { type: "string", description: "Document ID to extract from" },
+        documentId: { type: "string", description: "Document ID" },
         domain: { type: "string", enum: ["commercial_loan", "equity_investment"] }
       },
       required: ["documentId"]
     },
     bodyType: "json",
     output: {
-      example: { extractedData: { gross_income: 1250000 }, pageCount: 10, costCents: 150 },
-      // schema is required for CDP Bazaar to accept the index entry
+      example: { extractedData: { gross_income: 1250000 }, costCents: 150 },
       schema: {
         type: "object",
         properties: {
           extractedData: { type: "object" },
-          pageCount: { type: "number" },
           costCents: { type: "number" }
         }
       }
     }
   }),
   requireX402Payment({ price: '0.15', payTo: '0xYourWalletAddress' }),
-  async (req, res) => {
-    res.json({ data: '...' });
-  }
+  async (req, res) => { res.json({ data: '...' }); }
 );
 ```
 
-### Triggering CDP Bazaar Indexing
+> **Note:** `output.schema` is required (not just `example`) for CDP Bazaar to accept the index entry. Without it, the validator will report "schema is invalid" even if all other checks pass.
 
-CDP indexes your endpoint the first time a **`PAYMENT-SIGNATURE`** credential is settled through their facilitator. To trigger this for existing endpoints without waiting for organic traffic, use `@x402/fetch` with your wallet:
+### How Bazaar Indexing Works
 
-```typescript
-import { wrapFetchWithPayment, x402Client } from '@x402/fetch';
-import { ExactEvmScheme } from '@x402/evm';
-import { privateKeyToAccount } from 'viem/accounts';
-import { base } from 'viem/chains';
+CDP Bazaar indexes your endpoint the **first time a `PAYMENT-SIGNATURE` credential is settled** through their facilitator. The middleware handles this automatically:
 
-const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
-const client = new x402Client();
-client.register('eip155:8453', new ExactEvmScheme(account as any));
-const x402Fetch = wrapFetchWithPayment(fetch, client);
+1. An agent hits your endpoint with `PAYMENT-SIGNATURE` (x402 v2 credential from `@x402/fetch`)
+2. The middleware passes the full payment payload — including your `declareDiscoveryExtension` metadata — directly to CDP's `/settle` endpoint
+3. CDP settles on-chain and writes the catalog entry
+4. Your endpoint appears on [agentic.market](https://agentic.market) within ~10 minutes
 
-// This hits your live endpoint, gets the real 402 challenge, signs + settles via CDP
-await x402Fetch('https://yourapi.com/api/extract', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ documentId: 'test' }),
-});
-```
+To trigger indexing for existing endpoints without waiting for organic traffic, use the `@x402/fetch` client with your own wallet to make one test payment per endpoint. See the [CDP Bazaar docs](https://docs.cdp.coinbase.com/x402/bazaar) for details.
 
-### Authenticated CDP Settlement (Required for Bazaar)
-
-For CDP to accept your settlement and write the catalog entry, set these environment variables:
+### Required Environment Variables for Bazaar
 
 ```env
-COINBASE_API_KEY=your-cdp-key-id        # CDP API key UUID
-COINBASE_API_SECRET=your-cdp-secret     # Base64-encoded Ed25519 key (64 bytes)
+COINBASE_API_KEY=your-cdp-key-id       # CDP API key UUID
+COINBASE_API_SECRET=your-cdp-secret    # Base64-encoded Ed25519 key (64 bytes)
 ```
 
-The middleware automatically builds a CDP JWT and attaches `Authorization: Bearer <jwt>` to the `/settle` call when these are present.
+When set, the middleware automatically authenticates CDP settlement calls with a signed JWT — required for Bazaar catalog writes.
 
 ## What the 402 Response Emits
 
@@ -143,23 +122,25 @@ Every unauthenticated request receives three parallel discovery headers:
 
 | Header | Protocol | Read by |
 |--------|----------|---------|
-| `PAYMENT-REQUIRED` | x402 v2 | [Delegare Market](https://market.delegare.dev), CDP Bazaar, agentic.market |
-| `WWW-Authenticate: Payment ...` | MPP / RFC 7235 | MPPScan, MPP-compatible clients |
-| `BAZAAR-EXTENSION` | Delegare | Debug / custom clients |
+| `PAYMENT-REQUIRED` | x402 v2 | [Delegare Market](https://market.delegare.dev), CDP Bazaar, agentic.market, @x402/fetch |
+| `WWW-Authenticate: Payment ...` | MPP / RFC 7235 | [Delegare Market](https://market.delegare.dev), MPPScan, MPP-compatible wallets |
+| `BAZAAR-EXTENSION` | Delegare debug | Custom clients |
 
 Plus a JSON body for backward-compatible x402 v1 clients.
 
 ## Payment Rails (Priority Order)
 
-| Header sent by client | Rail | Settlement |
-|-----------------------|------|------------|
-| `X-Bundle-Token` | Fiat credit bundle | Stripe (your backend) |
-| `PAYMENT-SIGNATURE` | x402 v2 USDC | CDP Facilitator → on-chain |
-| `X-PAYMENT` | x402 v1 USDC | Delegare Facilitator → on-chain |
-| `X-DELEGARE-MANDATE` | AP2 intent mandate | Delegare Vault |
-| `Authorization: Payment` | MPP | Delegare Facilitator |
+The middleware accepts five types of payment credentials in this order:
 
-## Configuration Reference
+| Client header | Rail | Settlement |
+|---------------|------|------------|
+| `X-Bundle-Token` | Fiat credit bundle | Your backend (Stripe) |
+| `PAYMENT-SIGNATURE` | x402 v2 USDC | CDP Facilitator → Base |
+| `X-PAYMENT` | x402 v1 USDC | Delegare Facilitator → Base |
+| `X-DELEGARE-MANDATE` | AP2 intent mandate | Delegare Vault |
+| `Authorization: Payment` | MPP/RFC 7235 | Delegare Facilitator |
+
+## Configuration
 
 ```typescript
 requireX402Payment({
@@ -170,10 +151,10 @@ requireX402Payment({
   // Optional
   testMode: true,                   // Use Base Sepolia (default: false)
   apiUrl: 'https://api.sandbox.delegare.dev/v1',
-  resource: 'https://yourapi.com/api/endpoint', // Full URL for catalog key
+  resource: 'https://yourapi.com/api/endpoint', // Full URL — used as catalog key
   mimeType: 'application/json',
   maxTimeoutSeconds: 300,
-  creditBundle: { ... }             // Fiat fallback config
+  creditBundle: { ... }
 });
 ```
 
@@ -183,17 +164,28 @@ requireX402Payment({
 app.get('/premium-data',
   requireX402Payment({ price: '0.05', payTo: '0xYourWallet' }),
   (req, res) => {
-    const payer = (req as any).x402Payer;        // Wallet address
+    const payer = (req as any).x402Payer;        // Payer's wallet address
     const txHash = (req as any).x402Transaction;  // On-chain tx hash
-    res.json({ paidBy: payer });
+    res.json({ data: '...', paidBy: payer });
   }
 );
 ```
 
-## Learn More
+## Testing with Sandbox
 
-- [Delegare Documentation](https://docs.delegare.dev)
-- [Delegare Market](https://market.delegare.dev) — x402 + MPP aggregator marketplace
-- [x402 Protocol](https://docs.delegare.dev/concepts/x402-payments)
-- [CDP Bazaar](https://docs.cdp.coinbase.com/x402/bazaar)
-- [MPPScan Discovery](https://mppscan.com/discovery)
+```typescript
+requireX402Payment({
+  price: '0.01',
+  payTo: '0xYourTestnetWallet',
+  testMode: true,
+  apiUrl: 'https://api.sandbox.delegare.dev/v1',
+});
+```
+
+## Related
+
+- [x402 Payments](https://docs.delegare.dev/concepts/x402-payments) — How x402 works end-to-end
+- [TypeScript SDK](https://docs.delegare.dev/sdk-tools/typescript-sdk) — Agent-side `delegare.fetch()` for auto-paying 402s
+- [MCP Tools](https://docs.delegare.dev/sdk-tools/mcp-tools) — `delegare_fetch` tool for LLM agents
+- [CDP Bazaar](https://docs.cdp.coinbase.com/x402/bazaar) — Coinbase discovery catalog
+- [MPPScan Discovery](https://mppscan.com/discovery) — MPP discovery spec
