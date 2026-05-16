@@ -1,8 +1,19 @@
 # @delegare/x402
 
-Gate your API routes behind USDC micropayments with multi-protocol discovery — CDP Bazaar, MPPScan, and Delegare AP2 mandates.
+Gate your API routes behind USDC micropayments using **Google's AP2 protocol** alongside multi-protocol discovery — CDP Bazaar, MPPScan, and Delegare AP2 mandates.
 
-The `@delegare/x402` package lets merchants monetize API endpoints using the x402 protocol. It handles the 402 challenge, payment verification, and settlement across multiple payment rails. Crucially, it also embeds discovery metadata that makes your endpoint automatically indexable on [Delegare Market](https://market.delegare.dev), [agentic.market](https://agentic.market) (CDP Bazaar), and [mppscan.com](https://mppscan.com) (MPP) — one middleware, three directories.
+The `@delegare/x402` package lets merchants monetize API endpoints using the x402 protocol while crucially implementing [Google's AP2 (Agentic Payment Protocol)](https://github.com/google-agentic-commerce/AP2). This guarantees secure, autonomous transactions where the **AI agent never holds private keys, credit card credentials, or raw funds**. Instead, agents operate strictly via pre-authorized intent mandates (SD-JWT-VC).
+
+Beyond security, it handles the 402 challenge, payment verification, and settlement across multiple payment rails, and automatically embeds discovery metadata. This makes your endpoint seamlessly indexable on [Delegare Market](https://market.delegare.dev), [agentic.market](https://agentic.market) (CDP Bazaar), and [mppscan.com](https://mppscan.com) (MPP) — one middleware, zero exposed credentials, three directories.
+
+## 🔒 Secured by Google's AP2 Protocol
+
+Traditional agentic payments force developers to provision wallets with live funds or inject raw credit card details into the LLM context window—a massive security vulnerability.
+
+`@delegare/x402` natively implements [Google's AP2 (Agentic Payment Protocol)](https://github.com/google-agentic-commerce/AP2):
+1. **No Keys in Context:** Agents are issued an **Intent Mandate** (SD-JWT-VC) rather than returning raw card details or wallet seeds.
+2. **Bounded Authority:** Mandates define strict, server-side enforced spending limits and permitted rails.
+3. **Zero-Trust Validation:** The middleware cryptographically verifies the mandate before settling the payment on-chain or via fiat fallbacks.
 
 ## Installation
 
