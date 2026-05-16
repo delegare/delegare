@@ -56,5 +56,7 @@ class DelegareBudgetCallbackHandler(BaseCallbackHandler):
                             raise BudgetExceededError(
                                 f"Budget threshold ({self.halt_at_pct * 100}%) reached. Spent {spent} of {limit} cents."
                             )
+            except BudgetExceededError:
+                raise
             except Exception:
                 pass

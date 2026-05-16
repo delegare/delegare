@@ -75,28 +75,20 @@ class DelegareToolkit(BaseToolkit):
 
     def get_tools(self) -> list[BaseTool]:
         tools: list[BaseTool] = [
-            SetupMandateTool(
-                sync_client=self.sync_client, async_client=self.async_client
-            ),
-            PollSetupTool(sync_client=self.sync_client, async_client=self.async_client),
-            CheckBalanceTool(
-                sync_client=self.sync_client, async_client=self.async_client
-            ),
+            SetupMandateTool(),
+            PollSetupTool(),
+            CheckBalanceTool(),
             AuthorizePaymentTool(
-                sync_client=self.sync_client,
-                async_client=self.async_client,
                 allowed_amounts_cents=self.allowed_amounts_cents,
             ),
-            DelegareFetchTool(
-                sync_client=self.sync_client, async_client=self.async_client
-            ),
-            RevokeMandateTool(
-                sync_client=self.sync_client, async_client=self.async_client
-            ),
-            VerifyReceiptTool(
-                sync_client=self.sync_client, async_client=self.async_client
-            ),
+            DelegareFetchTool(),
+            RevokeMandateTool(),
+            VerifyReceiptTool(),
         ]
+        
+        for tool in tools:
+            if hasattr(tool, "set_clients"):
+                tool.set_clients(self.sync_client, self.async_client)
 
         if self.tool_filter:
             return [tool for tool in tools if tool.name in self.tool_filter]
