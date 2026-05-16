@@ -1,0 +1,50 @@
+[project]
+name = "delegare-workspace"
+version = "0.0.0"
+description = "Delegare Python Workspace"
+authors = [{ name = "Tobias Pfuetze", email = "tobias@delegare.dev" }]
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.uv.workspace]
+members = [
+    "packages/sdk-python",
+    "packages/mcp-tools-python",
+    "packages/langchain-delegare"
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --asyncio-mode=auto --cov=delegare --cov-report=term-missing"
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+]
+
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true

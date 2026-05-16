@@ -1,0 +1,17 @@
+name: CI - langchain-delegare
+
+on:
+  push:
+    paths:
+      - 'packages/langchain-delegare/**'
+      - 'packages/sdk-python/**'
+  pull_request:
+    paths:
+      - 'packages/langchain-delegare/**'
+      - 'packages/sdk-python/**'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_python-ci.yml
+    with:
+      working-directory: packages/langchain-delegare

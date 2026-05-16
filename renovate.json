@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "minimumReleaseAge": "3 days",
+  "stabilityDays": 3,
+  "automerge": false,
+  "dependencyDashboard": true,
+  "packageRules": [
+    {
+      "description": "Own packages — no age gate",
+      "matchPackagePatterns": ["^@delegare/", "^@securelend/"],
+      "minimumReleaseAge": "0 days",
+      "stabilityDays": 0
+    },
+    {
+      "description": "Group AWS SDK updates",
+      "matchPackagePatterns": ["^@aws-sdk/"],
+      "groupName": "AWS SDK"
+    },
+    {
+      "description": "Pin digests for GitHub Actions",
+      "matchManagers": ["github-actions"],
+      "pinDigests": true
+    }
+  ]
+}

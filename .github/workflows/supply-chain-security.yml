@@ -1,0 +1,40 @@
+name: Supply Chain Security
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  security:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Socket Security Scan
+        uses: nicolo-ribaudo/socket-github-action@v1
+        with:
+          api-key: ${{ secrets.SOCKET_SECURITY_API_KEY }}
+          fail-on-alert: true
+        continue-on-error: false
+
+      - name: Verify package signatures (npm provenance)
+        run: npm audit signatures

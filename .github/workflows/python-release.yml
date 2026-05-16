@@ -1,0 +1,59 @@
+name: Release Python Packages
+
+on:
+  push:
+    tags:
+      - 'delegare-py-v*'
+      - 'delegare-mcp-v*'
+      - 'langchain-delegare-v*'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/delegare
+    permissions:
+      id-token: write  # required for OIDC PyPI publishing
+      contents: write  # required for GitHub Releases
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+          
+      - name: Determine package path from tag
+        id: pkg-info
+        run: |
+          if [[ "${{ github.ref_name }}" == delegare-py-v* ]]; then
+            echo "path=packages/sdk-python" >> $GITHUB_OUTPUT
+            echo "pkg=delegare" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref_name }}" == delegare-mcp-v* ]]; then
+            echo "path=packages/mcp-tools-python" >> $GITHUB_OUTPUT
+            echo "pkg=delegare-mcp" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref_name }}" == langchain-delegare-v* ]]; then
+            echo "path=packages/langchain-delegare" >> $GITHUB_OUTPUT
+            echo "pkg=langchain-delegare" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Build package
+        working-directory: ${{ steps.pkg-info.outputs.path }}
+        run: uv build
+        
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: ${{ steps.pkg-info.outputs.path }}/dist/
+          
+      - name: Release to GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true

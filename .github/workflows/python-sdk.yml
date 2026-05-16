@@ -1,0 +1,15 @@
+name: CI - delegare (Python)
+
+on:
+  push:
+    paths:
+      - 'packages/sdk-python/**'
+  pull_request:
+    paths:
+      - 'packages/sdk-python/**'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_python-ci.yml
+    with:
+      working-directory: packages/sdk-python

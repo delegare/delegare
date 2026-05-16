@@ -14,8 +14,11 @@
     "node": ">=22.0.0",
     "pnpm": ">=9.0.0"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "msw", "sharp", "unrs-resolver"]
+  },
   "devDependencies": {
-    "next": "16.2.1",
-    "typescript": "^5.4.0"
+    "next": "16.2.6",
+    "typescript": "5.9.3"
   }
 }

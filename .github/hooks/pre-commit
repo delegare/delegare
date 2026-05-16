@@ -1,0 +1,30 @@
+#!/bin/sh
+# Supply chain security pre-commit checks
+
+# 1. Block commits that add 'hooks' to .claude/settings.json
+if git diff --cached -- .claude/settings.json .claude/settings.local.json 2>/dev/null | grep -q '"hooks"'; then
+  echo "🚨 SECURITY: hooks entry detected in .claude/settings.json"
+  echo "   This is a known supply-chain persistence vector."
+  echo "   Review the change carefully before committing."
+  exit 1
+fi
+
+# 2. Warn if any node_modules/.claude/ files are staged (should never happen)
+if git diff --cached --name-only | grep -q "node_modules/.*\.claude/"; then
+  echo "🚨 SECURITY: .claude config files inside node_modules are being committed."
+  echo "   This is highly suspicious — aborting."
+  exit 1
+fi
+
+# 3. Warn if package.json deps have ^ or ~ re-introduced (Renovate should own updates)
+if git diff --cached -- package.json | grep '^\+' | grep -E '"[^"]+": "[\^~][0-9]' | grep -v '"pnpm"\|"engines"\|"overrides"' | grep -q .; then
+  echo "⚠️  WARNING: unpinned dependency (^ or ~) detected in package.json"
+  echo "   All external deps should be pinned. Use Renovate for updates."
+  echo "   Staged changes:"
+  git diff --cached -- package.json | grep '^\+' | grep -E '"[^"]+": "[\^~][0-9]'
+  echo ""
+  echo "   To commit anyway: git commit --no-verify (only if intentional)"
+  exit 1
+fi
+
+exit 0

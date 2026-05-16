@@ -1,0 +1,17 @@
+name: CI - delegare-mcp
+
+on:
+  push:
+    paths:
+      - 'packages/mcp-tools-python/**'
+      - 'packages/sdk-python/**'
+  pull_request:
+    paths:
+      - 'packages/mcp-tools-python/**'
+      - 'packages/sdk-python/**'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_python-ci.yml
+    with:
+      working-directory: packages/mcp-tools-python
