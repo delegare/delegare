@@ -503,28 +503,6 @@ export default function Home() {
               <span className="c-white">)</span>
             </div>
             <div>&nbsp;</div>
-            <div>&nbsp;</div>
-            <div className="code-header" style={{ marginTop: "20px", marginBottom: "10px" }}>
-              <span className="code-tab">Python SDK & LangChain</span>
-            </div>
-            <div>
-              <span className="c-dim">{"# install via pip"}</span>
-            </div>
-            <div>
-              <span className="c-green">pip</span>
-              <span className="c-white"> install </span>
-              <span className="c-gold">delegare langchain-delegare</span>
-            </div>
-            <div>&nbsp;</div>
-            <div>
-              <span className="c-dim">{"# LangChain integration"}</span>
-            </div>
-            <div>
-              <span className="c-blue">from</span>
-              <span className="c-white"> langchain_delegare </span>
-              <span className="c-blue">import</span>
-              <span className="c-white"> DelegareToolkit</span>
-            </div>
             <div>
               <span className="c-dim">
                 {
