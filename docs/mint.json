@@ -79,6 +79,8 @@
       "group": "SDK & Tools",
       "pages": [
         "sdk-tools/typescript-sdk",
+        "sdk-tools/python-sdk",
+        "sdk-tools/langchain",
         "sdk-tools/mcp-tools",
         "sdk-tools/x402-middleware",
         "sdk-tools/openclaw-plugin",

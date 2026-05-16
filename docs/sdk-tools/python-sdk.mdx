@@ -1,0 +1,55 @@
+---
+title: "Python SDK"
+description: "Official Python SDK for Delegare"
+---
+
+# Python SDK
+
+The Delegare Python SDK provides robust, type-safe clients for interacting with the Delegare API. It includes fully synchronous and asynchronous implementations, Pydantic v2 typing, and seamless x402 auto-payment routines.
+
+## Installation
+
+```bash
+pip install delegare
+```
+
+## Quick Start
+
+```python
+import os
+from delegare import Delegare, ApiKeyAuth, ChargeRequest
+
+auth = ApiKeyAuth(
+    merchant_id=os.environ.get("DELEGARE_MERCHANT_ID"),
+    api_key=os.environ.get("DELEGARE_API_KEY")
+)
+
+with Delegare(auth) as client:
+    charge = client.charge(ChargeRequest(
+        amountCents=500,
+        currency="usd",
+        intentMandate="mandate_123",
+        idempotencyKey="idem_123",
+        description="Data extraction"
+    ))
+    
+    print(f"Charge ID: {charge.receipt_id}")
+    print(f"Status: {charge.status}")
+```
+
+## Features
+
+### Synchronous and Asynchronous Clients
+The SDK natively supports `Delegare` and `AsyncDelegare` implementations, giving you parity regardless of whether you're using `asyncio` or standard synchronous scripts.
+
+### X402 Auto-Payment
+
+You can use the built-in `.fetch()` utility to automatically process any HTTP requests that return `402 Payment Required` headers. The client automatically retrieves the `accepts` schema, makes the corresponding charge against the provided intent mandate, and retries the request seamlessly.
+
+```python
+response = client.fetch(
+    "https://api.example.com/premium-endpoint", 
+    intent_mandate="mandate_123"
+)
+print(response.json())
+```

@@ -1,5 +1,6 @@
 ---
-sidebar_position: 1
+title: "LangChain Integration"
+description: "Use Delegare directly within LangChain and LangGraph"
 ---
 
 # Delegare Toolkit
@@ -121,4 +122,19 @@ def charge_node(state, config):
     
     # Your agent's charge logic
     # authorize_payment(..., idempotency_key=safe_key)
+```
+
+## Runnables and LCEL
+
+For seamless data retrieval requiring x402 payment headers, you can use the `X402AutoPayRunnable` directly in your LCEL chains. It catches 402 errors, executes the required micro-payment via the intent mandate, and retries the fetch autonomously.
+
+```python
+from langchain_delegare import X402AutoPayRunnable
+
+x402_fetcher = X402AutoPayRunnable(
+    sync_client=toolkit.sync_client,
+    async_client=toolkit.async_client
+)
+
+chain = x402_fetcher | prompt | model
 ```
