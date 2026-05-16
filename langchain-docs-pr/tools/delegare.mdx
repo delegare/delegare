@@ -1,0 +1,124 @@
+---
+sidebar_position: 1
+---
+
+# Delegare Toolkit
+
+The Delegare toolkit enables your LangChain and LangGraph agents to execute payments, check budgets, and handle x402-gated content automatically via the [Delegare API](https://delegare.dev/).
+
+Unlike standard payment gateways, Delegare issues an **Intent Mandate** (SD-JWT-VC) rather than returning raw card details. The agent uses this mandate to request charges up to the user's pre-authorized budget, ensuring payments are entirely separated from the LLM context.
+
+## Setup
+
+First, you need to install the `langchain-delegare` package:
+
+```bash
+pip install langchain-delegare
+```
+
+Second, sign up for a merchant account at [Delegare](https://app.delegare.dev) and retrieve your API Key and Merchant ID. Set these as environment variables:
+
+```bash
+export DELEGARE_MERCHANT_ID="your_merchant_id"
+export DELEGARE_API_KEY="your_api_key"
+```
+
+## Initializing the Toolkit
+
+You can instantiate the `DelegareToolkit` using environment variables or by passing your credentials explicitly. It's recommended to define an `allowed_amounts_cents` whitelist for safety.
+
+```python
+import os
+from langchain_delegare import DelegareToolkit
+
+# Initialize with environment variables and a safety whitelist
+toolkit = DelegareToolkit.from_api_key(
+    merchant_id=os.environ.get("DELEGARE_MERCHANT_ID"),
+    api_key=os.environ.get("DELEGARE_API_KEY"),
+    allowed_amounts_cents=[50, 499, 1000] # Safe whitelist: 50¢, $4.99, $10.00
+)
+
+# Get all 7 payment tools
+tools = toolkit.get_tools()
+for tool in tools:
+    print(tool.name)
+```
+
+## Available Tools
+
+The toolkit provides 7 unique tools designed for distinct phases of the agent payment lifecycle:
+
+1. **`setup_spending_mandate`**: Generates a one-time browser link for the user to securely input their card/wallet.
+2. **`poll_setup_session`**: Checks if the user completed the setup. Once completed, returns the `intentMandate` string.
+3. **`check_mandate_balance`**: Retrieves the remaining budget of an active intent mandate.
+4. **`authorize_agent_payment`**: Executes a charge against a mandate (enforced server-side).
+5. **`delegare_fetch`**: Fetches URLs and automatically resolves HTTP 402 errors using the mandate.
+6. **`revoke_mandate`**: Cancels an active mandate.
+7. **`verify_receipt`**: Cryptographically verifies the `X-PAYMENT-RESPONSE` payload of a settled charge.
+
+## Usage in an Agent
+
+Here is a full example showing how to initialize the tools and connect them to an agent built with LangGraph.
+
+### Agent with Budget Awareness
+
+Delegare provides a custom `DelegareBudgetCallbackHandler` that intercepts tool completions and monitors mandate budgets automatically to stop LLMs from overspending before the Delegare API physically rejects the transaction.
+
+```python
+import asyncio
+import os
+from langchain_openai import ChatOpenAI
+from langchain_delegare import DelegareToolkit, DelegareBudgetCallbackHandler
+from langchain_core.messages import HumanMessage
+from langgraph.prebuilt import create_react_agent
+
+async def run_agent():
+    # 1. Initialize tools
+    toolkit = DelegareToolkit.from_api_key(
+        merchant_id=os.environ.get("DELEGARE_MERCHANT_ID"),
+        api_key=os.environ.get("DELEGARE_API_KEY")
+    )
+    tools = toolkit.get_tools()
+    
+    # 2. Attach a callback to halt at 90% budget utilization
+    budget_handler = DelegareBudgetCallbackHandler(
+        async_client=toolkit.async_client,
+        halt_at_pct=0.90
+    )
+    
+    # 3. Create the agent
+    llm = ChatOpenAI(model="gpt-4o")
+    agent = create_react_agent(llm, tools)
+    
+    # 4. Invoke with mandate ID loaded in context
+    try:
+        response = await agent.ainvoke(
+            {"messages": [HumanMessage(content="Process a $5 charge for the API subscription using mandate 'mandate_abc123'")]},
+            config={"callbacks": [budget_handler]}
+        )
+        print(response["messages"][-1].content)
+    except Exception as e:
+        print(f"Agent execution halted: {e}")
+
+if __name__ == "__main__":
+    asyncio.run(run_agent())
+```
+
+### LangGraph Idempotency
+
+When dealing with payments, idempotent execution is critical. If a LangGraph workflow crashes and retries, you want to guarantee the agent doesn't double-charge the user. The integration provides `get_idempotency_key` which securely hashes LangGraph thread states into deterministic UUIDs.
+
+```python
+from langchain_delegare import get_idempotency_key
+
+def charge_node(state, config):
+    thread_id = config["configurable"]["thread_id"]
+    run_id = config["run_id"]
+    tool_call_id = "call_xyz123" # usually state["tool_calls"][-1]["id"]
+    
+    # Derives a deterministic UUIDv5
+    safe_key = get_idempotency_key(thread_id, run_id, tool_call_id)
+    
+    # Your agent's charge logic
+    # authorize_payment(..., idempotency_key=safe_key)
+```
