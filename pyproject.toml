@@ -29,7 +29,7 @@ warn_unused_configs = true
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --asyncio-mode=auto --cov=delegare --cov-report=term-missing"
+addopts = "-ra -q --asyncio-mode=auto"
 testpaths = ["tests"]
 
 [dependency-groups]
