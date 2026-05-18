@@ -8,11 +8,10 @@ from langchain_core.callbacks import (
 )
 from pydantic import BaseModel, ConfigDict, Field
 
-from ._base import DelegareToolBase
+from ._base import DelegareToolBase, DelegareInputBase
 
 
-class DelegareFetchInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class DelegareFetchInput(DelegareInputBase):
 
     url: str = Field(description="The URL to fetch")
     method: str = Field(default="GET", description="HTTP method")

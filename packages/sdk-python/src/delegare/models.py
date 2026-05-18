@@ -98,7 +98,6 @@ class SetupDelegateResponse(BaseModel):
 class SetupSessionStatus(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    session_token: str = Field(alias="sessionToken")
     status: SetupStatus
     intent_mandate: str | None = Field(default=None, alias="intentMandate")
     masked_payment_methods: list[PaymentMethodSummary] | None = Field(

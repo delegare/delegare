@@ -8,11 +8,10 @@ from langchain_core.callbacks import (
 )
 from pydantic import BaseModel, ConfigDict, Field
 
-from ._base import DelegareToolBase
+from ._base import DelegareToolBase, DelegareInputBase
 
 
-class AuthorizePaymentInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class AuthorizePaymentInput(DelegareInputBase):
 
     intent_mandate: str = Field(
         alias="intentMandate", description="The intentMandate stored in agent context"

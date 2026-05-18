@@ -8,11 +8,10 @@ from langchain_core.callbacks import (
 )
 from pydantic import BaseModel, ConfigDict, Field
 
-from ._base import DelegareToolBase
+from ._base import DelegareToolBase, DelegareInputBase
 
 
-class VerifyReceiptInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class VerifyReceiptInput(DelegareInputBase):
 
     x_payment_response_header: str = Field(
         description="The base64 encoded X-PAYMENT-RESPONSE header to decode and verify"

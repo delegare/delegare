@@ -7,11 +7,10 @@ from langchain_core.callbacks import (
 )
 from pydantic import BaseModel, ConfigDict, Field
 
-from ._base import DelegareToolBase
+from ._base import DelegareToolBase, DelegareInputBase
 
 
-class SetupMandateInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class SetupMandateInput(DelegareInputBase):
 
     max_per_tx_cents: int = Field(
         alias="maxPerTxCents", description="Maximum charge per transaction in cents"

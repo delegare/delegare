@@ -11,6 +11,7 @@ Beyond security, it handles the 402 challenge, payment verification, and settlem
 Traditional agentic payments force developers to provision wallets with live funds or inject raw credit card details into the LLM context window—a massive security vulnerability.
 
 `@delegare/x402` natively implements [Google's AP2 (Agentic Payment Protocol)](https://github.com/google-agentic-commerce/AP2):
+
 1. **No Keys in Context:** Agents are issued an **Intent Mandate** (SD-JWT-VC) rather than returning raw card details or wallet seeds.
 2. **Bounded Authority:** Mandates define strict, server-side enforced spending limits and permitted rails.
 3. **Zero-Trust Validation:** The middleware cryptographically verifies the mandate before settling the payment on-chain or via fiat fallbacks.
@@ -18,25 +19,26 @@ Traditional agentic payments force developers to provision wallets with live fun
 ## Installation
 
 ```bash
-npm install @delegare/x402
+pnpm install @delegare/x402
 ```
 
 ## Quick Start
 
 ```typescript
-import express from 'express';
-import { requireX402Payment } from '@delegare/x402';
+import express from "express";
+import { requireX402Payment } from "@delegare/x402";
 
 const app = express();
 
-app.get('/premium-data',
+app.get(
+  "/premium-data",
   requireX402Payment({
-    price: '0.05',                  // 5 cents USDC per call
-    payTo: '0xYourWalletAddress',   // Your Base wallet
+    price: "0.05", // 5 cents USDC per call
+    payTo: "0xYourWalletAddress", // Your Base wallet
   }),
   (req, res) => {
-    res.json({ data: 'premium content' });
-  }
+    res.json({ data: "premium content" });
+  },
 );
 
 app.listen(4000);
@@ -47,22 +49,23 @@ app.listen(4000);
 Not all agent developers have a crypto wallet. Configure a **Credit Bundle Fallback** to add a Stripe-backed fiat path alongside the crypto path.
 
 ```typescript
-app.post('/api/agent',
+app.post(
+  "/api/agent",
   requireX402Payment({
-    price: '0.02',
-    payTo: '0xYourWalletAddress',
+    price: "0.02",
+    payTo: "0xYourWalletAddress",
     creditBundle: {
       tiers: [
-        { name: 'Starter', usdCents: 1000, requests: 500 },
-        { name: 'Pro', usdCents: 5000, requests: 3000 }
+        { name: "Starter", usdCents: 1000, requests: 500 },
+        { name: "Pro", usdCents: 5000, requests: 3000 },
       ],
-      purchaseUrl: 'https://yourapp.com/billing/bundles',
+      purchaseUrl: "https://yourapp.com/billing/bundles",
       validateAndDeduct: async (token: string) => {
-        return { valid: true, creditsRemaining: 499, tenantId: 'org-123' };
+        return { valid: true, creditsRemaining: 499, tenantId: "org-123" };
       },
     },
   }),
-  (req, res) => res.json({ success: true })
+  (req, res) => res.json({ success: true }),
 );
 ```
 
@@ -75,18 +78,23 @@ Use `declareDiscoveryExtension` to make your endpoint automatically discoverable
 The metadata is embedded in both the `PAYMENT-REQUIRED` header (x402 v2, read by CDP Bazaar) and the `WWW-Authenticate` header (MPP/RFC 7235, read by MPPScan) on every 402 response.
 
 ```typescript
-import { requireX402Payment, declareDiscoveryExtension } from '@delegare/x402';
+import { requireX402Payment, declareDiscoveryExtension } from "@delegare/x402";
 
-app.post('/api/extract',
+app.post(
+  "/api/extract",
   declareDiscoveryExtension({
-    description: "Extract structured financial data from documents. $0.15/page.",
+    description:
+      "Extract structured financial data from documents. $0.15/page.",
     inputSchema: {
       type: "object",
       properties: {
         documentId: { type: "string", description: "Document ID" },
-        domain: { type: "string", enum: ["commercial_loan", "equity_investment"] }
+        domain: {
+          type: "string",
+          enum: ["commercial_loan", "equity_investment"],
+        },
       },
-      required: ["documentId"]
+      required: ["documentId"],
     },
     bodyType: "json",
     output: {
@@ -95,13 +103,15 @@ app.post('/api/extract',
         type: "object",
         properties: {
           extractedData: { type: "object" },
-          costCents: { type: "number" }
-        }
-      }
-    }
+          costCents: { type: "number" },
+        },
+      },
+    },
   }),
-  requireX402Payment({ price: '0.15', payTo: '0xYourWalletAddress' }),
-  async (req, res) => { res.json({ data: '...' }); }
+  requireX402Payment({ price: "0.15", payTo: "0xYourWalletAddress" }),
+  async (req, res) => {
+    res.json({ data: "..." });
+  },
 );
 ```
 
@@ -131,11 +141,11 @@ When set, the middleware automatically authenticates CDP settlement calls with a
 
 Every unauthenticated request receives three parallel discovery headers:
 
-| Header | Protocol | Read by |
-|--------|----------|---------|
-| `PAYMENT-REQUIRED` | x402 v2 | [Delegare Market](https://market.delegare.dev), CDP Bazaar, agentic.market, @x402/fetch |
-| `WWW-Authenticate: Payment ...` | MPP / RFC 7235 | [Delegare Market](https://market.delegare.dev), MPPScan, MPP-compatible wallets |
-| `BAZAAR-EXTENSION` | Delegare debug | Custom clients |
+| Header                          | Protocol       | Read by                                                                                 |
+| ------------------------------- | -------------- | --------------------------------------------------------------------------------------- |
+| `PAYMENT-REQUIRED`              | x402 v2        | [Delegare Market](https://market.delegare.dev), CDP Bazaar, agentic.market, @x402/fetch |
+| `WWW-Authenticate: Payment ...` | MPP / RFC 7235 | [Delegare Market](https://market.delegare.dev), MPPScan, MPP-compatible wallets         |
+| `BAZAAR-EXTENSION`              | Delegare debug | Custom clients                                                                          |
 
 Plus a JSON body for backward-compatible x402 v1 clients.
 
@@ -143,13 +153,13 @@ Plus a JSON body for backward-compatible x402 v1 clients.
 
 The middleware accepts five types of payment credentials in this order:
 
-| Client header | Rail | Settlement |
-|---------------|------|------------|
-| `X-Bundle-Token` | Fiat credit bundle | Your backend (Stripe) |
-| `PAYMENT-SIGNATURE` | x402 v2 USDC | CDP Facilitator → Base |
-| `X-PAYMENT` | x402 v1 USDC | Delegare Facilitator → Base |
-| `X-DELEGARE-MANDATE` | AP2 intent mandate | Delegare Vault |
-| `Authorization: Payment` | MPP/RFC 7235 | Delegare Facilitator |
+| Client header            | Rail               | Settlement                  |
+| ------------------------ | ------------------ | --------------------------- |
+| `X-Bundle-Token`         | Fiat credit bundle | Your backend (Stripe)       |
+| `PAYMENT-SIGNATURE`      | x402 v2 USDC       | CDP Facilitator → Base      |
+| `X-PAYMENT`              | x402 v1 USDC       | Delegare Facilitator → Base |
+| `X-DELEGARE-MANDATE`     | AP2 intent mandate | Delegare Vault              |
+| `Authorization: Payment` | MPP/RFC 7235       | Delegare Facilitator        |
 
 ## Configuration
 
@@ -172,13 +182,14 @@ requireX402Payment({
 ## Accessing Payment Context
 
 ```typescript
-app.get('/premium-data',
-  requireX402Payment({ price: '0.05', payTo: '0xYourWallet' }),
+app.get(
+  "/premium-data",
+  requireX402Payment({ price: "0.05", payTo: "0xYourWallet" }),
   (req, res) => {
-    const payer = (req as any).x402Payer;        // Payer's wallet address
-    const txHash = (req as any).x402Transaction;  // On-chain tx hash
-    res.json({ data: '...', paidBy: payer });
-  }
+    const payer = (req as any).x402Payer; // Payer's wallet address
+    const txHash = (req as any).x402Transaction; // On-chain tx hash
+    res.json({ data: "...", paidBy: payer });
+  },
 );
 ```
 
@@ -186,10 +197,10 @@ app.get('/premium-data',
 
 ```typescript
 requireX402Payment({
-  price: '0.01',
-  payTo: '0xYourTestnetWallet',
+  price: "0.01",
+  payTo: "0xYourTestnetWallet",
   testMode: true,
-  apiUrl: 'https://api.sandbox.delegare.dev/v1',
+  apiUrl: "https://api.sandbox.delegare.dev/v1",
 });
 ```
 

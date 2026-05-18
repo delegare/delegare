@@ -6,11 +6,10 @@ from langchain_core.callbacks import (
 )
 from pydantic import BaseModel, ConfigDict, Field
 
-from ._base import DelegareToolBase
+from ._base import DelegareToolBase, DelegareInputBase
 
 
-class PollSetupInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class PollSetupInput(DelegareInputBase):
 
     session_token: str = Field(
         alias="sessionToken",

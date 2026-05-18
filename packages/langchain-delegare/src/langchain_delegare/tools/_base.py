@@ -1,13 +1,15 @@
 from typing import Any
-
+from pydantic import PrivateAttr, BaseModel, ConfigDict
 from delegare import AsyncDelegare, Delegare
 from langchain_core.tools import BaseTool
+
+class DelegareInputBase(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
 class DelegareToolBase(BaseTool):
     """Base class for Delegare tools."""
     
     # We use a private attribute to bypass Pydantic validation entirely
-    from pydantic import PrivateAttr
     _state: dict[str, Any] = PrivateAttr(default_factory=dict)
     
     def set_clients(self, sync_client: Any, async_client: Any) -> None:

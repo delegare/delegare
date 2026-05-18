@@ -6,11 +6,10 @@ from langchain_core.callbacks import (
 )
 from pydantic import BaseModel, ConfigDict, Field
 
-from ._base import DelegareToolBase
+from ._base import DelegareToolBase, DelegareInputBase
 
 
-class RevokeMandateInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class RevokeMandateInput(DelegareInputBase):
 
     intent_mandate: str = Field(
         alias="intentMandate", description="The intentMandate to revoke"
