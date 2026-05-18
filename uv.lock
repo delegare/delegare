@@ -508,6 +508,7 @@ dev = [
     { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
     { name = "pytest-httpx" },
     { name = "ruff" },
 ]
@@ -523,6 +524,7 @@ dev = [
     { name = "mypy", specifier = ">=1.10.0" },
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", specifier = ">=0.23.0" },
+    { name = "pytest-cov", specifier = ">=4.1.0" },
     { name = "pytest-httpx", specifier = ">=0.30.0" },
     { name = "ruff", specifier = ">=0.4.0" },
 ]
@@ -542,6 +544,7 @@ dev = [
     { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
     { name = "ruff" },
 ]
 
@@ -557,6 +560,7 @@ dev = [
     { name = "mypy", specifier = ">=1.10.0" },
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", specifier = ">=0.23.0" },
+    { name = "pytest-cov", specifier = ">=4.1.0" },
     { name = "ruff", specifier = ">=0.4.0" },
 ]
 
@@ -744,6 +748,7 @@ dev = [
     { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
     { name = "ruff" },
 ]
 
@@ -760,6 +765,7 @@ dev = [
     { name = "mypy", specifier = ">=1.10.0" },
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", specifier = ">=0.23.0" },
+    { name = "pytest-cov", specifier = ">=4.1.0" },
     { name = "ruff", specifier = ">=0.4.0" },
 ]
 

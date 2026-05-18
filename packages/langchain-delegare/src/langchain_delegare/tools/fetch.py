@@ -6,13 +6,12 @@ from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
-from ._base import DelegareToolBase, DelegareInputBase
+from ._base import DelegareInputBase, DelegareToolBase
 
 
 class DelegareFetchInput(DelegareInputBase):
-
     url: str = Field(description="The URL to fetch")
     method: str = Field(default="GET", description="HTTP method")
     body: str | None = Field(

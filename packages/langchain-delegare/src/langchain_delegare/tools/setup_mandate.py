@@ -5,13 +5,12 @@ from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
-from ._base import DelegareToolBase, DelegareInputBase
+from ._base import DelegareInputBase, DelegareToolBase
 
 
 class SetupMandateInput(DelegareInputBase):
-
     max_per_tx_cents: int = Field(
         alias="maxPerTxCents", description="Maximum charge per transaction in cents"
     )

@@ -4,13 +4,12 @@ from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
-from ._base import DelegareToolBase, DelegareInputBase
+from ._base import DelegareInputBase, DelegareToolBase
 
 
 class PollSetupInput(DelegareInputBase):
-
     session_token: str = Field(
         alias="sessionToken",
         description="The sessionToken returned by setup_spending_mandate",

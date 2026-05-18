@@ -85,7 +85,7 @@ class DelegareToolkit(BaseToolkit):
             RevokeMandateTool(),
             VerifyReceiptTool(),
         ]
-        
+
         for tool in tools:
             if hasattr(tool, "set_clients"):
                 tool.set_clients(self.sync_client, self.async_client)

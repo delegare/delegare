@@ -6,13 +6,12 @@ from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
-from ._base import DelegareToolBase, DelegareInputBase
+from ._base import DelegareInputBase, DelegareToolBase
 
 
 class VerifyReceiptInput(DelegareInputBase):
-
     x_payment_response_header: str = Field(
         description="The base64 encoded X-PAYMENT-RESPONSE header to decode and verify"
     )

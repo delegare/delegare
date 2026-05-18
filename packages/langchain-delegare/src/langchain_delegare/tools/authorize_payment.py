@@ -6,13 +6,12 @@ from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
-from ._base import DelegareToolBase, DelegareInputBase
+from ._base import DelegareInputBase, DelegareToolBase
 
 
 class AuthorizePaymentInput(DelegareInputBase):
-
     intent_mandate: str = Field(
         alias="intentMandate", description="The intentMandate stored in agent context"
     )
@@ -41,14 +40,16 @@ class AuthorizePaymentTool(DelegareToolBase):
     name: str = "authorize_agent_payment"
     description: str = "Execute a payment through the Delegare vault using AP2. The agent presents its Intent Mandate (SD-JWT-VC). Spending limits are enforced server-side. IMPORTANT: amountCents is in US cents — divide by 100 for the dollar amount (e.g. amountCents=50 means $0.50, NOT 50 dollars or 50 USDC)."
     args_schema: type[BaseModel] = AuthorizePaymentInput
-    
+
     allowed_amounts_cents: list[int] | None = None
-    
-    def __init__(self, allowed_amounts_cents: list[int] | None = None, **kwargs: Any) -> None:
+
+    def __init__(
+        self, allowed_amounts_cents: list[int] | None = None, **kwargs: Any
+    ) -> None:
         if allowed_amounts_cents is not None:
             kwargs["allowed_amounts_cents"] = allowed_amounts_cents
         super().__init__(**kwargs)
-        
+
     def _run(
         self,
         intent_mandate: str,

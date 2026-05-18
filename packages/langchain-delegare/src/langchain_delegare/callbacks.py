@@ -34,7 +34,7 @@ class DelegareBudgetCallbackHandler(BaseCallbackHandler):
                 if isinstance(output, str):
                     res = json.loads(output)
                 else:
-                    res = output
+                    _res = output
 
                 # We need the intent_mandate to check the balance. The tool kwargs should have inputs.
                 inputs = kwargs.get("inputs", {})
