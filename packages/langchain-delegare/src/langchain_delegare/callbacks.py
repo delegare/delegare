@@ -12,9 +12,7 @@ class DelegareBudgetCallbackHandler(BaseCallbackHandler):
 
     run_inline = False
 
-    def __init__(
-        self, async_client: AsyncDelegare, halt_at_pct: float | None = None
-    ) -> None:
+    def __init__(self, async_client: AsyncDelegare, halt_at_pct: float | None = None) -> None:
         self.async_client = async_client
         self.halt_at_pct = halt_at_pct
         self.budget_warnings: list[str] = []
@@ -38,9 +36,7 @@ class DelegareBudgetCallbackHandler(BaseCallbackHandler):
 
                 # We need the intent_mandate to check the balance. The tool kwargs should have inputs.
                 inputs = kwargs.get("inputs", {})
-                intent_mandate = inputs.get("intentMandate") or inputs.get(
-                    "intent_mandate"
-                )
+                intent_mandate = inputs.get("intentMandate") or inputs.get("intent_mandate")
 
                 if intent_mandate:
                     balance = await self.async_client.get_balance(intent_mandate)
@@ -48,10 +44,7 @@ class DelegareBudgetCallbackHandler(BaseCallbackHandler):
                     if self.halt_at_pct is not None:
                         # e.g., if halt_at_pct = 0.9, halt if spent > 90% of limit
                         limit = balance.monthly_limit_cents
-                        spent = (
-                            balance.monthly_limit_cents
-                            - balance.remaining_monthly_budget_cents
-                        )
+                        spent = balance.monthly_limit_cents - balance.remaining_monthly_budget_cents
                         if limit > 0 and (spent / limit) >= self.halt_at_pct:
                             raise BudgetExceededError(
                                 f"Budget threshold ({self.halt_at_pct * 100}%) reached. Spent {spent} of {limit} cents."

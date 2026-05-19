@@ -12,9 +12,7 @@ from ._base import DelegareInputBase, DelegareToolBase
 
 
 class AuthorizePaymentInput(DelegareInputBase):
-    intent_mandate: str = Field(
-        alias="intentMandate", description="The intentMandate stored in agent context"
-    )
+    intent_mandate: str = Field(alias="intentMandate", description="The intentMandate stored in agent context")
     amount_cents: int = Field(
         alias="amountCents",
         description="Amount in US cents (1/100th of a dollar). amountCents=50 = $0.50. amountCents=499 = $4.99. DO NOT display this as the dollar amount.",
@@ -22,9 +20,7 @@ class AuthorizePaymentInput(DelegareInputBase):
     currency: str = Field(
         description="Settlement currency (usdc = USDC stablecoin on Base). The dollar amount is amountCents / 100."
     )
-    description: str = Field(
-        description="Human-readable description of what is being paid for"
-    )
+    description: str = Field(description="Human-readable description of what is being paid for")
     idempotency_key: str = Field(
         alias="idempotencyKey",
         description="Unique key to prevent duplicate charges. Use a stable identifier like a subscription ID.",
@@ -43,9 +39,7 @@ class AuthorizePaymentTool(DelegareToolBase):
 
     allowed_amounts_cents: list[int] | None = None
 
-    def __init__(
-        self, allowed_amounts_cents: list[int] | None = None, **kwargs: Any
-    ) -> None:
+    def __init__(self, allowed_amounts_cents: list[int] | None = None, **kwargs: Any) -> None:
         if allowed_amounts_cents is not None:
             kwargs["allowed_amounts_cents"] = allowed_amounts_cents
         super().__init__(**kwargs)
@@ -61,10 +55,7 @@ class AuthorizePaymentTool(DelegareToolBase):
         run_manager: CallbackManagerForToolRun | None = None,
         **kwargs: Any,
     ) -> Any:
-        if (
-            self.allowed_amounts_cents
-            and amount_cents not in self.allowed_amounts_cents
-        ):
+        if self.allowed_amounts_cents and amount_cents not in self.allowed_amounts_cents:
             return {
                 "error": "amount_not_allowed",
                 "message": f"Amount {amount_cents} cents is not in the allowed amounts list",
@@ -92,9 +83,7 @@ class AuthorizePaymentTool(DelegareToolBase):
         usd_amount = f"{amount_cents / 100:.2f}"
         res_dict = receipt.model_dump(by_alias=True)
         res_dict["amountUsd"] = f"${usd_amount}"
-        res_dict["note"] = (
-            f"Payment of ${usd_amount} ({amount_cents} cents) processed via {currency.upper()} on Base."
-        )
+        res_dict["note"] = f"Payment of ${usd_amount} ({amount_cents} cents) processed via {currency.upper()} on Base."
 
         return res_dict
 
@@ -109,10 +98,7 @@ class AuthorizePaymentTool(DelegareToolBase):
         run_manager: AsyncCallbackManagerForToolRun | None = None,
         **kwargs: Any,
     ) -> Any:
-        if (
-            self.allowed_amounts_cents
-            and amount_cents not in self.allowed_amounts_cents
-        ):
+        if self.allowed_amounts_cents and amount_cents not in self.allowed_amounts_cents:
             return {
                 "error": "amount_not_allowed",
                 "message": f"Amount {amount_cents} cents is not in the allowed amounts list",
@@ -140,8 +126,6 @@ class AuthorizePaymentTool(DelegareToolBase):
         usd_amount = f"{amount_cents / 100:.2f}"
         res_dict = receipt.model_dump(by_alias=True)
         res_dict["amountUsd"] = f"${usd_amount}"
-        res_dict["note"] = (
-            f"Payment of ${usd_amount} ({amount_cents} cents) processed via {currency.upper()} on Base."
-        )
+        res_dict["note"] = f"Payment of ${usd_amount} ({amount_cents} cents) processed via {currency.upper()} on Base."
 
         return res_dict

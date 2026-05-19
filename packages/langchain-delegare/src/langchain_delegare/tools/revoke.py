@@ -10,9 +10,7 @@ from ._base import DelegareInputBase, DelegareToolBase
 
 
 class RevokeMandateInput(DelegareInputBase):
-    intent_mandate: str = Field(
-        alias="intentMandate", description="The intentMandate to revoke"
-    )
+    intent_mandate: str = Field(alias="intentMandate", description="The intentMandate to revoke")
 
 
 class RevokeMandateTool(DelegareToolBase):

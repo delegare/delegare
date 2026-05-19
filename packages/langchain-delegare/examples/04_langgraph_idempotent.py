@@ -28,9 +28,7 @@ async def main() -> None:
 
     safe_key = get_idempotency_key(thread_id, run_id, tool_call_id)
     print(f"Derived safe idempotency key: {safe_key}")
-    print(
-        "Use this key inside your LLM prompts or tool interceptors to ensure idempotent charges."
-    )
+    print("Use this key inside your LLM prompts or tool interceptors to ensure idempotent charges.")
 
 
 if __name__ == "__main__":

@@ -11,16 +11,12 @@ from ._base import DelegareInputBase, DelegareToolBase
 
 
 class SetupMandateInput(DelegareInputBase):
-    max_per_tx_cents: int = Field(
-        alias="maxPerTxCents", description="Maximum charge per transaction in cents"
-    )
+    max_per_tx_cents: int = Field(alias="maxPerTxCents", description="Maximum charge per transaction in cents")
     max_monthly_spend_cents: int = Field(
         alias="maxMonthlySpendCents",
         description="Maximum total spend per month in cents",
     )
-    rail: str | None = Field(
-        default="both", description="Which payment rails to enable. Defaults to both."
-    )
+    rail: str | None = Field(default="both", description="Which payment rails to enable. Defaults to both.")
     rail_preference: str | None = Field(
         default="auto",
         alias="railPreference",

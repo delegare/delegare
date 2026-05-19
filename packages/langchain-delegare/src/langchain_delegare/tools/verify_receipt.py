@@ -30,9 +30,7 @@ class VerifyReceiptTool(DelegareToolBase):
     ) -> Any:
         try:
             # We mock a Response object to pass to the decode function
-            res = httpx.Response(
-                200, headers={"x-payment-response": x_payment_response_header}
-            )
+            res = httpx.Response(200, headers={"x-payment-response": x_payment_response_header})
             receipt = decode_payment_receipt(res)
             return receipt.model_dump(by_alias=True)
         except Exception as err:
@@ -45,9 +43,7 @@ class VerifyReceiptTool(DelegareToolBase):
         **kwargs: Any,
     ) -> Any:
         try:
-            res = httpx.Response(
-                200, headers={"x-payment-response": x_payment_response_header}
-            )
+            res = httpx.Response(200, headers={"x-payment-response": x_payment_response_header})
             receipt = decode_payment_receipt(res)
             return receipt.model_dump(by_alias=True)
         except Exception as err:

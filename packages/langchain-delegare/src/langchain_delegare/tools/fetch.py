@@ -14,9 +14,7 @@ from ._base import DelegareInputBase, DelegareToolBase
 class DelegareFetchInput(DelegareInputBase):
     url: str = Field(description="The URL to fetch")
     method: str = Field(default="GET", description="HTTP method")
-    body: str | None = Field(
-        default=None, description="Optional JSON body for POST requests"
-    )
+    body: str | None = Field(default=None, description="Optional JSON body for POST requests")
     intent_mandate: str = Field(
         alias="intentMandate",
         description="Your active spending delegate token (intentMandate)",
@@ -43,9 +41,7 @@ class DelegareFetchTool(DelegareToolBase):
             if body:
                 init["content"] = body
 
-            response = self.sync_client.fetch(
-                url, intent_mandate=intent_mandate, **init
-            )
+            response = self.sync_client.fetch(url, intent_mandate=intent_mandate, **init)
             text = response.text
 
             is_json = "application/json" in response.headers.get("content-type", "")
@@ -62,9 +58,7 @@ class DelegareFetchTool(DelegareToolBase):
             receipt = None
             if x_payment_response:
                 try:
-                    receipt = json.loads(
-                        base64.b64decode(x_payment_response).decode("utf8")
-                    )
+                    receipt = json.loads(base64.b64decode(x_payment_response).decode("utf8"))
                 except Exception:
                     pass
 
@@ -93,9 +87,7 @@ class DelegareFetchTool(DelegareToolBase):
             if body:
                 init["content"] = body
 
-            response = await self.async_client.fetch(
-                url, intent_mandate=intent_mandate, **init
-            )
+            response = await self.async_client.fetch(url, intent_mandate=intent_mandate, **init)
             text = response.text
 
             is_json = "application/json" in response.headers.get("content-type", "")
@@ -112,9 +104,7 @@ class DelegareFetchTool(DelegareToolBase):
             receipt = None
             if x_payment_response:
                 try:
-                    receipt = json.loads(
-                        base64.b64decode(x_payment_response).decode("utf8")
-                    )
+                    receipt = json.loads(base64.b64decode(x_payment_response).decode("utf8"))
                 except Exception:
                     pass
 
