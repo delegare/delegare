@@ -46,11 +46,11 @@ class AuthorizePaymentTool(DelegareToolBase):
 
     def _run(
         self,
+        intent_mandate: str,
+        amount_cents: int,
         currency: str,
         description: str,
         idempotency_key: str,
-        intent_mandate: str | None = None, intentMandate: str | None = None,
-        amount_cents: int | None = None, amountCents: int | None = None,
         metadata_json: str | None = None,
         run_manager: CallbackManagerForToolRun | None = None,
         **kwargs: Any,
@@ -58,7 +58,7 @@ class AuthorizePaymentTool(DelegareToolBase):
         if self.allowed_amounts_cents and amount_cents not in self.allowed_amounts_cents:
             return {
                 "error": "amount_not_allowed",
-                "message": f"Amount {amount_cents or amountCents} cents is not in the allowed amounts list",
+                "message": f"Amount {amount_cents} cents is not in the allowed amounts list",
                 "allowedAmounts": self.allowed_amounts_cents,
             }
 
@@ -89,11 +89,11 @@ class AuthorizePaymentTool(DelegareToolBase):
 
     async def _arun(
         self,
+        intent_mandate: str,
+        amount_cents: int,
         currency: str,
         description: str,
         idempotency_key: str,
-        intent_mandate: str | None = None, intentMandate: str | None = None,
-        amount_cents: int | None = None, amountCents: int | None = None,
         metadata_json: str | None = None,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
         **kwargs: Any,
@@ -101,7 +101,7 @@ class AuthorizePaymentTool(DelegareToolBase):
         if self.allowed_amounts_cents and amount_cents not in self.allowed_amounts_cents:
             return {
                 "error": "amount_not_allowed",
-                "message": f"Amount {amount_cents or amountCents} cents is not in the allowed amounts list",
+                "message": f"Amount {amount_cents} cents is not in the allowed amounts list",
                 "allowedAmounts": self.allowed_amounts_cents,
             }
 

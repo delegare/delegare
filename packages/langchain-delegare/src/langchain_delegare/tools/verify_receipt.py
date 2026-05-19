@@ -24,7 +24,7 @@ class VerifyReceiptTool(DelegareToolBase):
 
     def _run(
         self,
-        x_payment_response_header: str | None = None, paymentResponseHeader: str | None = None,
+        x_payment_response_header: str,
         run_manager: CallbackManagerForToolRun | None = None,
         **kwargs: Any,
     ) -> Any:
@@ -38,7 +38,7 @@ class VerifyReceiptTool(DelegareToolBase):
 
     async def _arun(
         self,
-        x_payment_response_header: str | None = None, paymentResponseHeader: str | None = None,
+        x_payment_response_header: str,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
         **kwargs: Any,
     ) -> Any:

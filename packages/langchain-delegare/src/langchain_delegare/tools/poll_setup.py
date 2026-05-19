@@ -23,18 +23,18 @@ class PollSetupTool(DelegareToolBase):
 
     def _run(
         self,
-        session_token: str | None = None, sessionToken: str | None = None,
+        session_token: str,
         run_manager: CallbackManagerForToolRun | None = None,
         **kwargs: Any,
     ) -> Any:
-        res = self.sync_client.get_setup_session(session_token or kwargs.get("sessionToken"))
+        res = self.sync_client.get_setup_session(session_token)
         return res.model_dump(by_alias=True)
 
     async def _arun(
         self,
-        session_token: str | None = None, sessionToken: str | None = None,
+        session_token: str,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
         **kwargs: Any,
     ) -> Any:
-        res = await self.async_client.get_setup_session(session_token or kwargs.get("sessionToken"))
+        res = await self.async_client.get_setup_session(session_token)
         return res.model_dump(by_alias=True)

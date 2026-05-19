@@ -23,18 +23,18 @@ class CheckBalanceTool(DelegareToolBase):
 
     def _run(
         self,
-        intent_mandate: str | None = None, intentMandate: str | None = None,
+        intent_mandate: str,
         run_manager: CallbackManagerForToolRun | None = None,
         **kwargs: Any,
     ) -> Any:
-        res = self.sync_client.get_balance(intent_mandate or kwargs.get("intentMandate"))
+        res = self.sync_client.get_balance(intent_mandate)
         return res.model_dump(by_alias=True)
 
     async def _arun(
         self,
-        intent_mandate: str | None = None, intentMandate: str | None = None,
+        intent_mandate: str,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
         **kwargs: Any,
     ) -> Any:
-        res = await self.async_client.get_balance(intent_mandate or kwargs.get("intentMandate"))
+        res = await self.async_client.get_balance(intent_mandate)
         return res.model_dump(by_alias=True)
