@@ -1,7 +1,15 @@
-import pytest
-from delegare import Delegare, AsyncDelegare, ApiKeyAuth, ChargeRequest, SetupDelegateRequest, DelegareError
+
 import httpx
-import time
+import pytest
+from delegare import (
+    ApiKeyAuth,
+    AsyncDelegare,
+    ChargeRequest,
+    Delegare,
+    DelegareError,
+    SetupDelegateRequest,
+)
+
 
 def test_sync_charge(httpx_mock, mock_merchant_id, mock_api_key):
     httpx_mock.add_response(
@@ -352,7 +360,7 @@ def test_fetch_x402(httpx_mock, mock_merchant_id, mock_api_key):
         res = client.fetch("https://api.example.com/data", intent_mandate="mandate_123")
 
     assert res.json() == {"data": "success"}
-    
+
 @pytest.mark.asyncio
 async def test_async_fetch_x402(httpx_mock, mock_merchant_id, mock_api_key):
     # Initial 402
@@ -412,7 +420,8 @@ def test_sync_get_setup_session(httpx_mock, mock_merchant_id, mock_api_key):
     auth = ApiKeyAuth(merchant_id=mock_merchant_id, api_key=mock_api_key)
     with Delegare(auth) as client:
         res = client.get_setup_session("token_123")
-    assert res.session_token == "token_123"
+    assert res.status == "pending"
+    assert res.intent_mandate is None
 
 def test_sync_revoke(httpx_mock, mock_merchant_id, mock_api_key):
     httpx_mock.add_response(
@@ -429,7 +438,7 @@ def test_sync_revoke(httpx_mock, mock_merchant_id, mock_api_key):
         res = client.revoke("mandate_123")
 
     assert res.success is True
-    
+
 def test_sync_create_setup_session(httpx_mock, mock_merchant_id, mock_api_key):
     httpx_mock.add_response(
         url="https://api.delegare.dev/v1/mandates",
@@ -465,8 +474,9 @@ async def test_async_get_setup_session(httpx_mock, mock_merchant_id, mock_api_ke
     auth = ApiKeyAuth(merchant_id=mock_merchant_id, api_key=mock_api_key)
     async with AsyncDelegare(auth) as client:
         res = await client.get_setup_session("token_123")
-    assert res.session_token == "token_123"
-    
+    assert res.status == "pending"
+    assert res.intent_mandate is None
+
 def test_oauth_refresh_sync(httpx_mock):
     # Initial 401
     httpx_mock.add_response(url="https://api.delegare.dev/v1/mandates/mandate_123/balance", method="GET", status_code=401)
@@ -498,8 +508,8 @@ def test_oauth_refresh_sync(httpx_mock):
         status_code=200
     )
 
-    from delegare import OAuthAuth, Delegare
-    
+    from delegare import Delegare, OAuthAuth
+
     auth = OAuthAuth(access_token="old_access", refresh_token="old_refresh")
     with Delegare(auth) as client:
         res = client.get_balance("mandate_123")
@@ -538,8 +548,8 @@ async def test_oauth_refresh_async(httpx_mock):
         status_code=200
     )
 
-    from delegare import OAuthAuth, AsyncDelegare
-    
+    from delegare import AsyncDelegare, OAuthAuth
+
     auth = OAuthAuth(access_token="old_access", refresh_token="old_refresh")
     async with AsyncDelegare(auth) as client:
         res = await client.get_balance("mandate_123")
@@ -549,7 +559,7 @@ async def test_oauth_refresh_async(httpx_mock):
 
 def test_parse_x402_requirements_list():
     from delegare import parse_x402_requirements
-    
+
     payload = """[
         {
             "scheme": "exact",
@@ -571,11 +581,9 @@ def test_parse_x402_requirements_invalid():
     assert len(res2) == 0
 
 def test_decode_payment_receipt_invalid():
-    from delegare import decode_payment_receipt
-    import httpx
     import pytest
-    from delegare import X402Error
-    
+    from delegare import X402Error, decode_payment_receipt
+
     with pytest.raises(X402Error):
         decode_payment_receipt(httpx.Response(200)) # Missing header
 
@@ -627,7 +635,6 @@ def test_handle_error_5xx_retry_fails_sync(httpx_mock, mock_merchant_id, mock_ap
 
 @pytest.mark.asyncio
 async def test_fetch_auth_error_async(httpx_mock, mock_merchant_id, mock_api_key):
-    from delegare import AuthenticationError
     httpx_mock.add_response(url="https://api.example.com/data", method="GET", status_code=401)
     auth = ApiKeyAuth(merchant_id=mock_merchant_id, api_key=mock_api_key)
     async with AsyncDelegare(auth) as client:
@@ -635,14 +642,13 @@ async def test_fetch_auth_error_async(httpx_mock, mock_merchant_id, mock_api_key
         assert res.status_code == 401
 
 def test_fetch_auth_error_sync(httpx_mock, mock_merchant_id, mock_api_key):
-    from delegare import AuthenticationError
     httpx_mock.add_response(url="https://api.example.com/data", method="GET", status_code=401)
     auth = ApiKeyAuth(merchant_id=mock_merchant_id, api_key=mock_api_key)
     with Delegare(auth) as client:
         res = client.fetch("https://api.example.com/data")
         assert res.status_code == 401
-            
+
 def test_oauth_is_config():
-    from delegare import is_oauth_config, OAuthAuth, ApiKeyAuth
+    from delegare import ApiKeyAuth, OAuthAuth, is_oauth_config
     assert is_oauth_config(OAuthAuth("test", "test")) is True
     assert is_oauth_config(ApiKeyAuth("test", "test")) is False
