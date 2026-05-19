@@ -48,6 +48,42 @@ To prevent unauthorized tool calls, the MCP server implements an `mcpAuthGuard`.
 - Credentials (`merchantId`, `apiKey`) are never exposed to the LLM prompt.
 - The guard injects the required metadata into the tool context based on the bearer token in the request header.
 
+
+### Running Locally with Python
+The Delegare MCP Server is also published to PyPI, allowing you to run it locally or embed it within your own orchestration environments.
+
+```bash
+pip install delegare-mcp
+```
+
+To run the MCP server locally over `stdio`:
+
+```bash
+export DELEGARE_MERCHANT_ID="your_merchant_id"
+export DELEGARE_API_KEY="your_api_key"
+
+python -m delegare_mcp.server
+```
+
+#### Claude Desktop Local Config
+If you prefer to run the server locally rather than connecting to the remote endpoint, configure Claude Desktop to spawn the Python process:
+
+```json
+{
+  "mcpServers": {
+    "delegare": {
+      "command": "python",
+      "args": ["-m", "delegare_mcp.server"],
+      "env": {
+        "DELEGARE_MERCHANT_ID": "your_merchant_id",
+        "DELEGARE_API_KEY": "your_api_key"
+      }
+    }
+  }
+}
+```
+
+
 ## Usage with Claude.ai
 
 Connect Delegare as a remote MCP connector on Claude.ai:
