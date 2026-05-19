@@ -40,10 +40,10 @@ class SetupMandateTool(DelegareToolBase):
     ) -> Any:
         res = self.sync_client.create_setup_session(
             SetupDelegateRequest(
-                maxMonthlySpendCents=max_monthly_spend_cents,
-                maxPerTxCents=max_per_tx_cents,
+                maxMonthlySpendCents=(max_monthly_spend_cents or kwargs.get("maxMonthlySpendCents")),
+                maxPerTxCents=(max_per_tx_cents or kwargs.get("maxPerTxCents")),
                 rail=rail,  # type: ignore
-                railPreference=rail_preference,  # type: ignore
+                railPreference=(rail_preference or kwargs.get("railPreference")),  # type: ignore
             )
         )
 
@@ -65,10 +65,10 @@ class SetupMandateTool(DelegareToolBase):
     ) -> Any:
         res = await self.async_client.create_setup_session(
             SetupDelegateRequest(
-                maxMonthlySpendCents=max_monthly_spend_cents,
-                maxPerTxCents=max_per_tx_cents,
+                maxMonthlySpendCents=(max_monthly_spend_cents or kwargs.get("maxMonthlySpendCents")),
+                maxPerTxCents=(max_per_tx_cents or kwargs.get("maxPerTxCents")),
                 rail=rail,  # type: ignore
-                railPreference=rail_preference,  # type: ignore
+                railPreference=(rail_preference or kwargs.get("railPreference")),  # type: ignore
             )
         )
 

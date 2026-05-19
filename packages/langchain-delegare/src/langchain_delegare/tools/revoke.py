@@ -20,18 +20,18 @@ class RevokeMandateTool(DelegareToolBase):
 
     def _run(
         self,
-        intent_mandate: str,
+        intent_mandate: str | None = None, intentMandate: str | None = None,
         run_manager: CallbackManagerForToolRun | None = None,
         **kwargs: Any,
     ) -> Any:
-        res = self.sync_client.revoke(intent_mandate)
+        res = self.sync_client.revoke(intent_mandate or kwargs.get("intentMandate"))
         return res.model_dump(by_alias=True)
 
     async def _arun(
         self,
-        intent_mandate: str,
+        intent_mandate: str | None = None, intentMandate: str | None = None,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
         **kwargs: Any,
     ) -> Any:
-        res = await self.async_client.revoke(intent_mandate)
+        res = await self.async_client.revoke(intent_mandate or kwargs.get("intentMandate"))
         return res.model_dump(by_alias=True)

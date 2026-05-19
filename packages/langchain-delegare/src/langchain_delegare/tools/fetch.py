@@ -30,7 +30,7 @@ class DelegareFetchTool(DelegareToolBase):
         self,
         url: str,
         method: str,
-        intent_mandate: str,
+        intent_mandate: str | None = None, intentMandate: str | None = None,
         body: str | None = None,
         run_manager: CallbackManagerForToolRun | None = None,
         **kwargs: Any,
@@ -41,7 +41,7 @@ class DelegareFetchTool(DelegareToolBase):
             if body:
                 init["content"] = body
 
-            response = self.sync_client.fetch(url, intent_mandate=intent_mandate, **init)
+            response = self.sync_client.fetch(url, intent_mandate=(intent_mandate or kwargs.get("intentMandate")), **init)
             text = response.text
 
             is_json = "application/json" in response.headers.get("content-type", "")
@@ -76,7 +76,7 @@ class DelegareFetchTool(DelegareToolBase):
         self,
         url: str,
         method: str,
-        intent_mandate: str,
+        intent_mandate: str | None = None, intentMandate: str | None = None,
         body: str | None = None,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
         **kwargs: Any,
@@ -87,7 +87,7 @@ class DelegareFetchTool(DelegareToolBase):
             if body:
                 init["content"] = body
 
-            response = await self.async_client.fetch(url, intent_mandate=intent_mandate, **init)
+            response = await self.async_client.fetch(url, intent_mandate=(intent_mandate or kwargs.get("intentMandate")), **init)
             text = response.text
 
             is_json = "application/json" in response.headers.get("content-type", "")
