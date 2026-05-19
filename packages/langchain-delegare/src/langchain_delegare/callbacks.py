@@ -32,7 +32,7 @@ class DelegareBudgetCallbackHandler(BaseCallbackHandler):
             try:
                 # If output is string, parse it.
                 if isinstance(output, str):
-                    res = json.loads(output)
+                    _res = json.loads(output)
                 else:
                     _res = output
 

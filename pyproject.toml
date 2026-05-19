@@ -14,8 +14,18 @@ members = [
 ]
 
 [tool.ruff]
-line-length = 88
+line-length = 120
 target-version = "py310"
+
+[tool.ruff.lint.per-file-ignores]
+"**/src/**/tools/*.py" = ["E501"]
+"**/src/**/tools.py" = ["E501"]
+"**/src/**/schemas.py" = ["E501"]
+"**/src/**/_http.py" = ["E501"]
+"**/src/**/client.py" = ["E501"]
+"**/src/**/callbacks.py" = ["E501"]
+"**/examples/**/*.py" = ["E501"]
+"**/tests/**/*.py" = ["E501", "I001", "F401", "F811", "W293"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP", "B"]
