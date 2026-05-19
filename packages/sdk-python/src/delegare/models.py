@@ -4,9 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 Currency: TypeAlias = Literal["usd", "usdc", "usdt"]
 Rail: TypeAlias = Literal["fiat", "crypto"]
-RailPreference: TypeAlias = Literal[
-    "auto", "fiat_first", "crypto_first", "cheapest", "fastest"
-]
+RailPreference: TypeAlias = Literal["auto", "fiat_first", "crypto_first", "cheapest", "fastest"]
 DelegateStatus: TypeAlias = Literal["active", "paused", "revoked", "expired"]
 ChargeStatus: TypeAlias = Literal["pending", "completed", "failed", "refunded"]
 SetupStatus: TypeAlias = Literal["pending", "complete", "expired"]
@@ -41,9 +39,7 @@ class ChargeResponse(BaseModel):
     currency: Currency
     rail_used: Rail | None = Field(default=None, alias="railUsed")
     tx_hash: str | None = Field(default=None, alias="txHash")
-    stripe_payment_intent_id: str | None = Field(
-        default=None, alias="stripePaymentIntentId"
-    )
+    stripe_payment_intent_id: str | None = Field(default=None, alias="stripePaymentIntentId")
     failure_reason: str | None = Field(default=None, alias="failureReason")
 
 
@@ -81,9 +77,7 @@ class SetupDelegateRequest(BaseModel):
     max_per_tx_cents: int = Field(alias="maxPerTxCents")
     rail: Literal["fiat", "crypto", "both"] | None = None
     rail_preference: RailPreference | None = Field(default=None, alias="railPreference")
-    allowed_merchant_ids: list[str] | None = Field(
-        default=None, alias="allowedMerchantIds"
-    )
+    allowed_merchant_ids: list[str] | None = Field(default=None, alias="allowedMerchantIds")
     expires_at: str | None = Field(default=None, alias="expiresAt")
 
 
@@ -100,9 +94,7 @@ class SetupSessionStatus(BaseModel):
 
     status: SetupStatus
     intent_mandate: str | None = Field(default=None, alias="intentMandate")
-    masked_payment_methods: list[PaymentMethodSummary] | None = Field(
-        default=None, alias="maskedPaymentMethods"
-    )
+    masked_payment_methods: list[PaymentMethodSummary] | None = Field(default=None, alias="maskedPaymentMethods")
 
 
 class RevokeResponse(BaseModel):

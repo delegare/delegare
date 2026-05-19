@@ -24,9 +24,7 @@ class RegisterDelegareToolsOptions(BaseModel):
     allowed_amounts_cents: list[int] | None = None
 
 
-def register_delegare_tools(
-    server: Server, options: RegisterDelegareToolsOptions
-) -> None:
+def register_delegare_tools(server: Server, options: RegisterDelegareToolsOptions) -> None:
     client = Delegare(
         config=ApiKeyAuth(
             merchant_id=options.merchant_id,
@@ -120,10 +118,7 @@ def register_delegare_tools(
         elif name == "authorize_agent_payment":
             parsed_auth = AuthorizePaymentSchema(**args)
 
-            if (
-                options.allowed_amounts_cents
-                and parsed_auth.amount_cents not in options.allowed_amounts_cents
-            ):
+            if options.allowed_amounts_cents and parsed_auth.amount_cents not in options.allowed_amounts_cents:
                 return [
                     types.TextContent(
                         type="text",
@@ -175,9 +170,7 @@ def register_delegare_tools(
                 if parsed_fetch.body:
                     init["content"] = parsed_fetch.body
 
-                response = client.fetch(
-                    parsed_fetch.url, intent_mandate=parsed_fetch.intent_mandate, **init
-                )
+                response = client.fetch(parsed_fetch.url, intent_mandate=parsed_fetch.intent_mandate, **init)
                 text = response.text
 
                 is_json = "application/json" in response.headers.get("content-type", "")
@@ -194,9 +187,7 @@ def register_delegare_tools(
                 receipt = None
                 if x_payment_response:
                     try:
-                        receipt = json.loads(
-                            base64.b64decode(x_payment_response).decode("utf8")
-                        )
+                        receipt = json.loads(base64.b64decode(x_payment_response).decode("utf8"))
                     except Exception:
                         pass
 
@@ -215,9 +206,7 @@ def register_delegare_tools(
                 ]
 
             except Exception as err:
-                return [
-                    types.TextContent(type="text", text=json.dumps({"error": str(err)}))
-                ]
+                return [types.TextContent(type="text", text=json.dumps({"error": str(err)}))]
 
         elif name == "revoke_mandate":
             parsed_revoke = RevokeMandateSchema(**args)

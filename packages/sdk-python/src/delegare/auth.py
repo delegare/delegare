@@ -1,8 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any
-
-from typing import TypeGuard
+from typing import Any, TypeGuard
 
 
 @dataclass

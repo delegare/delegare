@@ -19,8 +19,6 @@ def parse_x402_requirements(response_body: str) -> list[X402Requirement]:
         return []
 
 
-
-
 def decode_payment_receipt(response: httpx.Response) -> X402PaymentReceipt:
     """Decode base64 X-PAYMENT-RESPONSE header"""
     try:

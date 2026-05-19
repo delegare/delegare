@@ -1,6 +1,6 @@
 import asyncio
-import threading
 import inspect
+import threading
 import time
 from importlib.metadata import PackageNotFoundError, version
 from typing import Any
@@ -27,9 +27,7 @@ class HttpTransport:
         self.config = config
         self.timeout_sec = timeout_sec
 
-        headers = {
-            "User-Agent": f"delegare-python/{__version__} (httpx/{httpx.__version__})"
-        }
+        headers = {"User-Agent": f"delegare-python/{__version__} (httpx/{httpx.__version__})"}
         if isinstance(config, ApiKeyAuth):
             headers["X-Delegare-Api-Key"] = config.api_key
             headers["X-Delegare-Merchant-Id"] = config.merchant_id
@@ -95,9 +93,7 @@ class HttpTransport:
         with self._sync_lock:
             # If refreshed by another thread in the last 5 seconds, just return
             if time.time() - self._last_refresh_time < 5.0:
-                self.sync_client.headers["Authorization"] = (
-                    f"Bearer {self.config.access_token}"
-                )
+                self.sync_client.headers["Authorization"] = f"Bearer {self.config.access_token}"
                 return True
 
             try:
@@ -115,9 +111,7 @@ class HttpTransport:
                 if "refresh_token" in data:
                     self.config.refresh_token = data["refresh_token"]
 
-                self.sync_client.headers["Authorization"] = (
-                    f"Bearer {self.config.access_token}"
-                )
+                self.sync_client.headers["Authorization"] = f"Bearer {self.config.access_token}"
                 self._last_refresh_time = time.time()
 
                 # Call the optional callback
@@ -125,9 +119,7 @@ class HttpTransport:
                     # In sync context, we just call it. If it returns a coroutine, we can't await it easily here.
 
                     if not inspect.iscoroutinefunction(self.config.on_token_refresh):
-                        self.config.on_token_refresh(
-                            self.config.access_token, self.config.refresh_token
-                        )
+                        self.config.on_token_refresh(self.config.access_token, self.config.refresh_token)
 
                 return True
             except Exception:
@@ -139,9 +131,7 @@ class HttpTransport:
 
         async with self._async_lock:
             if time.time() - self._last_refresh_time < 5.0:
-                self.async_client.headers["Authorization"] = (
-                    f"Bearer {self.config.access_token}"
-                )
+                self.async_client.headers["Authorization"] = f"Bearer {self.config.access_token}"
                 return True
 
             try:
@@ -158,21 +148,14 @@ class HttpTransport:
                 if "refresh_token" in data:
                     self.config.refresh_token = data["refresh_token"]
 
-                self.async_client.headers["Authorization"] = (
-                    f"Bearer {self.config.access_token}"
-                )
+                self.async_client.headers["Authorization"] = f"Bearer {self.config.access_token}"
                 self._last_refresh_time = time.time()
 
                 if self.config.on_token_refresh:
-
                     if inspect.iscoroutinefunction(self.config.on_token_refresh):
-                        await self.config.on_token_refresh(
-                            self.config.access_token, self.config.refresh_token
-                        )
+                        await self.config.on_token_refresh(self.config.access_token, self.config.refresh_token)
                     else:
-                        self.config.on_token_refresh(
-                            self.config.access_token, self.config.refresh_token
-                        )
+                        self.config.on_token_refresh(self.config.access_token, self.config.refresh_token)
 
                 return True
             except Exception:

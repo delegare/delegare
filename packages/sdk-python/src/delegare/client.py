@@ -48,9 +48,7 @@ class Delegare:
         response = self._transport.request("DELETE", f"/mandates/{intent_mandate}")
         return RevokeResponse.model_validate(response.json())
 
-    def create_setup_session(
-        self, request: SetupDelegateRequest
-    ) -> SetupDelegateResponse:
+    def create_setup_session(self, request: SetupDelegateRequest) -> SetupDelegateResponse:
         """Create a session for the user to securely set up their payment method and spending limits."""
         payload = request.model_dump(by_alias=True, exclude_none=True)
         response = self._transport.request("POST", "/mandates", json=payload)
@@ -71,9 +69,7 @@ class Delegare:
             if status.status == "expired":
                 raise SetupTimeoutError(f"Setup session {session_token} expired")
             time.sleep(1.0)
-        raise SetupTimeoutError(
-            f"Setup session {session_token} did not complete within {timeout_sec} seconds"
-        )
+        raise SetupTimeoutError(f"Setup session {session_token} did not complete within {timeout_sec} seconds")
 
     def fetch(self, url: str, intent_mandate: str | None = None, **init: Any) -> Any:
         """x402 auto-pay fetch wrapper. Executes a request, pays if x402 required, and retries."""
@@ -89,12 +85,7 @@ class Delegare:
         except Exception:
             return first
         req = next(
-            (
-                a
-                for a in accepts
-                if a.get("scheme") == "exact"
-                and a.get("network") in ("base", "base-sepolia")
-            ),
+            (a for a in accepts if a.get("scheme") == "exact" and a.get("network") in ("base", "base-sepolia")),
             None,
         )
         if not req:
@@ -123,28 +114,20 @@ class AsyncDelegare:
     async def charge(self, request: ChargeRequest) -> ChargeResponse:
         """Process a payment charge against a delegate mandate."""
         payload = request.model_dump(by_alias=True, exclude_none=True)
-        response = await self._transport.arequest(
-            "POST", "/payments/charge", json=payload
-        )
+        response = await self._transport.arequest("POST", "/payments/charge", json=payload)
         return ChargeResponse.model_validate(response.json())
 
     async def get_balance(self, intent_mandate: str) -> BalanceResponse:
         """Get the current balance and limits for a specific spending mandate."""
-        response = await self._transport.arequest(
-            "GET", f"/mandates/{intent_mandate}/balance"
-        )
+        response = await self._transport.arequest("GET", f"/mandates/{intent_mandate}/balance")
         return BalanceResponse.model_validate(response.json())
 
     async def revoke(self, intent_mandate: str) -> RevokeResponse:
         """Revoke a spending mandate."""
-        response = await self._transport.arequest(
-            "DELETE", f"/mandates/{intent_mandate}"
-        )
+        response = await self._transport.arequest("DELETE", f"/mandates/{intent_mandate}")
         return RevokeResponse.model_validate(response.json())
 
-    async def create_setup_session(
-        self, request: SetupDelegateRequest
-    ) -> SetupDelegateResponse:
+    async def create_setup_session(self, request: SetupDelegateRequest) -> SetupDelegateResponse:
         """Create a session for the user to securely set up their payment method and spending limits."""
         payload = request.model_dump(by_alias=True, exclude_none=True)
         response = await self._transport.arequest("POST", "/mandates", json=payload)
@@ -152,14 +135,10 @@ class AsyncDelegare:
 
     async def get_setup_session(self, session_token: str) -> SetupSessionStatus:
         """Get the current status of a setup session."""
-        response = await self._transport.arequest(
-            "GET", f"/setup-sessions/{session_token}"
-        )
+        response = await self._transport.arequest("GET", f"/setup-sessions/{session_token}")
         return SetupSessionStatus.model_validate(response.json())
 
-    async def wait_for_setup(
-        self, session_token: str, timeout_sec: float = 300.0
-    ) -> str:
+    async def wait_for_setup(self, session_token: str, timeout_sec: float = 300.0) -> str:
         """Block until the setup session is successfully completed, expires, or times out."""
         start_time = time.time()
         while time.time() - start_time < timeout_sec:
@@ -169,13 +148,9 @@ class AsyncDelegare:
             if status.status == "expired":
                 raise SetupTimeoutError(f"Setup session {session_token} expired")
             await asyncio.sleep(1.0)
-        raise SetupTimeoutError(
-            f"Setup session {session_token} did not complete within {timeout_sec} seconds"
-        )
+        raise SetupTimeoutError(f"Setup session {session_token} did not complete within {timeout_sec} seconds")
 
-    async def fetch(
-        self, url: str, intent_mandate: str | None = None, **init: Any
-    ) -> Any:
+    async def fetch(self, url: str, intent_mandate: str | None = None, **init: Any) -> Any:
 
         method = init.pop("method", "GET")
         if "intent_mandate" in init:
@@ -188,12 +163,7 @@ class AsyncDelegare:
         except Exception:
             return first
         req = next(
-            (
-                a
-                for a in accepts
-                if a.get("scheme") == "exact"
-                and a.get("network") in ("base", "base-sepolia")
-            ),
+            (a for a in accepts if a.get("scheme") == "exact" and a.get("network") in ("base", "base-sepolia")),
             None,
         )
         if not req:
