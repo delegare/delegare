@@ -30,10 +30,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Socket Security Scan
-        uses: nicolo-ribaudo/socket-github-action@v1
-        with:
-          api-key: ${{ secrets.SOCKET_SECURITY_API_KEY }}
-          fail-on-alert: true
+        uses: socketsecurity/github-action@v1
+        env:
+          SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_SECURITY_API_KEY }}
         continue-on-error: false
 
       - name: Verify package signatures (npm provenance)
