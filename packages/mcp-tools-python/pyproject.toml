@@ -43,3 +43,11 @@ delegare = { workspace = true }
 
 [project.scripts]
 delegare-mcp = "delegare_mcp.server:run"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint.per-file-ignores]
+"src/delegare_mcp/schemas.py" = ["E501"]
+"src/delegare_mcp/tools.py" = ["E501"]
+"tests/**/*.py" = ["E501", "I001", "F401", "W293"]

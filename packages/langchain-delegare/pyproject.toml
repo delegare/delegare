@@ -41,3 +41,13 @@ packages = ["src/langchain_delegare"]
 
 [tool.uv.sources]
 delegare = { workspace = true }
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint.per-file-ignores]
+"src/langchain_delegare/tools/*.py" = ["E501"]
+"src/langchain_delegare/callbacks.py" = ["E501"]
+"src/langchain_delegare/_idempotency.py" = ["E501"]
+"examples/**/*.py" = ["E501", "I001", "F401", "F811", "F841", "W293"]
+"tests/**/*.py" = ["E501", "I001", "F401", "F811", "W293"]
