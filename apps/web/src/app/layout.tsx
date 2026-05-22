@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, DM_Serif_Display, DM_Mono } from "next/font/google";
-import { GoogleTagManager } from '@next/third-parties/google'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import Providers from "./providers";
 import "./globals.css";
 
@@ -86,7 +86,7 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
-        <GoogleTagManager gtmId={GA_ID} />
+        <GoogleAnalytics gaId={GA_ID} />
       </body>
     </html>
   );
