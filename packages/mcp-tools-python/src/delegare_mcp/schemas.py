@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -76,3 +76,55 @@ class DelegareFetchSchema(BaseDelegareSchema):
 
 class RevokeMandateSchema(BaseDelegareSchema):
     intent_mandate: str = Field(alias="intentMandate", description="The intentMandate to revoke")
+
+
+# ── Output schemas ───────────────────────────────────────────────────────────
+# Plain BaseModel (no extra="forbid") so structured content from the SDK can
+# carry extra fields without failing the MCP SDK's strict jsonschema validation.
+# All fields optional so a partial/absent value never trips a "required" check.
+
+
+class SetupSpendingMandateOutput(BaseModel):
+    message: str | None = None
+    setup_url: str | None = Field(default=None, alias="setupUrl")
+    session_token: str | None = Field(default=None, alias="sessionToken")
+    expires_in_seconds: int | None = Field(default=None, alias="expiresInSeconds")
+
+
+class PollSetupSessionOutput(BaseModel):
+    status: str | None = None
+    intent_mandate: str | None = Field(default=None, alias="intentMandate")
+    encoded_mandate: str | None = Field(default=None, alias="encodedMandate")
+
+
+class CheckMandateBalanceOutput(BaseModel):
+    status: str | None = None
+    max_monthly_spend_cents: int | None = Field(default=None, alias="maxMonthlySpendCents")
+    current_monthly_spend_cents: int | None = Field(default=None, alias="currentMonthlySpendCents")
+    remaining_monthly_spend_cents: int | None = Field(default=None, alias="remainingMonthlySpendCents")
+    max_per_tx_cents: int | None = Field(default=None, alias="maxPerTxCents")
+    currency: str | None = None
+
+
+class AuthorizePaymentOutput(BaseModel):
+    receipt_id: str | None = Field(default=None, alias="receiptId")
+    status: str | None = None
+    transaction: str | None = None
+    network: str | None = None
+    amount_cents: int | None = Field(default=None, alias="amountCents")
+    currency: str | None = None
+    amount_usd: str | None = Field(default=None, alias="amountUsd")
+    note: str | None = None
+
+
+class DelegareFetchOutput(BaseModel):
+    status: int | None = None
+    content: Any = None
+    payment_executed: bool | None = Field(default=None, alias="paymentExecuted")
+    receipt: Any = None
+
+
+class RevokeMandateOutput(BaseModel):
+    status: str | None = None
+    revoked: bool | None = None
+    message: str | None = None

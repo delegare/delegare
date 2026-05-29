@@ -19,12 +19,25 @@ export function registerDelegareTools(
   server.registerTool(
     'setup_spending_mandate',
     {
+      annotations: {
+        title: 'Set Up Spending Mandate',
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
       description: 'Initiate the one-time browser setup flow so the user can connect their payment method and set spending limits. Returns a URL the user must visit. Returns sessionToken for polling.',
       inputSchema: z.object({
         maxPerTxCents: z.number().int().positive().describe('Maximum charge per transaction in cents'),
         maxMonthlySpendCents: z.number().int().positive().describe('Maximum total spend per month in cents'),
         rail: z.enum(['fiat', 'crypto', 'both']).optional().describe('Which payment rails to enable. Defaults to both.'),
         railPreference: z.enum(['auto', 'fiat_first', 'crypto_first', 'cheapest', 'fastest']).optional().describe('How to select the rail when both are available. Defaults to auto.'),
+      }),
+      outputSchema: z.object({
+        message: z.string().optional().describe('Human-readable next-step instructions'),
+        setupUrl: z.string().optional().describe('URL the user visits to connect a payment method'),
+        sessionToken: z.string().optional().describe('Token to poll for completion via poll_setup_session'),
+        expiresInSeconds: z.number().optional().describe('Seconds until the setup URL expires'),
       }),
       securitySchemes: oauthSecurity,
     } as any,
@@ -38,21 +51,18 @@ export function registerDelegareTools(
         railPreference: railPreference ?? 'auto',
       });
 
+      const out = {
+        message:
+          'Please ask the user to visit the setup URL to connect their payment method. ' +
+          'This is a one-time step. The setup URL expires in 10 minutes. ' +
+          'Use poll_setup_session with the sessionToken to check when setup is complete.',
+        setupUrl: session.setupUrl,
+        sessionToken: session.sessionToken,
+        expiresInSeconds: session.expiresInSeconds,
+      };
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({
-              message:
-                'Please ask the user to visit the setup URL to connect their payment method. ' +
-                'This is a one-time step. The setup URL expires in 10 minutes. ' +
-                'Use poll_setup_session with the sessionToken to check when setup is complete.',
-              setupUrl: session.setupUrl,
-              sessionToken: session.sessionToken,
-              expiresInSeconds: session.expiresInSeconds,
-            }),
-          },
-        ],
+        content: [{ type: 'text', text: JSON.stringify(out) }],
+        structuredContent: out,
       };
     },
   );
@@ -61,9 +71,21 @@ export function registerDelegareTools(
   server.registerTool(
     'poll_setup_session',
     {
+      annotations: {
+        title: 'Poll Setup Session',
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
       description: 'Check whether the user has completed the payment setup flow. Call this after presenting the setup URL. Returns the intentMandate once complete — store it in agent context for future payments.',
       inputSchema: z.object({
         sessionToken: z.string().describe('The sessionToken returned by setup_spending_mandate'),
+      }),
+      outputSchema: z.object({
+        status: z.string().optional().describe('Setup status: pending, complete, or expired'),
+        intentMandate: z.string().optional().describe('The finalized intent mandate when complete'),
+        encodedMandate: z.string().optional().describe('Legacy encoded mandate field'),
       }),
       securitySchemes: oauthSecurity,
     } as any,
@@ -72,12 +94,8 @@ export function registerDelegareTools(
       const result = await client.getSetupSession(sessionToken);
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result),
-          },
-        ],
+        content: [{ type: 'text', text: JSON.stringify(result) }],
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     },
   );
@@ -86,9 +104,24 @@ export function registerDelegareTools(
   server.registerTool(
     'check_mandate_balance',
     {
+      annotations: {
+        title: 'Check Mandate Balance',
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
       description: 'Check remaining monthly budget and masked payment methods for a spending mandate. Never returns card numbers or wallet seeds — only masked summaries.',
       inputSchema: z.object({
         intentMandate: z.string().describe('The intentMandate (SD-JWT-VC) stored in agent context'),
+      }),
+      outputSchema: z.object({
+        status: z.string().optional().describe('Mandate status (e.g. active)'),
+        maxMonthlySpendCents: z.number().optional().describe('Maximum monthly spend in cents'),
+        currentMonthlySpendCents: z.number().optional().describe('Amount spent this month in cents'),
+        remainingMonthlySpendCents: z.number().optional().describe('Remaining monthly budget in cents'),
+        maxPerTxCents: z.number().optional().describe('Maximum per-transaction spend in cents'),
+        currency: z.string().optional().describe('Currency (e.g. usd)'),
       }),
       securitySchemes: oauthSecurity,
     } as any,
@@ -97,12 +130,8 @@ export function registerDelegareTools(
       const balance = await client.getBalance(intentMandate);
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(balance),
-          },
-        ],
+        content: [{ type: 'text', text: JSON.stringify(balance) }],
+        structuredContent: balance as unknown as Record<string, unknown>,
       };
     },
   );
@@ -111,6 +140,13 @@ export function registerDelegareTools(
   server.registerTool(
     'authorize_agent_payment',
     {
+      annotations: {
+        title: 'Authorize Agent Payment',
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
       description: 'Execute a payment through the Delegare vault using AP2. The agent presents its Intent Mandate (SD-JWT-VC). Spending limits are enforced server-side. IMPORTANT: amountCents is in US cents — divide by 100 for the dollar amount (e.g. amountCents=50 means $0.50, NOT 50 dollars or 50 USDC).',
       inputSchema: z.object({
         intentMandate: z.string().describe('The intentMandate stored in agent context'),
@@ -119,6 +155,16 @@ export function registerDelegareTools(
         description: z.string().describe('Human-readable description of what is being paid for'),
         idempotencyKey: z.string().describe('Unique key to prevent duplicate charges. Use a stable identifier like a subscription ID.'),
         metadataJson: z.string().optional().describe('Optional JSON string of key-value metadata (e.g. \'{"planId":"growth"}\')'),
+      }),
+      outputSchema: z.object({
+        receiptId: z.string().optional().describe('Unique receipt identifier'),
+        status: z.string().optional().describe('Payment status'),
+        transaction: z.string().optional().describe('On-chain transaction hash when settled on-chain'),
+        network: z.string().optional().describe('Settlement network'),
+        amountCents: z.number().optional().describe('Amount charged in cents'),
+        currency: z.string().optional().describe('Settlement currency'),
+        amountUsd: z.string().optional().describe('Human-readable dollar amount'),
+        note: z.string().optional().describe('Human-readable payment summary'),
       }),
       securitySchemes: oauthSecurity,
     } as any,
@@ -159,17 +205,14 @@ export function registerDelegareTools(
       });
 
       const usdAmount = (amountCents / 100).toFixed(2);
+      const out = {
+        ...receipt,
+        amountUsd: `$${usdAmount}`,
+        note: `Payment of $${usdAmount} (${amountCents} cents) processed via ${currency.toUpperCase()} on Base.`,
+      };
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({
-              ...receipt,
-              amountUsd: `$${usdAmount}`,
-              note: `Payment of $${usdAmount} (${amountCents} cents) processed via ${currency.toUpperCase()} on Base.`,
-            }),
-          },
-        ],
+        content: [{ type: 'text', text: JSON.stringify(out) }],
+        structuredContent: out,
       };
     },
   );
@@ -178,12 +221,25 @@ export function registerDelegareTools(
   server.registerTool(
     'delegare_fetch',
     {
+      annotations: {
+        title: 'Delegare Fetch',
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
       description: 'Fetch a URL. If the resource requires payment via x402, this tool will automatically use the provided spending mandate to authorize the payment and retrieve the data. Supports both GET and POST.',
       inputSchema: z.object({
         url: z.string().url().describe('The URL to fetch'),
         method: z.enum(['GET', 'POST']).default('GET').describe('HTTP method'),
         body: z.string().optional().describe('Optional JSON body for POST requests'),
         intentMandate: z.string().describe('Your active spending delegate token (intentMandate)'),
+      }),
+      outputSchema: z.object({
+        status: z.number().optional().describe('HTTP response status code'),
+        content: z.any().optional().describe('The response body (JSON or text)'),
+        paymentExecuted: z.boolean().optional().describe('Whether an x402 payment was executed'),
+        receipt: z.any().optional().describe('Payment receipt when a payment was executed'),
       }),
       securitySchemes: oauthSecurity,
     } as any,
@@ -216,18 +272,15 @@ export function registerDelegareTools(
           } catch {}
         }
 
+        const out = {
+          status: response.status,
+          content: data,
+          paymentExecuted: !!receipt,
+          receipt,
+        };
         return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify({
-                status: response.status,
-                content: data,
-                paymentExecuted: !!receipt,
-                receipt,
-              }),
-            },
-          ],
+          content: [{ type: 'text', text: JSON.stringify(out) }],
+          structuredContent: out,
         };
       } catch (err: any) {
         return {
@@ -242,9 +295,21 @@ export function registerDelegareTools(
   server.registerTool(
     'revoke_mandate',
     {
+      annotations: {
+        title: 'Revoke Mandate',
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
       description: 'Immediately revoke a spending mandate. After revocation, no further charges can be made with this intentMandate. The user can create a new mandate at any time.',
       inputSchema: z.object({
         intentMandate: z.string().describe('The intentMandate to revoke'),
+      }),
+      outputSchema: z.object({
+        status: z.string().optional().describe('Revocation status'),
+        revoked: z.boolean().optional().describe('Whether the mandate was revoked'),
+        message: z.string().optional().describe('Human-readable result message'),
       }),
       securitySchemes: oauthSecurity,
     } as any,
@@ -253,12 +318,8 @@ export function registerDelegareTools(
       const result = await client.revoke(intentMandate);
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result),
-          },
-        ],
+        content: [{ type: 'text', text: JSON.stringify(result) }],
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     },
   );

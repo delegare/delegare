@@ -8,11 +8,17 @@ from mcp.server import Server
 from pydantic import BaseModel
 
 from .schemas import (
+    AuthorizePaymentOutput,
     AuthorizePaymentSchema,
+    CheckMandateBalanceOutput,
     CheckMandateBalanceSchema,
+    DelegareFetchOutput,
     DelegareFetchSchema,
+    PollSetupSessionOutput,
     PollSetupSessionSchema,
+    RevokeMandateOutput,
     RevokeMandateSchema,
+    SetupSpendingMandateOutput,
     SetupSpendingMandateSchema,
 )
 
@@ -38,31 +44,79 @@ def register_delegare_tools(server: Server, options: RegisterDelegareToolsOption
             name="setup_spending_mandate",
             description="Initiate the one-time browser setup flow so the user can connect their payment method and set spending limits. Returns a URL the user must visit. Returns sessionToken for polling.",
             inputSchema=SetupSpendingMandateSchema.model_json_schema(),
+            outputSchema=SetupSpendingMandateOutput.model_json_schema(),
+            annotations=types.ToolAnnotations(
+                title="Set Up Spending Mandate",
+                readOnlyHint=False,
+                destructiveHint=False,
+                idempotentHint=False,
+                openWorldHint=True,
+            ),
         ),
         types.Tool(
             name="poll_setup_session",
             description="Check whether the user has completed the payment setup flow. Call this after presenting the setup URL. Returns the intentMandate once complete — store it in agent context for future payments.",
             inputSchema=PollSetupSessionSchema.model_json_schema(),
+            outputSchema=PollSetupSessionOutput.model_json_schema(),
+            annotations=types.ToolAnnotations(
+                title="Poll Setup Session",
+                readOnlyHint=True,
+                destructiveHint=False,
+                idempotentHint=True,
+                openWorldHint=True,
+            ),
         ),
         types.Tool(
             name="check_mandate_balance",
             description="Check remaining monthly budget and masked payment methods for a spending mandate. Never returns card numbers or wallet seeds — only masked summaries.",
             inputSchema=CheckMandateBalanceSchema.model_json_schema(),
+            outputSchema=CheckMandateBalanceOutput.model_json_schema(),
+            annotations=types.ToolAnnotations(
+                title="Check Mandate Balance",
+                readOnlyHint=True,
+                destructiveHint=False,
+                idempotentHint=True,
+                openWorldHint=True,
+            ),
         ),
         types.Tool(
             name="authorize_agent_payment",
             description="Execute a payment through the Delegare vault using AP2. The agent presents its Intent Mandate (SD-JWT-VC). Spending limits are enforced server-side. IMPORTANT: amountCents is in US cents — divide by 100 for the dollar amount (e.g. amountCents=50 means $0.50, NOT 50 dollars or 50 USDC).",
             inputSchema=AuthorizePaymentSchema.model_json_schema(),
+            outputSchema=AuthorizePaymentOutput.model_json_schema(),
+            annotations=types.ToolAnnotations(
+                title="Authorize Agent Payment",
+                readOnlyHint=False,
+                destructiveHint=False,
+                idempotentHint=False,
+                openWorldHint=True,
+            ),
         ),
         types.Tool(
             name="delegare_fetch",
             description="Fetch a URL. If the resource requires payment via x402, this tool will automatically use the provided spending mandate to authorize the payment and retrieve the data. Supports both GET and POST.",
             inputSchema=DelegareFetchSchema.model_json_schema(),
+            outputSchema=DelegareFetchOutput.model_json_schema(),
+            annotations=types.ToolAnnotations(
+                title="Delegare Fetch",
+                readOnlyHint=False,
+                destructiveHint=False,
+                idempotentHint=False,
+                openWorldHint=True,
+            ),
         ),
         types.Tool(
             name="revoke_mandate",
             description="Immediately revoke a spending mandate. After revocation, no further charges can be made with this intentMandate. The user can create a new mandate at any time.",
             inputSchema=RevokeMandateSchema.model_json_schema(),
+            outputSchema=RevokeMandateOutput.model_json_schema(),
+            annotations=types.ToolAnnotations(
+                title="Revoke Mandate",
+                readOnlyHint=False,
+                destructiveHint=True,
+                idempotentHint=True,
+                openWorldHint=True,
+            ),
         ),
     ]
 
@@ -76,7 +130,11 @@ def register_delegare_tools(server: Server, options: RegisterDelegareToolsOption
     @server.call_tool()  # type: ignore
     async def handle_call_tool(
         name: str, arguments: dict[str, Any] | None
-    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+    ) -> (
+        list[types.TextContent]
+        | tuple[list[types.TextContent], dict[str, Any]]
+        | types.CallToolResult
+    ):
         args = arguments or {}
 
         if name == "setup_spending_mandate":
@@ -91,46 +149,45 @@ def register_delegare_tools(server: Server, options: RegisterDelegareToolsOption
                 )
             )
 
-            return [
-                types.TextContent(
-                    type="text",
-                    text=json.dumps(
-                        {
-                            "message": "Please ask the user to visit the setup URL to connect their payment method. This is a one-time step. The setup URL expires in 10 minutes. Use poll_setup_session with the sessionToken to check when setup is complete.",
-                            "setupUrl": session.setup_url,
-                            "sessionToken": session.session_token,
-                            "expiresInSeconds": session.expires_in_seconds,
-                        }
-                    ),
-                )
-            ]
+            out: dict[str, Any] = {
+                "message": "Please ask the user to visit the setup URL to connect their payment method. This is a one-time step. The setup URL expires in 10 minutes. Use poll_setup_session with the sessionToken to check when setup is complete.",
+                "setupUrl": session.setup_url,
+                "sessionToken": session.session_token,
+                "expiresInSeconds": session.expires_in_seconds,
+            }
+            return [types.TextContent(type="text", text=json.dumps(out))], out
 
         elif name == "poll_setup_session":
             parsed_poll = PollSetupSessionSchema(**args)
             result = client.get_setup_session(parsed_poll.session_token)
-            return [types.TextContent(type="text", text=result.model_dump_json())]
+            poll_out: dict[str, Any] = result.model_dump(by_alias=True, mode="json")
+            return [types.TextContent(type="text", text=json.dumps(poll_out))], poll_out
 
         elif name == "check_mandate_balance":
             parsed_bal = CheckMandateBalanceSchema(**args)
             balance = client.get_balance(parsed_bal.intent_mandate)
-            return [types.TextContent(type="text", text=balance.model_dump_json())]
+            bal_out: dict[str, Any] = balance.model_dump(by_alias=True, mode="json")
+            return [types.TextContent(type="text", text=json.dumps(bal_out))], bal_out
 
         elif name == "authorize_agent_payment":
             parsed_auth = AuthorizePaymentSchema(**args)
 
             if options.allowed_amounts_cents and parsed_auth.amount_cents not in options.allowed_amounts_cents:
-                return [
-                    types.TextContent(
-                        type="text",
-                        text=json.dumps(
-                            {
-                                "error": "amount_not_allowed",
-                                "message": f"Amount {parsed_auth.amount_cents} cents is not in the allowed amounts list",
-                                "allowedAmounts": options.allowed_amounts_cents,
-                            }
-                        ),
-                    )
-                ]
+                return types.CallToolResult(
+                    content=[
+                        types.TextContent(
+                            type="text",
+                            text=json.dumps(
+                                {
+                                    "error": "amount_not_allowed",
+                                    "message": f"Amount {parsed_auth.amount_cents} cents is not in the allowed amounts list",
+                                    "allowedAmounts": options.allowed_amounts_cents,
+                                }
+                            ),
+                        )
+                    ],
+                    isError=True,
+                )
 
             metadata = None
             if parsed_auth.metadata_json:
@@ -157,7 +214,7 @@ def register_delegare_tools(server: Server, options: RegisterDelegareToolsOption
                 f"Payment of ${usd_amount} ({parsed_auth.amount_cents} cents) processed via {parsed_auth.currency.upper()} on Base."
             )
 
-            return [types.TextContent(type="text", text=json.dumps(res_dict))]
+            return [types.TextContent(type="text", text=json.dumps(res_dict))], res_dict
 
         elif name == "delegare_fetch":
             parsed_fetch = DelegareFetchSchema(**args)
@@ -191,26 +248,24 @@ def register_delegare_tools(server: Server, options: RegisterDelegareToolsOption
                     except Exception:
                         pass
 
-                return [
-                    types.TextContent(
-                        type="text",
-                        text=json.dumps(
-                            {
-                                "status": response.status_code,
-                                "content": data,
-                                "paymentExecuted": bool(receipt),
-                                "receipt": receipt,
-                            }
-                        ),
-                    )
-                ]
+                fetch_out: dict[str, Any] = {
+                    "status": response.status_code,
+                    "content": data,
+                    "paymentExecuted": bool(receipt),
+                    "receipt": receipt,
+                }
+                return [types.TextContent(type="text", text=json.dumps(fetch_out))], fetch_out
 
             except Exception as err:
-                return [types.TextContent(type="text", text=json.dumps({"error": str(err)}))]
+                return types.CallToolResult(
+                    content=[types.TextContent(type="text", text=json.dumps({"error": str(err)}))],
+                    isError=True,
+                )
 
         elif name == "revoke_mandate":
             parsed_revoke = RevokeMandateSchema(**args)
             result_rev = client.revoke(parsed_revoke.intent_mandate)
-            return [types.TextContent(type="text", text=result_rev.model_dump_json())]
+            revoke_out: dict[str, Any] = result_rev.model_dump(by_alias=True, mode="json")
+            return [types.TextContent(type="text", text=json.dumps(revoke_out))], revoke_out
 
         raise ValueError(f"Unknown tool: {name}")
