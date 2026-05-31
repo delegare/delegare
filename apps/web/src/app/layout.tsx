@@ -83,10 +83,10 @@ export default function RootLayout({
       style={{ backgroundColor: "#0c0c0c", color: "#f0ede8" }}
     >
       <body className="min-h-full flex flex-col font-sans">
+        <GoogleAnalytics gaId={GA_ID} />
         <Providers>
           {children}
         </Providers>
-        <GoogleAnalytics gaId={GA_ID} />
       </body>
     </html>
   );
