@@ -1,0 +1,181 @@
+---
+title: Delegare
+provider: Delegare
+description: Tools for AI agents to authorize and execute payments using AP2 spending mandates, with x402 paywall support, multi-rail (fiat + crypto) settlement, and built-in budget guardrails.
+category: finance
+---
+
+# Delegare
+
+[![PyPI - Version](https://img.shields.io/pypi/v/langchain-delegare?style=flat-square)](https://pypi.org/project/langchain-delegare/)
+[![License](https://img.shields.io/pypi/l/langchain-delegare?style=flat-square)](https://github.com/orgtom78/delegare/blob/main/LICENSE)
+
+[Delegare](https://delegare.dev) is agent payment authorization infrastructure built on the [AP2 protocol](https://github.com/google/agent-payments-protocol). It lets AI agents pay merchants on behalf of users — with hard server-side spending limits, per-merchant whitelists, and full audit trails — across both fiat (Stripe) and crypto (USDC on Base) rails.
+
+The `langchain-delegare` package exposes a `DelegareToolkit` with seven LangChain tools, a budget-aware callback handler, an x402-compatible `Runnable`, and LangGraph-native idempotency primitives.
+
+## Installation
+
+```bash
+pip install langchain-delegare
+```
+
+## Setup
+
+You'll need a Delegare merchant account. Get sandbox credentials at [delegare.dev/dashboard](https://delegare.dev/dashboard).
+
+```bash
+export DELEGARE_API_KEY="..."
+export DELEGARE_MERCHANT_ID="..."
+```
+
+The toolkit supports both API-key (for backend/merchant-side use) and OAuth (for agent-side use with delegated spending budgets).
+
+```python
+import os
+from langchain_delegare import DelegareToolkit
+
+# API-key auth (backend merchant)
+toolkit = DelegareToolkit.from_api_key(
+    merchant_id=os.environ["DELEGARE_MERCHANT_ID"],
+    api_key=os.environ["DELEGARE_API_KEY"],
+)
+
+# OAuth auth (agent with delegated spending)
+# toolkit = DelegareToolkit.from_oauth(
+#     access_token="...",
+#     refresh_token="...",
+# )
+
+tools = toolkit.get_tools()
+```
+
+You can also restrict which charge amounts agents may authorize:
+
+```python
+toolkit = DelegareToolkit.from_api_key(
+    merchant_id=os.environ["DELEGARE_MERCHANT_ID"],
+    api_key=os.environ["DELEGARE_API_KEY"],
+    allowed_amounts_cents=[50, 100, 500, 1000],  # whitelist
+)
+```
+
+## The seven tools
+
+| Tool name | Purpose |
+| --- | --- |
+| `setup_spending_mandate` | Start the browser flow where a user connects payment method and sets limits. Returns a `setupUrl` and `sessionToken`. |
+| `poll_setup_session` | Check whether the user has completed setup. Returns the `intentMandate` (SD-JWT-VC) once ready. |
+| `check_mandate_balance` | Query remaining monthly budget, masked payment methods, and rail preferences. |
+| `authorize_agent_payment` | Execute a charge via AP2. Spending limits are enforced server-side; idempotency keys prevent double-charges. |
+| `delegare_fetch` | Fetch a URL. If the response is HTTP 402 with an x402 challenge, auto-pays from the mandate and retries. |
+| `revoke_mandate` | Immediately revoke a spending mandate. All future charges with that mandate fail. |
+| `verify_receipt` | Decode the `X-PAYMENT-RESPONSE` header from an x402 charge to verify on-chain settlement. |
+
+## Quickstart with LangGraph
+
+```python
+import os
+from langchain_delegare import DelegareToolkit, DelegareBudgetCallbackHandler
+from langchain_core.messages import HumanMessage
+from langgraph.prebuilt import create_react_agent
+from langchain_openai import ChatOpenAI
+
+toolkit = DelegareToolkit.from_api_key(
+    merchant_id=os.environ["DELEGARE_MERCHANT_ID"],
+    api_key=os.environ["DELEGARE_API_KEY"],
+    allowed_amounts_cents=[100, 500, 1000],  # cap any single charge
+)
+
+# Stop the agent if monthly budget reaches 90% used
+budget_guard = DelegareBudgetCallbackHandler(
+    async_client=toolkit.async_client,
+    halt_at_pct=0.90,
+)
+
+llm = ChatOpenAI(model="gpt-4o")
+agent = create_react_agent(llm, toolkit.get_tools())
+
+response = agent.invoke(
+    {"messages": [HumanMessage(
+        content="Process a $5 charge for my API subscription using mandate <intent_mandate>"
+    )]},
+    config={"callbacks": [budget_guard]},
+)
+print(response["messages"][-1].content)
+```
+
+The `DelegareBudgetCallbackHandler` watches every `authorize_agent_payment` call, queries balance after each, and raises `BudgetExceededError` once the threshold is hit — short-circuiting further charges within the same graph run.
+
+## LangGraph-native idempotency
+
+Production agents need to survive retries. If a LangGraph node crashes mid-charge and replays, you don't want to double-charge the user. `langchain-delegare` derives a deterministic idempotency key from LangGraph's `thread_id` + `run_id` + `tool_call_id`:
+
+```python
+from langchain_delegare import get_idempotency_key
+
+# Inside a LangGraph node — derive from the current state's identifiers
+key = get_idempotency_key(
+    thread_id=state["thread_id"],
+    run_id=state["run_id"],
+    tool_call_id=state["tool_call_id"],
+)
+
+# Pass to authorize_agent_payment as idempotencyKey — retries are safe
+```
+
+The key is a UUID v5, fully deterministic for a given `(thread_id, run_id, tool_call_id)` triple. Delegare's server enforces idempotency: a second charge with the same key returns the original receipt instead of creating a duplicate transaction.
+
+## x402 paywall auto-pay
+
+For paid APIs that return HTTP 402 with x402 payment requirements (e.g., crypto-native data providers), `delegare_fetch` and `X402AutoPayRunnable` automatically charge and retry:
+
+```python
+from langchain_delegare import X402AutoPayRunnable
+
+fetcher = X402AutoPayRunnable(
+    sync_client=toolkit.sync_client,
+    async_client=toolkit.async_client,
+)
+
+# Compose into LCEL chains
+result = fetcher.invoke({
+    "url": "https://api.example.com/premium-data",
+    "intent_mandate": "<intent_mandate>",
+})
+```
+
+When the API returns 402 with valid x402 `accepts` for Base or Base Sepolia, `fetcher` retries the request with the `X-DELEGARE-MANDATE` header. Delegare's facilitator settles the on-chain payment without the agent ever touching a private key.
+
+## Authentication model
+
+Delegare supports two auth flows:
+
+**API key (server-to-server merchant flow)**
+
+Two headers identify a merchant:
+- `X-Delegare-Api-Key`
+- `X-Delegare-Merchant-Id`
+
+Use `DelegareToolkit.from_api_key()` for backend processes that charge users against pre-authorized mandates.
+
+**OAuth 2.1 with PKCE (agent flow)**
+
+Use `DelegareToolkit.from_oauth()` when the agent itself authenticates with a user-granted access token. Refresh tokens are auto-rotated via the `on_token_refresh` callback — your storage layer is invoked whenever the access token changes.
+
+```python
+toolkit = DelegareToolkit.from_oauth(
+    access_token="...",
+    refresh_token="...",
+    on_token_refresh=lambda access, refresh: my_token_store.save(access, refresh),
+)
+```
+
+## Resources
+
+- **Package**: [pypi.org/project/langchain-delegare](https://pypi.org/project/langchain-delegare/)
+- **Source**: [github.com/orgtom78/delegare](https://github.com/orgtom78/delegare/tree/main/packages/langchain-delegare)
+- **Underlying SDK**: [pypi.org/project/delegare](https://pypi.org/project/delegare/) (`pip install delegare`)
+- **MCP server**: [pypi.org/project/delegare-mcp](https://pypi.org/project/delegare-mcp/) (`pip install delegare-mcp`)
+- **Delegare docs**: [docs.delegare.dev](https://docs.delegare.dev)
+- **AP2 protocol**: [github.com/google/agent-payments-protocol](https://github.com/google/agent-payments-protocol)
