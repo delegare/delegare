@@ -156,6 +156,12 @@ export function requireX402Payment(options: X402Options) {
         const bodySchema = b.inputSchema || b.input?.body;
         return {
           ...(b.description && { description: b.description }),
+          // ── CDP Bazaar display fields (2026-05 schema update) ──────────
+          // Surface on agentic.market via /discovery/resources items.
+          // Provider-supplied; CDP moderates + re-hosts iconUrl.
+          ...(b.serviceName && { serviceName: b.serviceName }),
+          ...(Array.isArray(b.tags) && b.tags.length > 0 && { tags: b.tags }),
+          ...(b.iconUrl && { iconUrl: b.iconUrl }),
           info: {
             input: {
               type: 'http',
@@ -418,7 +424,14 @@ export function requireX402Payment(options: X402Options) {
       }
     }
 
-    // ── Case D: payment receipt already present → verify ─────────────────
+    // ── Case D: payment receipt already present → verify-receipt ─────────
+    //
+    // Verifies an X-PAYMENT-RESPONSE receipt against the facilitator's
+    // settlement record. The receipt path is BOUND TO `expectedResource`
+    // (the current route) to prevent replay across same-(payTo, amount)
+    // endpoints, and the facilitator enforces a short TTL on receipt
+    // verification to limit same-resource replay. See:
+    // https://github.com/delegare/delegare/issues/1
     if (xPaymentResponse) {
       try {
         const decoded = Buffer.from(xPaymentResponse, 'base64').toString('utf8');
@@ -433,10 +446,14 @@ export function requireX402Payment(options: X402Options) {
         }
 
         const verifyPayload: Record<string, unknown> = {
-          transaction:    receipt.transaction,
-          network:        receipt.network,
-          expectedPayTo:  options.payTo,
-          expectedAmount: priceToAtomicUsdc(options.price),
+          transaction:      receipt.transaction,
+          network:          receipt.network,
+          expectedPayTo:    options.payTo,
+          expectedAmount:   priceToAtomicUsdc(options.price),
+          // Resource binding — REQUIRED. Without it the facilitator rejects
+          // the verification (fail-closed) since the receipt cannot be
+          // proven to be for this specific route.
+          expectedResource: options.resource || req.originalUrl,
         };
 
         const bazaarExt = (req as any)._x402BazaarExtension;
@@ -444,16 +461,35 @@ export function requireX402Payment(options: X402Options) {
           verifyPayload.extensions = { bazaar: bazaarExt };
         }
 
-        const verifyRes = await fetch(`${apiUrl}/x402/verify`, {
+        // Distinct endpoint from /x402/verify (which handles unsettled
+        // EIP-3009 authorization payloads). /verify-receipt is for already-
+        // settled receipts and enforces the resource/payTo/amount binding +
+        // TTL described above.
+        const verifyRes = await fetch(`${apiUrl}/x402/verify-receipt`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(verifyPayload),
         });
 
         if (!verifyRes.ok) {
+          // Surface the facilitator's structured reason when available so
+          // callers can distinguish resource mismatch / TTL expiry / unknown
+          // tx from generic verification failures.
+          const errBody = await verifyRes.json().catch(() => ({}));
           res.status(402).json({
             code: 'payment_verification_failed',
-            message: 'Could not verify payment receipt',
+            message: (errBody as any).invalidReason || 'Could not verify payment receipt',
+          });
+          return;
+        }
+
+        // Even on HTTP 200, the body carries { isValid, invalidReason? }.
+        // Reject explicit isValid=false answers — fail-closed.
+        const verifyBody = await verifyRes.json().catch(() => ({ isValid: false }));
+        if ((verifyBody as any).isValid !== true) {
+          res.status(402).json({
+            code: 'payment_verification_failed',
+            message: (verifyBody as any).invalidReason || 'Receipt verification rejected',
           });
           return;
         }
