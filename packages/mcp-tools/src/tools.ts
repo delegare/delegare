@@ -26,6 +26,12 @@ export function registerDelegareTools(
         rail: z.enum(['fiat', 'crypto', 'both']).optional().describe('Which payment rails to enable. Defaults to both.'),
         railPreference: z.enum(['auto', 'fiat_first', 'crypto_first', 'cheapest', 'fastest']).optional().describe('How to select the rail when both are available. Defaults to auto.'),
       }),
+      outputSchema: z.object({
+        message: z.string().describe('Instructions for the agent to present to the user'),
+        setupUrl: z.string().url().describe('The URL the user must visit'),
+        sessionToken: z.string().describe('Token to use for polling'),
+        expiresInSeconds: z.number().int().describe('Seconds until the URL expires'),
+      }),
       securitySchemes: oauthSecurity,
     } as any,
     async (args: any) => {
@@ -65,6 +71,11 @@ export function registerDelegareTools(
       inputSchema: z.object({
         sessionToken: z.string().describe('The sessionToken returned by setup_spending_mandate'),
       }),
+      outputSchema: z.object({
+        status: z.enum(['pending', 'completed', 'expired', 'cancelled']).describe('Current status of the setup session'),
+        intentMandate: z.string().optional().describe('The SD-JWT-VC spending mandate (returned once completed)'),
+        error: z.string().optional().describe('Error message if setup failed'),
+      }),
       securitySchemes: oauthSecurity,
     } as any,
     async (args: any) => {
@@ -89,6 +100,13 @@ export function registerDelegareTools(
       description: 'Check remaining monthly budget and masked payment methods for a spending mandate. Never returns card numbers or wallet seeds — only masked summaries.',
       inputSchema: z.object({
         intentMandate: z.string().describe('The intentMandate (SD-JWT-VC) stored in agent context'),
+      }),
+      outputSchema: z.object({
+        monthlyLimitCents: z.number().int().describe('Total monthly limit in cents'),
+        monthlySpentCents: z.number().int().describe('Amount spent this month in cents'),
+        remainingCents: z.number().int().describe('Remaining budget for the month'),
+        currency: z.string().describe('Currency of the limits'),
+        maskedPaymentMethod: z.string().describe('Description of the connected payment method'),
       }),
       securitySchemes: oauthSecurity,
     } as any,
@@ -119,6 +137,15 @@ export function registerDelegareTools(
         description: z.string().describe('Human-readable description of what is being paid for'),
         idempotencyKey: z.string().describe('Unique key to prevent duplicate charges. Use a stable identifier like a subscription ID.'),
         metadataJson: z.string().optional().describe('Optional JSON string of key-value metadata (e.g. \'{"planId":"growth"}\')'),
+      }),
+      outputSchema: z.object({
+        receiptId: z.string().describe('Unique receipt identifier'),
+        status: z.string().describe('Payment status'),
+        amountCents: z.number().int().describe('Amount charged in cents'),
+        currency: z.string().describe('Currency charged'),
+        transactionHash: z.string().optional().describe('On-chain transaction hash if applicable'),
+        amountUsd: z.string().describe('Human-readable dollar amount'),
+        note: z.string().describe('Additional details about the payment'),
       }),
       securitySchemes: oauthSecurity,
     } as any,
@@ -185,6 +212,12 @@ export function registerDelegareTools(
         body: z.string().optional().describe('Optional JSON body for POST requests'),
         intentMandate: z.string().describe('Your active spending delegate token (intentMandate)'),
       }),
+      outputSchema: z.object({
+        status: z.number().int().describe('HTTP status code'),
+        content: z.any().describe('Response content (parsed JSON or raw text)'),
+        paymentExecuted: z.boolean().describe('Whether a payment was executed to access this resource'),
+        receipt: z.any().optional().describe('Payment receipt if a payment was executed'),
+      }),
       securitySchemes: oauthSecurity,
     } as any,
     async (args: any) => {
@@ -245,6 +278,10 @@ export function registerDelegareTools(
       description: 'Immediately revoke a spending mandate. After revocation, no further charges can be made with this intentMandate. The user can create a new mandate at any time.',
       inputSchema: z.object({
         intentMandate: z.string().describe('The intentMandate to revoke'),
+      }),
+      outputSchema: z.object({
+        status: z.string().describe('Revocation status'),
+        revokedAt: z.string().describe('Timestamp of revocation'),
       }),
       securitySchemes: oauthSecurity,
     } as any,

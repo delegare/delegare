@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "delegare-mcp"
-version = "0.1.0"
+version = "0.1.1"
 description = "Model Context Protocol (MCP) server and tools for Delegare"
 readme = "README.md"
 authors = [{ name = "SecureLend", email = "support@securelend.ai" }]

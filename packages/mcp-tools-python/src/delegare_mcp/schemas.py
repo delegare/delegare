@@ -76,3 +76,46 @@ class DelegareFetchSchema(BaseDelegareSchema):
 
 class RevokeMandateSchema(BaseDelegareSchema):
     intent_mandate: str = Field(alias="intentMandate", description="The intentMandate to revoke")
+
+
+class SetupSpendingMandateOutputSchema(BaseModel):
+    message: str = Field(description="Instructions for the agent to present to the user")
+    setup_url: str = Field(alias="setupUrl", description="The URL the user must visit")
+    session_token: str = Field(alias="sessionToken", description="Token to use for polling")
+    expires_in_seconds: int = Field(alias="expiresInSeconds", description="Seconds until the URL expires")
+
+
+class PollSetupSessionOutputSchema(BaseModel):
+    status: Literal["pending", "completed", "expired", "cancelled"] = Field(description="Current status of the setup session")
+    intent_mandate: str | None = Field(default=None, alias="intentMandate", description="The SD-JWT-VC spending mandate")
+    error: str | None = Field(default=None, description="Error message if setup failed")
+
+
+class CheckMandateBalanceOutputSchema(BaseModel):
+    monthly_limit_cents: int = Field(alias="monthlyLimitCents", description="Total monthly limit in cents")
+    monthly_spent_cents: int = Field(alias="monthlySpentCents", description="Amount spent this month in cents")
+    remaining_cents: int = Field(alias="remainingCents", description="Remaining budget for the month")
+    currency: str = Field(description="Currency of the limits")
+    masked_payment_method: str = Field(alias="maskedPaymentMethod", description="Description of the connected payment method")
+
+
+class AuthorizePaymentOutputSchema(BaseModel):
+    receipt_id: str = Field(alias="receiptId", description="Unique receipt identifier")
+    status: str = Field(description="Payment status")
+    amount_cents: int = Field(alias="amountCents", description="Amount charged in cents")
+    currency: str = Field(description="Currency charged")
+    transaction_hash: str | None = Field(default=None, alias="transactionHash", description="On-chain transaction hash")
+    amount_usd: str = Field(alias="amountUsd", description="Human-readable dollar amount")
+    note: str = Field(description="Additional details about the payment")
+
+
+class DelegareFetchOutputSchema(BaseModel):
+    status: int = Field(description="HTTP status code")
+    content: Any = Field(description="Response content")
+    payment_executed: bool = Field(alias="paymentExecuted", description="Whether a payment was executed")
+    receipt: Any | None = Field(default=None, description="Payment receipt")
+
+
+class RevokeMandateOutputSchema(BaseModel):
+    status: str = Field(description="Revocation status")
+    revoked_at: str = Field(alias="revokedAt", description="Timestamp of revocation")
