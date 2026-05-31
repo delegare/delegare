@@ -1,20 +1,27 @@
 # @delegare/x402
 
-Gate your API routes behind USDC micropayments using **Google's AP2 protocol** alongside multi-protocol discovery — CDP Bazaar, MPPScan, and Delegare AP2 mandates.
+**AP2-native x402 + MPP middleware for Express. Dual-rail by default. Auto-discoverable on three directories in one call.**
 
-The `@delegare/x402` package lets merchants monetize API endpoints using the x402 protocol while crucially implementing [Google's AP2 (Agentic Payment Protocol)](https://github.com/google-agentic-commerce/AP2). This guarantees secure, autonomous transactions where the **AI agent never holds private keys, credit card credentials, or raw funds**. Instead, agents operate strictly via pre-authorized intent mandates (SD-JWT-VC).
+`@delegare/x402` is the only x402 middleware that ships every production concern in a single drop-in: protocol coverage (x402 v1/v2 + MPP/RFC 7235), payment rails (USDC on Base + Stripe fiat fallback), discovery emission (CDP Bazaar + MPPScan + Delegare Market), and AP2 mandate verification ([Google's Agentic Payment Protocol](https://github.com/google-agentic-commerce/AP2)). One `requireX402Payment({...})` call gets you all of it.
 
-Beyond security, it handles the 402 challenge, payment verification, and settlement across multiple payment rails, and automatically embeds discovery metadata. This makes your endpoint seamlessly indexable on [Delegare Market](https://market.delegare.dev), [agentic.market](https://agentic.market) (CDP Bazaar), and [mppscan.com](https://mppscan.com) (MPP) — one middleware, zero exposed credentials, three directories.
+## Why this package
 
-## 🔒 Secured by Google's AP2 Protocol
+- **AP2-native, not bolted on.** Agents authenticate against bounded SD-JWT-VC mandates issued by the Delegare facilitator. **No private keys, no card details, no raw funds in agent context.** Spending limits, allowed rails, expiry are server-enforced before any settlement.
+- **Dual-rail by default.** Crypto path (USDC on Base, EIP-3009 `receiveWithAuthorization`) and fiat path (Stripe-purchased credit bundles via `X-Bundle-Token`) coexist on the same route. Clients with no wallet get a path; corporate-AP buyers get an invoice; the middleware picks the right rail from headers.
+- **Multi-protocol discovery in one middleware.** Every 402 response emits Bazaar `PAYMENT-REQUIRED` (x402 v2), MPP `WWW-Authenticate` (RFC 7235), and Delegare Market metadata simultaneously — your service shows up on [agentic.market](https://agentic.market), [mppscan.com](https://mppscan.com), and [market.delegare.dev](https://market.delegare.dev) without separate registration.
+- **Multi-facilitator settlement.** The middleware routes v2 `PAYMENT-SIGNATURE` to CDP and v1 `X-PAYMENT` / `X-DELEGARE-MANDATE` to the Delegare facilitator — keep your existing CDP setup, gain everything else.
 
-Traditional agentic payments force developers to provision wallets with live funds or inject raw credit card details into the LLM context window—a massive security vulnerability.
+## Pricing
 
-`@delegare/x402` natively implements [Google's AP2 (Agentic Payment Protocol)](https://github.com/google-agentic-commerce/AP2):
+The middleware itself is MIT-licensed and free. Settlement through the Delegare facilitator (the default `apiUrl`) carries a transaction fee:
 
-1. **No Keys in Context:** Agents are issued an **Intent Mandate** (SD-JWT-VC) rather than returning raw card details or wallet seeds.
-2. **Bounded Authority:** Mandates define strict, server-side enforced spending limits and permitted rails.
-3. **Zero-Trust Validation:** The middleware cryptographically verifies the mandate before settling the payment on-chain or via fiat fallbacks.
+| Transaction amount | Fee |
+| --- | --- |
+| Under $0.17 | $0.005 (floor — covers Base EIP-3009 gas) |
+| $0.17 – $1.00 | 3% of amount |
+| $1.00 and above | $0.03 (flat cap) |
+
+So a $0.05 USDC call costs you $0.005 in fees, a $0.50 call costs $0.015, and a $10 call costs $0.03. No subscription, no per-seat, no minimum monthly. Settling through CDP directly via `PAYMENT-SIGNATURE` is also supported and uses CDP's fee schedule. Stripe-bundle fallback uses the same percentage-with-bounds model. See [`/.well-known/ap2.json`](https://api.delegare.dev/.well-known/ap2.json) for the live fee declaration.
 
 ## Installation
 
@@ -85,6 +92,11 @@ app.post(
   declareDiscoveryExtension({
     description:
       "Extract structured financial data from documents. $0.15/page.",
+    // CDP Bazaar 2026-05 display fields — surface on agentic.market.
+    // Provider-supplied; CDP moderates and re-hosts iconUrl.
+    serviceName: "Acme Document Intelligence",
+    tags: ["document-extraction", "ocr", "financial-data"],
+    iconUrl: "https://acme.example.com/icon-512.png",
     inputSchema: {
       type: "object",
       properties: {
@@ -116,6 +128,8 @@ app.post(
 ```
 
 > **Note:** `output.schema` is required (not just `example`) for CDP Bazaar to accept the index entry. Without it, the validator will report "schema is invalid" even if all other checks pass.
+>
+> **CDP Bazaar update (2026-05):** the [`/discovery/resources` schema](https://docs.cdp.coinbase.com/api-reference/v2/rest-api/x402-facilitator/list-x402-resources) now surfaces `serviceName`, `tags`, and `iconUrl` directly on indexed resources. Set them on every paid route — without them, the listing on agentic.market is bland and uncategorised.
 
 ### How Bazaar Indexing Works
 

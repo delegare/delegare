@@ -1,7 +1,7 @@
 {
   "name": "@delegare/x402",
-  "version": "0.5.18",
-  "description": "Express middleware for monetizing API routes with x402 micropayments via Delegare",
+  "version": "0.5.20",
+  "description": "AP2-native x402 + MPP middleware for Express. Dual-rail by default (USDC on Base + Stripe fiat). Auto-discoverable on CDP Bazaar, MPPScan, and Delegare Market in one call. Agents pay against bounded SD-JWT-VC mandates — no keys, no card details. Settlement fee: $0.005 min (includes Base chain fee), 3% under $1, capped at $0.03.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -15,7 +15,16 @@
   },
   "keywords": [
     "x402",
+    "mpp",
+    "mppscan",
+    "ap2",
+    "agentic-payments",
+    "bazaar",
+    "cdp",
+    "delegare-market",
+    "dual-rail",
     "micropayments",
+    "stripe",
     "ai",
     "agents",
     "express",
