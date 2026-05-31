@@ -8,6 +8,7 @@ from mcp.server import Server
 from pydantic import BaseModel
 
 from .schemas import (
+<<<<<<< HEAD
     AuthorizePaymentOutput,
     AuthorizePaymentSchema,
     CheckMandateBalanceOutput,
@@ -19,6 +20,19 @@ from .schemas import (
     RevokeMandateOutput,
     RevokeMandateSchema,
     SetupSpendingMandateOutput,
+=======
+    AuthorizePaymentOutputSchema,
+    AuthorizePaymentSchema,
+    CheckMandateBalanceOutputSchema,
+    CheckMandateBalanceSchema,
+    DelegareFetchOutputSchema,
+    DelegareFetchSchema,
+    PollSetupSessionOutputSchema,
+    PollSetupSessionSchema,
+    RevokeMandateOutputSchema,
+    RevokeMandateSchema,
+    SetupSpendingMandateOutputSchema,
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
     SetupSpendingMandateSchema,
 )
 
@@ -44,6 +58,7 @@ def register_delegare_tools(server: Server, options: RegisterDelegareToolsOption
             name="setup_spending_mandate",
             description="Initiate the one-time browser setup flow so the user can connect their payment method and set spending limits. Returns a URL the user must visit. Returns sessionToken for polling.",
             inputSchema=SetupSpendingMandateSchema.model_json_schema(),
+<<<<<<< HEAD
             outputSchema=SetupSpendingMandateOutput.model_json_schema(),
             annotations=types.ToolAnnotations(
                 title="Set Up Spending Mandate",
@@ -52,11 +67,15 @@ def register_delegare_tools(server: Server, options: RegisterDelegareToolsOption
                 idempotentHint=False,
                 openWorldHint=True,
             ),
+=======
+            outputSchema=SetupSpendingMandateOutputSchema.model_json_schema(),  # type: ignore
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
         ),
         types.Tool(
             name="poll_setup_session",
             description="Check whether the user has completed the payment setup flow. Call this after presenting the setup URL. Returns the intentMandate once complete — store it in agent context for future payments.",
             inputSchema=PollSetupSessionSchema.model_json_schema(),
+<<<<<<< HEAD
             outputSchema=PollSetupSessionOutput.model_json_schema(),
             annotations=types.ToolAnnotations(
                 title="Poll Setup Session",
@@ -65,11 +84,15 @@ def register_delegare_tools(server: Server, options: RegisterDelegareToolsOption
                 idempotentHint=True,
                 openWorldHint=True,
             ),
+=======
+            outputSchema=PollSetupSessionOutputSchema.model_json_schema(),  # type: ignore
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
         ),
         types.Tool(
             name="check_mandate_balance",
             description="Check remaining monthly budget and masked payment methods for a spending mandate. Never returns card numbers or wallet seeds — only masked summaries.",
             inputSchema=CheckMandateBalanceSchema.model_json_schema(),
+<<<<<<< HEAD
             outputSchema=CheckMandateBalanceOutput.model_json_schema(),
             annotations=types.ToolAnnotations(
                 title="Check Mandate Balance",
@@ -78,11 +101,15 @@ def register_delegare_tools(server: Server, options: RegisterDelegareToolsOption
                 idempotentHint=True,
                 openWorldHint=True,
             ),
+=======
+            outputSchema=CheckMandateBalanceOutputSchema.model_json_schema(),  # type: ignore
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
         ),
         types.Tool(
             name="authorize_agent_payment",
             description="Execute a payment through the Delegare vault using AP2. The agent presents its Intent Mandate (SD-JWT-VC). Spending limits are enforced server-side. IMPORTANT: amountCents is in US cents — divide by 100 for the dollar amount (e.g. amountCents=50 means $0.50, NOT 50 dollars or 50 USDC).",
             inputSchema=AuthorizePaymentSchema.model_json_schema(),
+<<<<<<< HEAD
             outputSchema=AuthorizePaymentOutput.model_json_schema(),
             annotations=types.ToolAnnotations(
                 title="Authorize Agent Payment",
@@ -91,11 +118,15 @@ def register_delegare_tools(server: Server, options: RegisterDelegareToolsOption
                 idempotentHint=False,
                 openWorldHint=True,
             ),
+=======
+            outputSchema=AuthorizePaymentOutputSchema.model_json_schema(),  # type: ignore
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
         ),
         types.Tool(
             name="delegare_fetch",
             description="Fetch a URL. If the resource requires payment via x402, this tool will automatically use the provided spending mandate to authorize the payment and retrieve the data. Supports both GET and POST.",
             inputSchema=DelegareFetchSchema.model_json_schema(),
+<<<<<<< HEAD
             outputSchema=DelegareFetchOutput.model_json_schema(),
             annotations=types.ToolAnnotations(
                 title="Delegare Fetch",
@@ -104,11 +135,15 @@ def register_delegare_tools(server: Server, options: RegisterDelegareToolsOption
                 idempotentHint=False,
                 openWorldHint=True,
             ),
+=======
+            outputSchema=DelegareFetchOutputSchema.model_json_schema(),  # type: ignore
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
         ),
         types.Tool(
             name="revoke_mandate",
             description="Immediately revoke a spending mandate. After revocation, no further charges can be made with this intentMandate. The user can create a new mandate at any time.",
             inputSchema=RevokeMandateSchema.model_json_schema(),
+<<<<<<< HEAD
             outputSchema=RevokeMandateOutput.model_json_schema(),
             annotations=types.ToolAnnotations(
                 title="Revoke Mandate",
@@ -117,6 +152,9 @@ def register_delegare_tools(server: Server, options: RegisterDelegareToolsOption
                 idempotentHint=True,
                 openWorldHint=True,
             ),
+=======
+            outputSchema=RevokeMandateOutputSchema.model_json_schema(),  # type: ignore
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
         ),
     ]
 
