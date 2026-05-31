@@ -1,0 +1,49 @@
+---
+title: Delegare
+description: Agent payment authorization infrastructure with AP2 mandates, x402 paywall handling, and multi-rail (fiat + crypto) settlement.
+---
+
+# Delegare
+
+> [Delegare](https://delegare.dev) provides trustless agent payment authorization for AI agents — letting them spend money on behalf of users without giving up wallets, seed phrases, or open-ended access. Built on the [AP2 protocol](https://github.com/google/agent-payments-protocol) (Agent Payments Protocol). Multi-rail: fiat via Stripe, crypto via USDC on Base.
+
+## Installation
+
+The LangChain integration is a thin wrapper over the Delegare Python SDK:
+
+```bash
+pip install langchain-delegare
+```
+
+This pulls in `delegare` (the underlying SDK) automatically.
+
+## Authentication
+
+Delegare supports two auth models:
+
+- **API key** — for backend / merchant-side use. Set `DELEGARE_API_KEY` and `DELEGARE_MERCHANT_ID`.
+- **OAuth 2.1 with PKCE** — for agent-side use with user-delegated spending budgets. Discovery metadata available at `https://api.delegare.dev/.well-known/oauth-authorization-server`.
+
+Sandbox credentials: [delegare.dev/dashboard](https://delegare.dev/dashboard).
+
+## Toolkit
+
+See the [Delegare tools page](/oss/python/integrations/tools/delegare) for the full toolkit with the seven tools, budget-aware callback handler, x402 `Runnable`, and LangGraph-native idempotency primitives.
+
+```python
+import os
+from langchain_delegare import DelegareToolkit
+
+toolkit = DelegareToolkit.from_api_key(
+    merchant_id=os.environ["DELEGARE_MERCHANT_ID"],
+    api_key=os.environ["DELEGARE_API_KEY"],
+)
+tools = toolkit.get_tools()
+```
+
+## Related packages
+
+- **`delegare`** — Python SDK (lower-level direct client). [PyPI](https://pypi.org/project/delegare/)
+- **`delegare-mcp`** — Model Context Protocol server exposing the same tools for Claude Desktop, Cursor, and other MCP clients. [PyPI](https://pypi.org/project/delegare-mcp/)
+- **`@delegare/sdk`** — TypeScript SDK. [npm](https://www.npmjs.com/package/@delegare/sdk)
+- **`@delegare/mcp-tools`** — TypeScript MCP tools. [npm](https://www.npmjs.com/package/@delegare/mcp-tools)
