@@ -79,6 +79,7 @@ class RevokeMandateSchema(BaseDelegareSchema):
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 # ── Output schemas ───────────────────────────────────────────────────────────
 # Plain BaseModel (no extra="forbid") so structured content from the SDK can
 # carry extra fields without failing the MCP SDK's strict jsonschema validation.
@@ -130,6 +131,8 @@ class RevokeMandateOutput(BaseModel):
     revoked: bool | None = None
     message: str | None = None
 =======
+=======
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
 class SetupSpendingMandateOutputSchema(BaseModel):
     message: str = Field(description="Instructions for the agent to present to the user")
     setup_url: str = Field(alias="setupUrl", description="The URL the user must visit")
@@ -171,4 +174,7 @@ class DelegareFetchOutputSchema(BaseModel):
 class RevokeMandateOutputSchema(BaseModel):
     status: str = Field(description="Revocation status")
     revoked_at: str = Field(alias="revokedAt", description="Timestamp of revocation")
+<<<<<<< HEAD
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
+=======
 >>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission

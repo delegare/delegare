@@ -35,15 +35,21 @@ export function registerDelegareTools(
       }),
       outputSchema: z.object({
 <<<<<<< HEAD
+<<<<<<< HEAD
         message: z.string().optional().describe('Human-readable next-step instructions'),
         setupUrl: z.string().optional().describe('URL the user visits to connect a payment method'),
         sessionToken: z.string().optional().describe('Token to poll for completion via poll_setup_session'),
         expiresInSeconds: z.number().optional().describe('Seconds until the setup URL expires'),
 =======
+=======
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
         message: z.string().describe('Instructions for the agent to present to the user'),
         setupUrl: z.string().url().describe('The URL the user must visit'),
         sessionToken: z.string().describe('Token to use for polling'),
         expiresInSeconds: z.number().int().describe('Seconds until the URL expires'),
+<<<<<<< HEAD
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
+=======
 >>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
       }),
       securitySchemes: oauthSecurity,
@@ -91,9 +97,15 @@ export function registerDelegareTools(
       }),
       outputSchema: z.object({
 <<<<<<< HEAD
+<<<<<<< HEAD
         status: z.string().optional().describe('Setup status: pending, complete, or expired'),
         intentMandate: z.string().optional().describe('The finalized intent mandate when complete'),
         encodedMandate: z.string().optional().describe('Legacy encoded mandate field'),
+=======
+        status: z.enum(['pending', 'completed', 'expired', 'cancelled']).describe('Current status of the setup session'),
+        intentMandate: z.string().optional().describe('The SD-JWT-VC spending mandate (returned once completed)'),
+        error: z.string().optional().describe('Error message if setup failed'),
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
 =======
         status: z.enum(['pending', 'completed', 'expired', 'cancelled']).describe('Current status of the setup session'),
         intentMandate: z.string().optional().describe('The SD-JWT-VC spending mandate (returned once completed)'),
@@ -130,6 +142,7 @@ export function registerDelegareTools(
       }),
       outputSchema: z.object({
 <<<<<<< HEAD
+<<<<<<< HEAD
         status: z.string().optional().describe('Mandate status (e.g. active)'),
         maxMonthlySpendCents: z.number().optional().describe('Maximum monthly spend in cents'),
         currentMonthlySpendCents: z.number().optional().describe('Amount spent this month in cents'),
@@ -137,11 +150,16 @@ export function registerDelegareTools(
         maxPerTxCents: z.number().optional().describe('Maximum per-transaction spend in cents'),
         currency: z.string().optional().describe('Currency (e.g. usd)'),
 =======
+=======
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
         monthlyLimitCents: z.number().int().describe('Total monthly limit in cents'),
         monthlySpentCents: z.number().int().describe('Amount spent this month in cents'),
         remainingCents: z.number().int().describe('Remaining budget for the month'),
         currency: z.string().describe('Currency of the limits'),
         maskedPaymentMethod: z.string().describe('Description of the connected payment method'),
+<<<<<<< HEAD
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
+=======
 >>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
       }),
       securitySchemes: oauthSecurity,
@@ -179,6 +197,7 @@ export function registerDelegareTools(
       }),
       outputSchema: z.object({
 <<<<<<< HEAD
+<<<<<<< HEAD
         receiptId: z.string().optional().describe('Unique receipt identifier'),
         status: z.string().optional().describe('Payment status'),
         transaction: z.string().optional().describe('On-chain transaction hash when settled on-chain'),
@@ -188,6 +207,8 @@ export function registerDelegareTools(
         amountUsd: z.string().optional().describe('Human-readable dollar amount'),
         note: z.string().optional().describe('Human-readable payment summary'),
 =======
+=======
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
         receiptId: z.string().describe('Unique receipt identifier'),
         status: z.string().describe('Payment status'),
         amountCents: z.number().int().describe('Amount charged in cents'),
@@ -195,6 +216,9 @@ export function registerDelegareTools(
         transactionHash: z.string().optional().describe('On-chain transaction hash if applicable'),
         amountUsd: z.string().describe('Human-readable dollar amount'),
         note: z.string().describe('Additional details about the payment'),
+<<<<<<< HEAD
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
+=======
 >>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
       }),
       securitySchemes: oauthSecurity,
@@ -268,15 +292,21 @@ export function registerDelegareTools(
       }),
       outputSchema: z.object({
 <<<<<<< HEAD
+<<<<<<< HEAD
         status: z.number().optional().describe('HTTP response status code'),
         content: z.any().optional().describe('The response body (JSON or text)'),
         paymentExecuted: z.boolean().optional().describe('Whether an x402 payment was executed'),
         receipt: z.any().optional().describe('Payment receipt when a payment was executed'),
 =======
+=======
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
         status: z.number().int().describe('HTTP status code'),
         content: z.any().describe('Response content (parsed JSON or raw text)'),
         paymentExecuted: z.boolean().describe('Whether a payment was executed to access this resource'),
         receipt: z.any().optional().describe('Payment receipt if a payment was executed'),
+<<<<<<< HEAD
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
+=======
 >>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
       }),
       securitySchemes: oauthSecurity,
@@ -346,9 +376,14 @@ export function registerDelegareTools(
       }),
       outputSchema: z.object({
 <<<<<<< HEAD
+<<<<<<< HEAD
         status: z.string().optional().describe('Revocation status'),
         revoked: z.boolean().optional().describe('Whether the mandate was revoked'),
         message: z.string().optional().describe('Human-readable result message'),
+=======
+        status: z.string().describe('Revocation status'),
+        revokedAt: z.string().describe('Timestamp of revocation'),
+>>>>>>> 3c9db2c... release(mcp-tools): annotations + descriptions for ChatGPT/Claude submission
 =======
         status: z.string().describe('Revocation status'),
         revokedAt: z.string().describe('Timestamp of revocation'),
