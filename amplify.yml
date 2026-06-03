@@ -12,7 +12,7 @@ applications:
             - cd ../.. && NODE_ENV=development pnpm install --no-frozen-lockfile --prod=false
         build:
           commands:
-            - node node_modules/next/dist/bin/next build
+            - cd apps/web && node node_modules/next/dist/bin/next build
       artifacts:
         baseDirectory: .next
         files:
