@@ -9,11 +9,10 @@ applications:
             - nvm use 22
             - corepack enable
             - corepack prepare pnpm@10.28.0 --activate
-            - cd ../.. && NODE_ENV=development pnpm install --no-frozen-lockfile --prod=false --ignore-scripts
-            - node ../../node_modules/esbuild/install.js 2>/dev/null || true
+            - cd ../.. && NODE_ENV=development pnpm install --no-frozen-lockfile --prod=false
         build:
           commands:
-            - ./node_modules/.bin/next build
+            - cd ../.. && pnpm --filter web build
       artifacts:
         baseDirectory: .next
         files:
