@@ -13,7 +13,7 @@ applications:
             - node ../../node_modules/esbuild/install.js 2>/dev/null || true
         build:
           commands:
-            - cd ../.. && pnpm --filter web build
+            - ../../node_modules/.bin/next build
       artifacts:
         baseDirectory: .next
         files:
