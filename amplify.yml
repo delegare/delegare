@@ -8,11 +8,11 @@ applications:
             - nvm install 22
             - nvm use 22
             - corepack enable
-            - corepack prepare pnpm@latest --activate
-            - cd "$CODEBUILD_SRC_DIR/delegare" && NODE_ENV=development pnpm install --no-frozen-lockfile --prod=false
+            - corepack prepare pnpm@10.28.0 --activate
+            - cd ../.. && NODE_ENV=development pnpm install --no-frozen-lockfile --prod=false
         build:
           commands:
-            - cd "$CODEBUILD_SRC_DIR/delegare/apps/web" && "$CODEBUILD_SRC_DIR/delegare/node_modules/.bin/next" build
+            - cd apps/web && node ../../node_modules/next/dist/bin/next build
       artifacts:
         baseDirectory: .next
         files:
