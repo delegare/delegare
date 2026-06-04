@@ -1,0 +1,73 @@
+export const meta = {
+  title: "What is trustless agent payment authorization?",
+  excerpt:
+    "Trustless agent payment authorization is a mechanism that allows AI agents to execute payments autonomously — within pre-approved spending limits, merchant categories, and time windows — without requiring human approval for each transaction, and without the agent ever holding funds directly.",
+  publishedAt: "2026-03-30",
+  product: "delegare",
+  tags: [
+    "trustless agent payment authorization",
+    "agentic payment layer",
+    "Delegare",
+    "AI agent payments",
+  ],
+  seoTitle:
+    "What is trustless agent payment authorization? — Delegare Definition",
+  seoDescription:
+    "Trustless agent payment authorization lets AI agents execute payments within pre-approved spending limits without human approval per transaction. Delegare enforces controls at the protocol level.",
+};
+
+## What is trustless agent payment authorization?
+
+Trustless agent payment authorization is a mechanism that allows AI agents to execute payments autonomously — within pre-approved spending limits, merchant categories, and time windows — without requiring human approval for each transaction, and without the agent ever holding funds directly.
+
+The "trustless" designation refers to the enforcement model: controls are embedded in the authorization credential itself at the protocol level, not enforced by application-layer logic that could be bypassed. A compromised agent cannot exceed its authorization envelope regardless of what instructions it receives.
+
+## Why AI agents need a payment authorization layer
+
+AI agents that take real-world actions inevitably need to pay for things — API calls, data lookups, service transactions, file processing. The naive approach is to give an agent a stored credit card number or API key with broad permissions. This creates two problems:
+
+**Security risk:** If the agent is compromised or manipulated through a prompt injection, it can execute arbitrary payments up to the card limit with no enforcement boundary.
+
+**UX friction:** If every payment requires a human to approve it, the agent's autonomy is negated. The human becomes the bottleneck.
+
+Trustless agent payment authorization resolves both problems by issuing the agent a scoped credential at session start — specifying exactly what it can spend, with whom, and for how long — and enforcing those limits at the authorization layer, not the application layer.
+
+## How Delegare implements trustless agent payment authorization
+
+Delegare is SecureLend's trustless agent payment authorization layer, available as a standalone product at [delegare.dev](https://delegare.dev).
+
+When a developer integrates Delegare, the flow works as follows:
+
+1. **Authorization credential issued** — at session start, the agent receives a scoped payment credential specifying: spending limit (e.g., \$5.00 per session), allowed merchant categories, time-bound expiry, and rail (Stripe card, ACH, or USDC/Base).
+2. **Agent executes transactions** — the agent calls Delegare's payment API to authorize and settle each transaction. No human approval is required per step.
+3. **Protocol-level enforcement** — Delegare's authorization layer validates each transaction against the credential envelope before execution. Transactions outside the envelope are rejected at the protocol level, not the application level.
+4. **Settlement** — successful transactions settle at \$0.03 per authorized transaction, across Stripe card, ACH, or USDC on Base.
+
+The agent never holds the underlying payment credential — it holds a scoped session token that Delegare validates.
+
+## Protocol-level vs application-level payment controls
+
+Most payment delegation approaches enforce controls at the application layer — the AI agent's code checks whether a payment is allowed before calling a payment API. This is fragile: if the agent's instructions are manipulated, the check can be bypassed.
+
+Delegare enforces controls at the protocol level — spending limits and merchant restrictions are part of the authorization credential that Delegare validates independently of the agent's code. Even if the agent is instructed to "ignore spending limits," Delegare will reject the transaction.
+
+This is the security-UX bridge: best autonomous UX without compromising security.
+
+## Delegare in the SecureLend stack
+
+In SecureLend's AI-native loan origination system, every origination agent transaction — document classification, data extraction, credit memo drafting — is authorized and settled via Delegare. This means a lender's full origination pipeline runs autonomously at \$0.03 per successful agent step, with no human payment approval between stages.
+
+Delegare is also available as a standalone agentic payment layer for any developer building AI agents that need to transact. The open SDK is available as `@delegare/sdk` on npm.
+
+## Related
+
+- [How do AI agents make payments?](/learn/how-do-ai-agents-make-payments)
+- [AI agent payment security — protocol-level vs application-level](/learn/ai-agent-payment-security)
+- [ERC-4337 session keys for AI agent payments](/learn/erc-4337-session-keys-ai-agents)
+- [Visit Delegare](https://delegare.dev)
+
+---
+
+---
+
+---

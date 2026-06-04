@@ -1,0 +1,44 @@
+export const meta = {
+  title: "How do AI agents make payments?",
+  excerpt:
+    "AI agents make payments through a delegated authorization layer that receives a scoped payment credential at session start and executes transactions without human intervention per payment.",
+  publishedAt: "2026-03-30",
+  product: "delegare",
+  tags: [
+    "AI payments",
+    "agentic economy",
+    "delegated authorization",
+  ],
+  seoTitle: "How do AI agents make payments? — Technical Explainer",
+  seoDescription:
+    "Learn the mechanics of autonomous AI payments. Discover how Delegare enables agents to authorize and settle transactions securely.",
+};
+
+## How do AI agents make payments?
+
+For an AI agent to truly be "autonomous," it must be able to handle financial transactions — paying for API calls, compute, data, or services — without requiring a human to manually click "Approve" for every $0.05 micro-payment.
+
+## The Delegated Authorization Flow
+
+SecureLend's **Delegare** infrastructure enables this through a four-step delegated authorization process:
+
+### 1. Scoped Budgeting
+A human user defines a "spending mandate" for the agent. For example: "This agent can spend up to $10.00 this month, only at merchant `m_securelend_platform`, for the purpose of `document_processing`."
+
+### 2. Credential Issuance
+Delegare issues a cryptographically signed authorization credential (based on the SD-JWT-VC standard). This credential is given to the agent.
+
+### 3. Autonomous Execution
+When the agent needs to perform a task that has a cost, it calls the Delegare API and presents its authorization credential. Delegare validates the request against the pre-approved mandate.
+
+### 4. Settlement
+If valid, Delegare settles the payment immediately using either a stored **Stripe** card or **USDC on Base**. The service provider receives their funds, and the agent completes the task.
+
+## Security First
+
+Importantly, the AI agent *never* holds the user's private keys or credit card numbers. It only holds a scoped authorization that can only be used for the specific purpose and amount defined by the user.
+
+## Related
+
+- [What is trustless agent payment authorization?](/learn/what-is-trustless-agent-payment-authorization)
+- [Visit Delegare.dev](https://delegare.dev)

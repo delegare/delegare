@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     images: [
       {
-        url: "/opengraph-image",
+        url: "/opengraph-image/",
         width: 1200,
         height: 630,
         alt: "Delegare — Let AI agents pay for things, safely.",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     title: TITLE,
     description: DESCRIPTION,
     site: "@delegare_dev",
-    images: ["/opengraph-image"],
+    images: ["/opengraph-image/"],
   },
 
   icons: {

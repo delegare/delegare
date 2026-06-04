@@ -1,0 +1,43 @@
+export const meta = {
+  title: "ERC-4337 session keys for AI agent payments",
+  excerpt:
+    "ERC-4337 session keys allow AI agents to execute USDC transactions on Base within pre-authorized parameters without the agent holding the private key to the user's wallet.",
+  publishedAt: "2026-03-30",
+  product: "delegare",
+  tags: [
+    "ERC-4337",
+    "session keys",
+    "crypto payments",
+    "Base network",
+  ],
+  seoTitle: "ERC-4337 Session Keys for AI Agents — Technical Definition",
+  seoDescription:
+    "Learn how ERC-4337 session keys enable secure, autonomous crypto payments for AI agents on the Base network.",
+};
+
+## ERC-4337 session keys for AI agents
+
+For AI agents to participate in the on-chain economy, they need a way to execute transactions on blockchain networks (like **Base**) securely and autonomously. ERC-4337, or Account Abstraction, provides the foundation for this via **session keys**.
+
+## What is a session key?
+
+A session key is a temporary, limited-purpose key that is authorized by a user's main wallet. Instead of giving an AI agent full control over your wallet (which would be a major security risk), you authorize a session key that can only:
+
+1. **Spend up to a certain amount** (e.g., 50 USDC).
+2. **Interact with specific contracts** (e.g., the SecureLend settlement contract).
+3. **Expire after a set time** (e.g., 24 hours).
+
+## Delegare and Base
+
+SecureLend's **Delegare** layer uses ERC-4337 account abstraction on the Base network to manage these session keys. When an agent needs to pay for a document classification task, it uses its authorized session key to trigger a USDC payment. 
+
+The user gets the benefit of autonomous AI work with the security of blockchain-enforced spending limits.
+
+## The End of Human-in-the-Loop Payments
+
+Session keys represent the end of the "Approval" button for micro-transactions. By pre-authorizing an agent within a safe "envelope," humans can delegate work to AI that includes the ability to settle its own debts instantly and globally.
+
+## Related
+
+- [What is trustless agent payment authorization?](/learn/what-is-trustless-agent-payment-authorization)
+- [Visit Delegare.dev](https://delegare.dev)
