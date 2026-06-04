@@ -1,8 +1,6 @@
 import type { NextConfig } from "next";
+import createMDX from "@next/mdx";
 
-// Shared security headers — see docs/concepts/security-model.mdx.
-// Deny framing (clickjacking), block MIME sniffing, conservative referrer policy,
-// and HSTS (1 year, includeSubDomains, preload-eligible).
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
@@ -15,6 +13,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
   trailingSlash: true,
   async redirects() {
     const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://app.delegare.dev';
@@ -36,4 +35,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withMDX = createMDX({});
+
+export default withMDX(nextConfig);

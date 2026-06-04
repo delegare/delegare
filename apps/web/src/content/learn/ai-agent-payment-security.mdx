@@ -1,0 +1,40 @@
+export const meta = {
+  title: "AI agent payment security — protocol-level vs application-level controls",
+  excerpt:
+    "Protocol-level payment controls embed spending limits and merchant restrictions in the authorization credential itself — meaning a compromised agent cannot exceed its authorization envelope.",
+  publishedAt: "2026-03-30",
+  product: "delegare",
+  tags: [
+    "AI security",
+    "payment safety",
+    "protocol-level security",
+  ],
+  seoTitle: "AI Agent Payment Security — Protocol vs Application",
+  seoDescription:
+    "Compare protocol-level and application-level security for AI agent payments. Discover why Delegare's protocol-level approach is more secure.",
+};
+
+## AI agent payment security
+
+As AI agents gain autonomy, securing their ability to transact becomes a critical priority. There are two primary ways to enforce security: **application-level** and **protocol-level**.
+
+## Application-Level Security (Fragile)
+
+In this model, the security logic lives inside the agent's code or the application it's running in. The code checks: "Has this user exceeded their $5.00 limit?" before calling a payment API.
+
+**The Risk:** If the agent is compromised via prompt injection or a software vulnerability, the malicious actor can instruct the agent to "skip the check" or modify the limit. Because the security is enforced by the same entity making the payment, it is easily bypassed.
+
+## Protocol-Level Security (Robust)
+
+In the protocol-level model — implemented by **Delegare** — the security logic is embedded in the authorization credential itself. The payment API validates the credential independently of the agent's instructions.
+
+**The Benefit:** Even if an agent is told to "spend $1,000,000," the payment request will be rejected by the infrastructure because the signed credential only authorizes $5.00. The security is enforced by the *ledger*, not the *code*.
+
+## SecureLend's Implementation
+
+Every agent in the SecureLend stack uses protocol-level authorization. This allows us to offer usage-metered AI for institutional underwriting with the same security posture expected by community bank compliance teams.
+
+## Related
+
+- [What is trustless agent payment authorization?](/learn/what-is-trustless-agent-payment-authorization)
+- [How do AI agents make payments?](/learn/how-do-ai-agents-make-payments)
