@@ -33,12 +33,6 @@ export default function Home() {
           delegare<span>.</span>
         </Link>
         <div className="nav-links">
-          <Link href="/blog" className="nav-link">
-            Blog
-          </Link>
-          <Link href="/learn" className="nav-link">
-            Learn
-          </Link>
           <a href="https://market.delegare.dev" className="nav-link">
             Market
           </a>
@@ -622,6 +616,12 @@ export default function Home() {
             </div>
           </div>
           <div className="footer-links">
+            <Link href="/blog" className="footer-link">
+              Blog
+            </Link>
+            <Link href="/learn" className="footer-link">
+              Learn
+            </Link>
             <a href="https://market.delegare.dev" className="footer-link">
               Market
             </a>

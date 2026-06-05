@@ -67,15 +67,20 @@ function normalizePost(entry: any): BlogPost {
   };
 }
 
+// Sort newest-first in JS — the contentful v11 typed client rejects
+// `order: ["-fields.publishedAt"]` on an `<any>` skeleton (validation throws
+// before the request), which silently emptied the list.
+const byPublishedDesc = (a: BlogPost, b: BlogPost) =>
+  (b.fields.publishedAt || "").localeCompare(a.fields.publishedAt || "");
+
 export async function getAllPosts(preview = false): Promise<BlogPost[]> {
   try {
     const client = getClient(preview);
     const entries = await client.getEntries<any>({
       content_type: "blogPost",
-      order: ["-fields.publishedAt"],
       limit: 100,
     });
-    return entries.items.map(normalizePost);
+    return entries.items.map(normalizePost).sort(byPublishedDesc);
   } catch (e) {
     console.error("Contentful error:", e);
     return [];
@@ -110,10 +115,9 @@ export async function getPostsByProduct(
     const entries = await client.getEntries<any>({
       content_type: "blogPost",
       "fields.product": product,
-      order: ["-fields.publishedAt"],
       limit: 20,
     });
-    return entries.items.map(normalizePost);
+    return entries.items.map(normalizePost).sort(byPublishedDesc);
   } catch (e) {
     console.error("Contentful error:", e);
     return [];
