@@ -56,6 +56,7 @@ People are rightfully skeptical around money. Delegare is built on strict bounda
 - **Expiration Controls:** Mandates have a strict time-to-live and can be instantly revoked.
 - **No Credential Exposure:** Agents hold a signed _Intent Mandate_, never your credit card number or private keys.
 - **Dual-Rails:** Settlement via Stripe (Fiat) or Base (Crypto).
+- **100% Open Source (MIT):** Both the client SDKs / middleware (`delegare/delegare`) and the [Vault facilitator + smart contracts (`delegare/vault`)](https://github.com/delegare/vault) are open source under the MIT License.
 
 ---
 

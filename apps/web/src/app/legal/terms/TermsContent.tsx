@@ -314,13 +314,14 @@ export default function TermsPage() {
             <div className="section-num">Section 1</div>
             <h2>About Delegare</h2>
             <p>
-              These Terms of Service ((&quot;Terms&quot;)) govern your use of Delegare, a
+              These Terms of Service (&quot;Terms&quot;) govern your use of Delegare, a
               trustless payment authorization layer for AI agents operated by{" "}
               <strong>SecureLend, Inc.</strong>, a Delaware Corporation
               (&quot;SecureLend,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;). Delegare is accessible at{" "}
               <code>delegare.dev</code>, <code>delegare.co</code>,{" "}
-              <code>api.delegare.dev</code>, <code>app.delegare.dev</code>, and{" "}
-              <code>mcp.delegare.dev</code> (collectively, the &quot;Services&quot;).
+              <code>api.delegare.dev</code>, <code>app.delegare.dev</code>,{" "}
+              <code>market.delegare.dev</code>, and <code>docs.delegare.dev</code>{" "}
+              (collectively, the &quot;Services&quot;).
             </p>
             <p>
               By accessing or using the Services — including setting up a
@@ -400,9 +401,10 @@ export default function TermsPage() {
             <p>
               A spending delegate authorizes an AI agent to initiate payments on
               your behalf, within the limits you set. When you create a spending
-              delegate, Delegare issues a <code>DelegateToken</code> to your
-              agent. That token authorizes charges up to your configured
-              per-transaction and monthly limits at your approved merchants.
+              delegate, Delegare issues an <strong>Intent Mandate</strong> (
+              <code>intentMandate</code>) to your agent. That mandate authorizes
+              charges up to your configured per-transaction and monthly limits
+              at your approved merchants.
             </p>
 
             <h3>Your responsibility for delegate activity</h3>
@@ -411,11 +413,12 @@ export default function TermsPage() {
                 You are responsible for charges your agent makes
               </div>
               <p>
-                All charges made using a valid DelegateToken are your
+                All charges made using a valid Intent Mandate are your
                 responsibility, whether initiated by you, your agent, or any
-                third party who obtained your token. Treat your DelegateToken
-                like a payment card — keep it secure and revoke it immediately
-                if you believe it has been compromised.
+                third party who obtained your mandate. Treat your{" "}
+                <code>intentMandate</code> like a payment card — keep it secure
+                and revoke it immediately if you believe it has been
+                compromised.
               </p>
             </div>
 
@@ -432,8 +435,8 @@ export default function TermsPage() {
 
             <h3>Revocation</h3>
             <p>
-              You may revoke a spending delegate at any time via the{" "}
-              <code>revoke_delegate</code> MCP tool or the Delegare dashboard.
+              You may revoke a spending mandate at any time via the{" "}
+              <code>revoke_mandate</code> MCP tool or the Delegare dashboard.
               Revocation takes effect immediately. Charges that have already
               been authorized and are in-flight at the time of revocation may
               still complete. Delegare is not liable for charges that complete
@@ -493,7 +496,7 @@ export default function TermsPage() {
                 into multiple smaller charges
               </li>
               <li>
-                Test charges against real DelegateTokens belonging to users who
+                Test charges against real Intent Mandates belonging to users who
                 have not consented to test charges
               </li>
             </ul>
@@ -685,11 +688,11 @@ export default function TermsPage() {
             <p>
               Delegare is designed to enable AI agents to initiate payments
               autonomously without requiring user approval for each individual
-              transaction. By setting up a spending delegate and providing a
-              DelegateToken to your agent, you grant your agent standing
-              authorization to initiate payments within your configured limits.
-              You accept full responsibility for all charges made by your agent
-              using a valid DelegateToken.
+              transaction. By setting up a spending delegate and providing an
+              Intent Mandate (<code>intentMandate</code>) to your agent, you
+              grant your agent standing authorization to initiate payments
+              within your configured limits. You accept full responsibility for
+              all charges made by your agent using a valid Intent Mandate.
             </p>
 
             <h3>Third-party AI platforms</h3>
@@ -700,7 +703,7 @@ export default function TermsPage() {
               endorsed by, or responsible for these platforms. Each platform&apos;s
               own terms of service govern your use of that platform. SecureLend
               has no control over how AI platforms handle, store, or process
-              DelegateTokens or other data in the agent&apos;s context.
+              Intent Mandates or other data in the agent&apos;s context.
             </p>
 
             <h3>No guarantee of agent behavior</h3>
@@ -741,10 +744,6 @@ export default function TermsPage() {
               <li>
                 Circumvent, disable, or attack Delegare&apos;s security mechanisms,
                 rate limits, or spending enforcement
-              </li>
-              <li>
-                Reverse engineer, decompile, or disassemble the vault service or
-                any proprietary component of the Services
               </li>
               <li>
                 Attempt to access another user&apos;s delegate records, merchant
@@ -897,20 +896,42 @@ export default function TermsPage() {
 
             <h3>Delegare IP</h3>
             <p>
-              All intellectual property in the Services — including the vault
-              service, API design, dashboard, brand, and documentation — is
-              owned by or licensed to SecureLend, Inc. These Terms do not grant
-              you any ownership interest in Delegare or SecureLend intellectual
-              property.
+              The Delegare brand, trademarks, and the hosted Services operated
+              at <code>delegare.dev</code> and <code>api.delegare.dev</code> are
+              owned by or licensed to SecureLend, Inc. Except as granted under
+              the open-source licenses below, these Terms do not grant you any
+              ownership interest in Delegare or SecureLend trademarks or
+              hosted infrastructure.
             </p>
 
-            <h3>Open source SDK</h3>
+            <h3>Open source software (MIT License)</h3>
             <p>
-              The <code>@delegare/sdk</code> and{" "}
-              <code>@delegare/mcp-tools</code> packages are licensed under the
-              MIT License. The MIT License governs your use of those packages.
-              Nothing in these Terms restricts rights granted by the MIT License
-              for those specific packages.
+              Delegare&apos;s source code — including the client SDKs and middleware
+              (<code>@delegare/sdk</code>, <code>@delegare/x402</code>,{" "}
+              <code>@delegare/mcp-tools</code>,{" "}
+              <code>@delegare/openclaw-plugin</code>, and the Python{" "}
+              <code>delegare</code>, <code>delegare-mcp</code>, and{" "}
+              <code>langchain-delegare</code> packages in{" "}
+              <a
+                href="https://github.com/delegare/delegare"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                github.com/delegare/delegare
+              </a>
+              ) as well as the Vault service, dashboards, and{" "}
+              <code>DelegareRouter</code> smart contracts (in{" "}
+              <a
+                href="https://github.com/delegare/vault"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                github.com/delegare/vault
+              </a>
+              ) — is licensed under the MIT License. The MIT License governs
+              your use, modification, and self-hosting of those repositories and
+              packages. Nothing in these Terms restricts rights granted by the
+              MIT License.
             </p>
 
             <h3>Merchant license</h3>

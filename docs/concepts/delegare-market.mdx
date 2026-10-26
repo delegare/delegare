@@ -66,14 +66,7 @@ app.post('/api/your-endpoint',
 
 ### 2. Trigger the first CDP settlement
 
-CDP Bazaar indexes your endpoint after the first `PAYMENT-SIGNATURE` credential settles through their facilitator. The fastest way to trigger this without waiting for organic traffic:
-
-```bash
-# In your vault/scripts directory — uses @x402/fetch with your wallet
-PRIVATE_KEY=0x... node dist/cdp-payment/cdp-first-payment.js
-```
-
-Or make any real payment to your endpoint using an `@x402/fetch`-based client.
+CDP Bazaar indexes your endpoint after the first `PAYMENT-SIGNATURE` credential settles through their facilitator. Make a single payment to your endpoint using any `@x402/fetch`-compatible client (or via `delegare_fetch` in `@delegare/mcp-tools`) to trigger indexing.
 
 ### 3. Register on MPPScan
 

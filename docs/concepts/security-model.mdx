@@ -133,7 +133,8 @@ Delegare minimizes trust by building on existing, battle-tested infrastructure r
 |---|---|---|
 | **Fiat payments** | [Stripe](https://stripe.com) | PCI-DSS Level 1, bank-grade fraud detection, established since 2010 |
 | **Crypto payments** | [Base](https://base.org) (Coinbase L2) | Open-source EVM chain, secured by Ethereum L1 |
-| **Smart contract** | DelegareRouter | On-chain, auditable, enforces token whitelisting and payment routing |
+| **Smart contract** | DelegareRouter | On-chain, open-source (MIT), auditable, enforces token whitelisting and payment routing |
+| **Vault facilitator** | [delegare/vault](https://github.com/delegare/vault) | Open-source (MIT) authorization, limit enforcement, and settlement service |
 | **Session key storage** | AWS KMS + DynamoDB | KMS envelope encryption; decryption requires mandate-bound context — cross-mandate reuse is cryptographically impossible |
 | **Spending limits** | DynamoDB atomic counters | Race-condition-free enforcement, server-side |
 | **Transport** | TLS 1.2+ with HSTS | Every API + dashboard hop; certificates managed by AWS ACM |
@@ -192,7 +193,7 @@ Rail costs for fiat (Stripe acquiring fees) are passed through at cost. On the c
 
 We welcome responsible disclosure.
 
-- **Email:** [security@delegare.dev](mailto:security@delegare.dev)
+- **Email:** [security@securelend.ai](mailto:security@securelend.ai) (or via [GitHub Private Vulnerability Reporting](https://github.com/delegare/delegare/security/advisories/new))
 - **Scope:** the Delegare vault API, the DelegareRouter smart contract, the dashboard, and the `@delegare/*` packages on npm.
 - **Out of scope:** denial-of-service on non-production environments, issues already covered in [Known Limitations](#known-limitations), and third-party systems we build on (Stripe, AWS, Base) — please report those to the upstream project.
 - **Response:** we acknowledge within 2 business days and aim to resolve or publish a mitigation within 30 days.

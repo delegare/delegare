@@ -139,6 +139,14 @@ export default function Home() {
           <span className="proof-badge-dot" style={{ background: "#FF9900" }} />
           AWS
         </span>
+        <a
+          href="https://github.com/delegare"
+          className="proof-badge"
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <span className="proof-badge-dot" style={{ background: "#7ec898" }} />
+          Open Source (MIT)
+        </a>
       </div>
 
       {/* DEMO VIDEO */}
@@ -207,8 +215,16 @@ export default function Home() {
           }}
         >
           People are rightfully skeptical when money is involved. Delegare is
-          built on strict boundaries and cryptographic guarantees so your agent
-          can never go rogue.
+          open source under the MIT license — from the client SDKs and x402
+          middleware to the{" "}
+          <a
+            href="https://github.com/delegare/vault"
+            style={{ color: "#c8b99a", textDecoration: "underline" }}
+          >
+            Vault service and smart contracts
+          </a>{" "}
+          — built on strict boundaries and cryptographic guarantees so your
+          agent can never go rogue.
         </p>
         <div className="rails-grid">
           <div className="rail-card">
@@ -448,6 +464,11 @@ export default function Home() {
                 title: "Micropayment-ready",
                 desc: "Under $1, the fee is 3% with a 0.5\u00A2 minimum \u2014 a 50\u00A2 API call costs 1.5\u00A2. Above $1, it\u2019s a flat 3\u00A2. The minimum covers gas on Base so neither party pays separately.",
               },
+              {
+                icon: "OS",
+                title: "MIT open source",
+                desc: "Every layer \u2014 SDKs, x402 middleware, smart contract router, and the Vault facilitator \u2014 is open source under MIT. Inspect the code or self-host anytime; pay only when using our managed cloud.",
+              },
             ].map((f) => (
               <div key={f.title} className="pricing-feature">
                 <div className="pricing-feature-icon">{f.icon}</div>
@@ -480,11 +501,46 @@ export default function Home() {
             <div>
               <span className="c-green">pnpm</span>
               <span className="c-white"> add </span>
-              <span className="c-gold">@delegare/sdk</span>
+              <span className="c-gold">@delegare/x402 @delegare/sdk</span>
             </div>
             <div>&nbsp;</div>
             <div>
-              <span className="c-dim">{"// 2. initialize"}</span>
+              <span className="c-dim">
+                {
+                  "// 2a. gate an API route (auto-listed on Delegare Market, agentic.market & MPPScan)"
+                }
+              </span>
+            </div>
+            <div>
+              <span className="c-blue">import</span>
+              <span className="c-white"> {"{ requireX402Payment }"} </span>
+              <span className="c-blue">from</span>
+              <span className="c-gold"> &apos;@delegare/x402&apos;</span>
+            </div>
+            <div>
+              <span className="c-white">app.</span>
+              <span className="c-green">post</span>
+              <span className="c-white">(</span>
+              <span className="c-gold">&apos;/api/analyze&apos;</span>
+              <span className="c-dim">,</span>
+              <span className="c-white"> </span>
+              <span className="c-green">requireX402Payment</span>
+              <span className="c-white">({"{"} price: </span>
+              <span className="c-gold">&apos;0.10&apos;</span>
+              <span className="c-dim">,</span>
+              <span className="c-white"> payTo: </span>
+              <span className="c-gold">&apos;0x...&apos;</span>
+              <span className="c-white"> {"}"})</span>
+              <span className="c-dim">,</span>
+              <span className="c-white"> handler)</span>
+            </div>
+            <div>&nbsp;</div>
+            <div>
+              <span className="c-dim">
+                {
+                  "// 2b. or charge an AP2 spending mandate directly via the SDK"
+                }
+              </span>
             </div>
             <div>
               <span className="c-blue">import</span>
@@ -501,14 +557,6 @@ export default function Home() {
               <span className="c-white">(process.env.</span>
               <span className="c-gold">DELEGARE_API_KEY</span>
               <span className="c-white">)</span>
-            </div>
-            <div>&nbsp;</div>
-            <div>
-              <span className="c-dim">
-                {
-                  "// 3. charge via spending mandate (agent presents this automatically)"
-                }
-              </span>
             </div>
             <div>
               <span className="c-blue">const</span>
@@ -536,12 +584,12 @@ export default function Home() {
             </div>
             <div>
               <span className="c-white">{"  "}description: </span>
-              <span className="c-gold">&apos;Pro plan &middot; Jan 2026&apos;</span>
+              <span className="c-gold">&apos;Pro plan subscription&apos;</span>
               <span className="c-dim">,</span>
             </div>
             <div>
               <span className="c-white">{"  "}idempotencyKey: </span>
-              <span className="c-gold">{"`pro_${userId}_2026_01`"}</span>
+              <span className="c-gold">{"`pro_${userId}_${billingCycle}`"}</span>
               <span className="c-dim">,</span>
             </div>
             <div>

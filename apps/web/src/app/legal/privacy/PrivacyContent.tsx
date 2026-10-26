@@ -8,7 +8,7 @@ const SECTIONS = [
   { id: "who", label: "Who uses Delegare" },
   { id: "collect", label: "What we collect" },
   { id: "never", label: "What we never store" },
-  { id: "token", label: "DelegateToken & agents" },
+  { id: "token", label: "Intent Mandates & agents" },
   { id: "crypto", label: "Crypto & on-chain" },
   { id: "use", label: "How we use data" },
   { id: "share", label: "How we share data" },
@@ -351,8 +351,9 @@ export default function PrivacyPage() {
               This Privacy Policy explains how we collect, use, store, and
               protect information when you use Delegare at{" "}
               <code>delegare.dev</code>, <code>delegare.co</code>,{" "}
-              <code>api.delegare.dev</code>, <code>app.delegare.dev</code>, and{" "}
-              <code>mcp.delegare.dev</code> (collectively, the &quot;Services&quot;).
+              <code>api.delegare.dev</code>, <code>app.delegare.dev</code>,{" "}
+              <code>market.delegare.dev</code>, and <code>docs.delegare.dev</code>{" "}
+              (collectively, the &quot;Services&quot;).
             </p>
             <div className="callout callout-warn">
               <div className="callout-title">Separate from SecureLend</div>
@@ -427,9 +428,9 @@ export default function PrivacyPage() {
                 addresses.
               </li>
               <li>
-                <strong>DelegateToken:</strong> A cryptographically signed,
-                opaque authorization token issued to your AI agent. Does not
-                encode payment credentials.
+                <strong>Intent Mandate (<code>intentMandate</code>):</strong> A
+                cryptographically signed Verifiable Credential (SD-JWT-VC)
+                issued to your AI agent. Does not encode payment credentials.
               </li>
               <li>
                 <strong>Usage data:</strong> Monthly spend counter, last used
@@ -489,10 +490,10 @@ export default function PrivacyPage() {
             <h3>3.5 MCP Interactions</h3>
             <p>
               When an AI agent interacts with Delegare via the MCP server at{" "}
-              <code>mcp.delegare.dev</code>, we receive the tool call parameters
-              sent by the agent (DelegateToken, requested amount, currency,
-              merchant ID). We do not receive or log the broader contents of the
-              agent&apos;s conversation.
+              <code>api.delegare.dev/mcp</code>, we receive the tool call
+              parameters sent by the agent (Intent Mandate, requested amount,
+              currency, merchant ID). We do not receive or log the broader
+              contents of the agent&apos;s conversation.
             </p>
           </section>
 
@@ -520,10 +521,12 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>
-                  Session key private keys in DynamoDB or application logs
+                  Plaintext session keys in DynamoDB or application logs
                 </strong>{" "}
-                — stored exclusively in AWS Secrets Manager, accessed only at
-                transaction execution time, then discarded from memory
+                — session keys are envelope-encrypted with AWS KMS bound to the
+                specific <code>mandateId</code> encryption context, decrypted in
+                memory only at transaction execution time, and permanently
+                removed when the mandate expires or is revoked
               </li>
               <li>
                 <strong>Passwords</strong> — Delegare does not use
@@ -535,34 +538,36 @@ export default function PrivacyPage() {
           {/* 5 */}
           <section id="token" className="policy-section">
             <div className="section-num">Section 5</div>
-            <h2>The DelegateToken and Agent Context</h2>
+            <h2>Intent Mandates and Agent Context</h2>
             <p>
-              When you complete spending delegate setup, Delegare issues a
-              DelegateToken to your AI agent. This section describes important
-              properties of that token.
+              When you complete spending delegate setup, Delegare issues an
+              Intent Mandate (<code>intentMandate</code>) to your AI agent. This
+              section describes important properties of that credential.
             </p>
 
             <h3>What it contains</h3>
             <p>
-              The DelegateToken is an HMAC-SHA256 signed token encoding your
-              owner ID and expiry date. It does not encode your card number,
-              wallet seed, session key private key, or any other payment
-              credential.
+              The Intent Mandate is an AP2-compliant Verifiable Credential
+              (SD-JWT-VC) signed with ES256 by Delegare&apos;s Platform DID (
+              <code>did:web:delegare.dev</code>). It encodes your scoped
+              spending limits, merchant allowlist, and expiry date. It does not
+              encode your card number, wallet seed, session key private key, or
+              any other payment credential.
             </p>
 
             <h3>What it authorizes</h3>
             <p>
-              Presenting a valid DelegateToken to the Delegare vault API
+              Presenting a valid Intent Mandate to the Delegare vault API
               authorizes a payment request, subject to the spending limits and
-              merchant restrictions you configured. The token is validated
-              against the DelegateToken record in our database on every use.
+              merchant restrictions you configured. The mandate signature and
+              status are verified against our database on every use.
             </p>
 
             <h3>Where it lives</h3>
             <p>
-              The DelegateToken is returned to your AI agent via the MCP tool
-              response and is held in your agent&apos;s context window or memory
-              system.
+              The Intent Mandate is returned to your AI agent via the setup or
+              MCP tool response and is held in your agent&apos;s context window or
+              memory system.
             </p>
             <div className="callout callout-warn">
               <div className="callout-title">Agent platform responsibility</div>
@@ -592,9 +597,9 @@ export default function PrivacyPage() {
               </p>
             </div>
 
-            <h3>Token security</h3>
+            <h3>Mandate security</h3>
             <p>
-              Even if a DelegateToken is obtained by an unauthorized party, it
+              Even if an Intent Mandate is obtained by an unauthorized party, it
               can only be used to initiate charges within your pre-configured
               spending limits and only at merchants on your allowed list. It
               cannot be used to retrieve your underlying card details or wallet
@@ -603,9 +608,10 @@ export default function PrivacyPage() {
 
             <h3>Revocation</h3>
             <p>
-              You can revoke a DelegateToken at any time via the{" "}
-              <code>revoke_delegate</code> MCP tool or the Delegare dashboard.
-              Once revoked, the token is immediately invalid.
+              You can revoke an Intent Mandate at any time via the{" "}
+              <code>revoke_mandate</code> MCP tool or the Delegare dashboard.
+              Once revoked, the mandate is immediately invalid and its encrypted
+              session key is removed.
             </p>
           </section>
 
@@ -627,12 +633,14 @@ export default function PrivacyPage() {
             <h3>Session keys</h3>
             <p>
               Delegare generates an ERC-4337 session key to sign transactions on
-              your behalf. The session key is scoped exclusively to the Delegare
-              payment contract address and cannot be used to interact with any
-              other contract or transfer funds outside your pre-authorized
-              spending limits. The session key private key is stored in AWS
-              Secrets Manager, fetched at transaction execution time, and is
-              never written to application logs or DynamoDB.
+              your behalf. The session key is scoped exclusively to the{" "}
+              <code>DelegareRouter</code> smart contract on Base and cannot be
+              used to interact with any other contract or transfer funds outside
+              your pre-authorized spending limits. The session key private key
+              is KMS-encrypted with a per-<code>mandateId</code> encryption
+              context, decrypted in memory only at transaction execution time,
+              never written to application logs, and permanently removed upon
+              mandate revocation.
             </p>
 
             <h3>Base network</h3>
@@ -650,9 +658,9 @@ export default function PrivacyPage() {
             <p>We use the information described in Section 3 to:</p>
             <ul>
               <li>
-                <strong>Execute and verify payments:</strong> Validate
-                DelegateTokens, enforce spending limits, route payments to the
-                correct rail, and create immutable receipts
+                <strong>Execute and verify payments:</strong> Validate Intent
+                Mandates, enforce spending limits, route payments to the correct
+                rail, and create immutable receipts
               </li>
               <li>
                 <strong>Prevent fraud and abuse:</strong> Detect anomalous
@@ -719,7 +727,7 @@ export default function PrivacyPage() {
                 <strong>Merchants:</strong> When your agent initiates a payment,
                 the merchant receives: transaction amount, currency,
                 description, idempotency key, receipt ID, and confirmation of
-                success. The merchant does not receive your DelegateToken, card
+                success. The merchant does not receive your Intent Mandate, card
                 details, wallet credentials, or email address.
               </li>
               <li>
@@ -770,8 +778,8 @@ export default function PrivacyPage() {
                   ["API key hashes", "Duration of relationship"],
                   ["IP address logs", "90 days"],
                   [
-                    "Session key private keys (Secrets Manager)",
-                    "Duration of delegate + 30 days",
+                    "Session key private keys (KMS-encrypted)",
+                    "Until mandate expires or is revoked, then immediately removed",
                   ],
                   ["Stripe Customer IDs", "Until delegate revoked + 90 days"],
                 ].map(([type, period]) => (
@@ -812,8 +820,9 @@ export default function PrivacyPage() {
                 customer-managed AWS KMS keys on all DynamoDB tables
               </li>
               <li>
-                <strong>Secrets management:</strong> AWS Secrets Manager for
-                session key private keys — never stored in DynamoDB or logs
+                <strong>Session key isolation:</strong> Session keys are
+                envelope-encrypted via AWS KMS bound to each specific{" "}
+                <code>mandateId</code> and removed immediately upon revocation
               </li>
               <li>
                 <strong>SSRF protection:</strong> All outbound vault requests
@@ -836,7 +845,7 @@ export default function PrivacyPage() {
             </ul>
             <p>
               No system is completely secure. You are responsible for revoking
-              your DelegateToken promptly if you believe it has been
+              your Intent Mandate promptly if you believe it has been
               compromised.
             </p>
           </section>
@@ -867,8 +876,8 @@ export default function PrivacyPage() {
                 record-keeping and cannot be deleted early
               </li>
               <li>
-                <strong>Revocation:</strong> Revoke a spending delegate at any
-                time via the <code>revoke_delegate</code> MCP tool or the
+                <strong>Revocation:</strong> Revoke a spending mandate at any
+                time via the <code>revoke_mandate</code> MCP tool or the
                 Delegare dashboard
               </li>
             </ul>

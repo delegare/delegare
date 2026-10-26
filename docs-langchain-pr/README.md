@@ -46,7 +46,7 @@ LangChain agents authorize payments via AP2 mandates with multi-rail
 settlement and built-in budget guardrails.
 
 Package: https://pypi.org/project/langchain-delegare/
-Source:  https://github.com/orgtom78/delegare"
+Source:  https://github.com/delegare/delegare"
 git push origin add-delegare-integration
 
 gh pr create \
@@ -65,7 +65,7 @@ Use this for the PR description:
 Adds documentation for `langchain-delegare` — agent payment authorization tools built on the AP2 protocol.
 
 - **Package**: https://pypi.org/project/langchain-delegare/ (v0.1.0)
-- **Source**: https://github.com/orgtom78/delegare
+- **Source**: https://github.com/delegare/delegare
 - **Underlying SDK**: https://pypi.org/project/delegare/
 
 ## What it adds

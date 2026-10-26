@@ -28,7 +28,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://delegare.dev"
 Documentation = "https://docs.delegare.dev"
-Repository = "https://github.com/orgtom78/delegare"
+Repository = "https://github.com/delegare/delegare"
 
 [dependency-groups]
 dev = [

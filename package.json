@@ -6,10 +6,10 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
-    "deploy:dev": "cd infrastructure && pnpm cdk deploy --all --context environment=dev",
-    "deploy:prod": "cd infrastructure && pnpm cdk deploy --all --context environment=prod",
     "sdk:publish": "cd packages/sdk && pnpm publish --access public",
-    "mcp-tools:publish": "cd packages/mcp-tools && pnpm publish --access public"
+    "x402:publish": "cd packages/x402 && pnpm publish --access public",
+    "mcp-tools:publish": "cd packages/mcp-tools && pnpm publish --access public",
+    "openclaw-plugin:publish": "cd packages/openclaw-plugin && pnpm publish --access public"
   },
   "engines": {
     "node": ">=22.0.0",

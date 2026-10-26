@@ -41,7 +41,7 @@ When a developer integrates Delegare, the flow works as follows:
 1. **Authorization credential issued** — at session start, the agent receives a scoped payment credential specifying: spending limit (e.g., \$5.00 per session), allowed merchant categories, time-bound expiry, and rail (Stripe card, ACH, or USDC/Base).
 2. **Agent executes transactions** — the agent calls Delegare's payment API to authorize and settle each transaction. No human approval is required per step.
 3. **Protocol-level enforcement** — Delegare's authorization layer validates each transaction against the credential envelope before execution. Transactions outside the envelope are rejected at the protocol level, not the application level.
-4. **Settlement** — successful transactions settle at \$0.03 per authorized transaction, across Stripe card, ACH, or USDC on Base.
+4. **Settlement** — successful transactions settle across Stripe card, ACH, or USDC on Base for 3¢ max per transaction (or 3% under $1, 0.5¢ minimum including Base gas).
 
 The agent never holds the underlying payment credential — it holds a scoped session token that Delegare validates.
 
@@ -55,9 +55,9 @@ This is the security-UX bridge: best autonomous UX without compromising security
 
 ## Delegare in the SecureLend stack
 
-In SecureLend's AI-native loan origination system, every origination agent transaction — document classification, data extraction, credit memo drafting — is authorized and settled via Delegare. This means a lender's full origination pipeline runs autonomously at \$0.03 per successful agent step, with no human payment approval between stages.
+In SecureLend's AI-native loan origination system, every origination agent transaction — document classification, data extraction, credit memo drafting — is authorized and settled via Delegare. This means a lender's full origination pipeline runs autonomously at up to \$0.03 per successful agent step (3% under \$1), with no human payment approval between stages.
 
-Delegare is also available as a standalone agentic payment layer for any developer building AI agents that need to transact. The open SDK is available as `@delegare/sdk` on npm.
+Delegare is also available as a standalone, MIT open-source agentic payment layer for any developer building AI agents that need to transact. The open-source SDKs and middleware are available as `@delegare/sdk`, `@delegare/x402`, and `@delegare/mcp-tools` on npm (and `delegare` on PyPI), with the full Vault facilitator and smart contracts at [github.com/delegare/vault](https://github.com/delegare/vault).
 
 ## Related
 
